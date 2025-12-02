@@ -18,6 +18,7 @@ type Config struct {
 	Checker  CheckerConfig
 	Emailit  EmailitConfig
 	Mailpit  MailpitConfig
+	GRPC     GRPCConfig
 }
 
 // ServerConfig holds server-related configuration
@@ -74,6 +75,17 @@ type MailpitConfig struct {
 	Enabled   bool
 }
 
+// GRPCConfig holds gRPC client configuration
+type GRPCConfig struct {
+	FeedbackEndpoint     string
+	DashboardEndpoint    string
+	NotificationsEndpoint string
+	PeopleEndpoint       string
+	Timeout              time.Duration
+	Retries              int
+	Enabled              bool
+}
+
 // Load loads configuration from environment variables
 func Load() (*Config, error) {
 	// Try to load .env file, but don't fail if it doesn't exist
@@ -119,6 +131,15 @@ func Load() (*Config, error) {
 			SMTPPort:  getIntEnv("MAILPIT_SMTP_PORT", 1025),
 			FromEmail: getEnv("MAILPIT_FROM_EMAIL", "noreply@ethos.test"),
 			Enabled:   getBoolEnv("MAILPIT_ENABLED", false),
+		},
+		GRPC: GRPCConfig{
+			FeedbackEndpoint:     getEnv("GRPC_FEEDBACK_ENDPOINT", "localhost:50051"),
+			DashboardEndpoint:    getEnv("GRPC_DASHBOARD_ENDPOINT", "localhost:50052"),
+			NotificationsEndpoint: getEnv("GRPC_NOTIFICATIONS_ENDPOINT", "localhost:50053"),
+			PeopleEndpoint:       getEnv("GRPC_PEOPLE_ENDPOINT", "localhost:50054"),
+			Timeout:              getDurationEnv("GRPC_TIMEOUT", 5*time.Second),
+			Retries:              getIntEnv("GRPC_RETRIES", 3),
+			Enabled:              getBoolEnv("GRPC_ENABLED", false),
 		},
 	}
 

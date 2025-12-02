@@ -52,6 +52,7 @@ func TestTracingStreamClientInterceptor(t *testing.T) {
 	// Test interceptor
 	stream, err := interceptor(ctx, nil, nil, "TestMethod", streamer)
 	assert.NoError(t, err)
-	assert.Nil(t, stream) // Stream is nil in test
+	// Stream should be wrapped in tracedClientStream (not nil)
+	assert.NotNil(t, stream)
 }
 
