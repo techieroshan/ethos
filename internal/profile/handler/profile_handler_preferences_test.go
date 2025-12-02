@@ -67,11 +67,13 @@ func TestUpdatePreferences_ValidUpdate(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var response prefModel.UserPreferences
+	var response struct {
+		Preferences prefModel.UserPreferences `json:"preferences"`
+	}
 	err = json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	assert.Equal(t, expectedPrefs.NotifyOnLogin, response.NotifyOnLogin)
-	assert.Equal(t, expectedPrefs.Locale, response.Locale)
+	assert.Equal(t, expectedPrefs.NotifyOnLogin, response.Preferences.NotifyOnLogin)
+	assert.Equal(t, expectedPrefs.Locale, response.Preferences.Locale)
 	mockService.AssertExpectations(t)
 }
 
