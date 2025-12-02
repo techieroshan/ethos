@@ -89,7 +89,7 @@ func TestEmailit_SendEmail(t *testing.T) {
 			})
 
 			// Test email sending
-			err := client.SendEmail(context.Background(), SendEmailRequest{
+			err := client.SendEmailInternal(context.Background(), SendEmailRequest{
 				To:          tt.to,
 				Subject:     tt.subject,
 				TemplateID:  tt.templateID,
@@ -128,7 +128,7 @@ func TestEmailit_SendEmail_OpenTelemetry(t *testing.T) {
 	ctx, span := tracer.Start(context.Background(), "test-span")
 	defer span.End()
 
-	err := client.SendEmail(ctx, SendEmailRequest{
+	err := client.SendEmailInternal(ctx, SendEmailRequest{
 		To:          "user@example.com",
 		Subject:     "Test",
 		TemplateID:  "verification",
@@ -158,7 +158,7 @@ func TestEmailit_SendEmail_RetryLogic(t *testing.T) {
 		Retries: 3,
 	})
 
-	err := client.SendEmail(context.Background(), SendEmailRequest{
+	err := client.SendEmailInternal(context.Background(), SendEmailRequest{
 		To:          "user@example.com",
 		Subject:     "Test",
 		TemplateID:  "verification",

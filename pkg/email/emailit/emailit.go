@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"ethos/pkg/email"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -28,7 +29,7 @@ type Emailit struct {
 	httpClient *http.Client
 }
 
-// SendEmailRequest represents an email sending request
+// SendEmailRequest represents an email sending request (internal)
 type SendEmailRequest struct {
 	To           string
 	Subject      string
@@ -53,8 +54,18 @@ func NewEmailit(config Config) *Emailit {
 	}
 }
 
-// SendEmail sends an email using Emailit API
-func (e *Emailit) SendEmail(ctx context.Context, req SendEmailRequest) error {
+// SendEmail sends an email using Emailit API (implements email.EmailSender)
+func (e *Emailit) SendEmail(ctx context.Context, req email.SendEmailRequest) error {
+	return e.SendEmailInternal(ctx, SendEmailRequest{
+		To:           req.To,
+		Subject:      req.Subject,
+		TemplateID:   req.TemplateID,
+		TemplateData: req.TemplateData,
+	})
+}
+
+// SendEmailInternal sends an email using Emailit API (internal method)
+func (e *Emailit) SendEmailInternal(ctx context.Context, req SendEmailRequest) error {
 	ctx, span := otel.Tracer("emailit").Start(ctx, "emailit.SendEmail")
 	defer span.End()
 
@@ -71,7 +82,7 @@ func (e *Emailit) SendEmail(ctx context.Context, req SendEmailRequest) error {
 			time.Sleep(time.Duration(attempt) * 100 * time.Millisecond) // Exponential backoff
 		}
 
-		err := e.sendEmailOnce(ctx, req)
+		err := e.sendEmailOnceInternal(ctx, req)
 		if err == nil {
 			span.SetStatus(codes.Ok, "")
 			return nil
@@ -85,8 +96,8 @@ func (e *Emailit) SendEmail(ctx context.Context, req SendEmailRequest) error {
 	return fmt.Errorf("failed to send email after %d retries: %w", e.config.Retries, lastErr)
 }
 
-// sendEmailOnce performs a single email sending request
-func (e *Emailit) sendEmailOnce(ctx context.Context, req SendEmailRequest) error {
+// sendEmailOnceInternal performs a single email sending request
+func (e *Emailit) sendEmailOnceInternal(ctx context.Context, req SendEmailRequest) error {
 	// Build request payload
 	payload := map[string]interface{}{
 		"to":            req.To,
@@ -152,4 +163,3 @@ func (e *Emailit) sendEmailOnce(ctx context.Context, req SendEmailRequest) error
 
 	return nil
 }
-
