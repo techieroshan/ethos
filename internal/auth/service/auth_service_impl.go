@@ -13,17 +13,24 @@ import (
 	"ethos/pkg/jwt"
 )
 
+// EmailChecker defines the interface for email validation
+type EmailChecker interface {
+	ValidateEmail(ctx context.Context, email string) (bool, error)
+}
+
 // AuthService implements the Service interface
 type AuthService struct {
 	repo          repository.Repository
 	tokenGenerator *jwt.TokenGenerator
+	emailChecker   EmailChecker
 }
 
 // NewAuthService creates a new authentication service
-func NewAuthService(repo repository.Repository, tokenGen *jwt.TokenGenerator) Service {
+func NewAuthService(repo repository.Repository, tokenGen *jwt.TokenGenerator, emailChecker EmailChecker) Service {
 	return &AuthService{
 		repo:          repo,
 		tokenGenerator: tokenGen,
+		emailChecker:  emailChecker,
 	}
 }
 
@@ -75,6 +82,17 @@ func (s *AuthService) Login(ctx context.Context, req *LoginRequest) (*LoginRespo
 
 // Register creates a new user account
 func (s *AuthService) Register(ctx context.Context, req *RegisterRequest) (*model.UserProfile, error) {
+	// Validate email if checker is provided
+	if s.emailChecker != nil {
+		valid, err := s.emailChecker.ValidateEmail(ctx, req.Email)
+		if err != nil {
+			return nil, errors.NewValidationError(err.Error())
+		}
+		if !valid {
+			return nil, errors.NewValidationError("invalid email address")
+		}
+	}
+
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {

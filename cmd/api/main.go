@@ -35,6 +35,7 @@ import (
 	profileService "ethos/internal/profile/service"
 	"ethos/internal/config"
 	"ethos/internal/database"
+	checkerClient "ethos/pkg/email/checker"
 	"ethos/pkg/jwt"
 	"ethos/pkg/otel"
 )
@@ -74,7 +75,19 @@ func main() {
 		cfg.JWT.AccessTokenExpiry,
 		cfg.JWT.RefreshTokenExpiry,
 	)
-	authService := service.NewAuthService(authRepo, tokenGen)
+	
+	// Initialize email checker (optional - can be nil if not configured)
+	var emailChecker checkerClient.EmailChecker
+	if cfg.Checker.APIKey != "" {
+		emailChecker = checkerClient.NewChecker(checkerClient.Config{
+			APIKey:  cfg.Checker.APIKey,
+			BaseURL: cfg.Checker.BaseURL,
+			Timeout: cfg.Checker.Timeout,
+			Retries: cfg.Checker.Retries,
+		})
+	}
+	
+	authService := service.NewAuthService(authRepo, tokenGen, emailChecker)
 	authHandler := handler.NewAuthHandler(authService)
 
 	// Initialize profile dependencies

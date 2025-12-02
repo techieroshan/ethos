@@ -15,6 +15,7 @@ type Config struct {
 	Database DatabaseConfig
 	JWT      JWTConfig
 	OTEL     OTELConfig
+	Checker  CheckerConfig
 }
 
 // ServerConfig holds server-related configuration
@@ -47,6 +48,14 @@ type OTELConfig struct {
 	Enabled     bool
 }
 
+// CheckerConfig holds Checker API configuration for email validation
+type CheckerConfig struct {
+	APIKey  string
+	BaseURL string
+	Timeout time.Duration
+	Retries int
+}
+
 // Load loads configuration from environment variables
 func Load() (*Config, error) {
 	// Try to load .env file, but don't fail if it doesn't exist
@@ -74,6 +83,12 @@ func Load() (*Config, error) {
 			ServiceName: getEnv("OTEL_SERVICE_NAME", "ethos-api"),
 			JaegerURL:   getEnv("JAEGER_URL", "http://localhost:14268/api/traces"),
 			Enabled:     getBoolEnv("OTEL_ENABLED", false),
+		},
+		Checker: CheckerConfig{
+			APIKey:  getEnv("CHECKER_API_KEY", ""),
+			BaseURL: getEnv("CHECKER_BASE_URL", "https://api.checker.com"),
+			Timeout: getDurationEnv("CHECKER_TIMEOUT", 5*time.Second),
+			Retries: getIntEnv("CHECKER_RETRIES", 2),
 		},
 	}
 
