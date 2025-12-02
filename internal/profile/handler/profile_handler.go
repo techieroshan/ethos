@@ -206,3 +206,33 @@ func (h *ProfileHandler) SearchProfiles(c *gin.Context) {
 		"count":   count,
 	})
 }
+
+// GetUserProfileByID handles GET /api/v1/profile/:user_id
+func (h *ProfileHandler) GetUserProfileByID(c *gin.Context) {
+	targetUserID := c.Param("user_id")
+	if targetUserID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	profile, err := h.service.GetUserProfile(c.Request.Context(), targetUserID)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, profile)
+}

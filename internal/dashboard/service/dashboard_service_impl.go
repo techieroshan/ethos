@@ -9,23 +9,25 @@ import (
 
 // DashboardService implements the Service interface
 type DashboardService struct {
-	repo repository.Repository
+	client DashboardClient // Can be REST or gRPC client
 }
 
-// NewDashboardService creates a new dashboard service
+// NewDashboardService creates a new dashboard service with REST client
 func NewDashboardService(repo repository.Repository) Service {
 	return &DashboardService{
-		repo: repo,
+		client: NewRESTDashboardClient(repo),
+	}
+}
+
+// NewDashboardServiceWithClient creates a dashboard service with a custom client (REST or gRPC)
+func NewDashboardServiceWithClient(client DashboardClient) Service {
+	return &DashboardService{
+		client: client,
 	}
 }
 
 // GetDashboard retrieves a dashboard snapshot for a user
 func (s *DashboardService) GetDashboard(ctx context.Context, userID string) (*model.DashboardSnapshot, error) {
-	snapshot, err := s.repo.GetDashboard(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	return snapshot, nil
+	return s.client.GetDashboard(ctx, userID)
 }
 

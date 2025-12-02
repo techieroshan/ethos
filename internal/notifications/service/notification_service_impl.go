@@ -9,24 +9,29 @@ import (
 
 // NotificationService implements the Service interface
 type NotificationService struct {
-	repo repository.Repository
+	client NotificationClient // Can be REST or gRPC client
+	repo   repository.Repository // Kept for write operations (GetPreferences, UpdatePreferences)
 }
 
-// NewNotificationService creates a new notification service
+// NewNotificationService creates a new notification service with REST client
 func NewNotificationService(repo repository.Repository) Service {
 	return &NotificationService{
-		repo: repo,
+		client: NewRESTNotificationClient(repo),
+		repo:   repo,
+	}
+}
+
+// NewNotificationServiceWithClient creates a notification service with a custom client (REST or gRPC)
+func NewNotificationServiceWithClient(client NotificationClient, repo repository.Repository) Service {
+	return &NotificationService{
+		client: client,
+		repo:   repo,
 	}
 }
 
 // GetNotifications retrieves notifications for a user
 func (s *NotificationService) GetNotifications(ctx context.Context, userID string, limit, offset int) ([]*model.Notification, int, int, error) {
-	notifications, count, unreadCount, err := s.repo.GetNotifications(ctx, userID, limit, offset)
-	if err != nil {
-		return nil, 0, 0, err
-	}
-
-	return notifications, count, unreadCount, nil
+	return s.client.GetNotifications(ctx, userID, limit, offset)
 }
 
 // GetPreferences retrieves notification preferences for a user

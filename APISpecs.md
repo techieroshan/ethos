@@ -26,1001 +26,512 @@ The Ethos API is designed to simplify and standardize authentication and user pr
 
 * Fetching authenticated user profile data for personalization or account management
 
-## Core Functionalities
-
-* **User Registration:** Create new user accounts using email and password; initiate email verification.
-
-* **Authentication (Login):** Authenticate credentials; issue JWT access and refresh tokens.
-
-* **Email Verification:** Confirm user email ownership through secure tokens.
-
-* **Password Management:** Change and reset passwords via email-based workflows.
-
-* **Token Refresh:** Seamlessly refresh access tokens using valid refresh tokens.
-
-* **Profile Retrieval:** Authenticated access to user profile details and personal information.
-
-* **Profile Update:** Editable profile data and user preference management.
-
-* **Account Security:** Two-factor authentication (2FA), security events log, and user data export.
-
-*Example Scenarios:*
-
-* A new user registers with their email, receives a verification link, and can then log in and manage their profile.
-
-* An existing user requests a password reset, receives an email, and sets a new password securely.
-
-* A mobile app fetches profile information for authenticated users to display personalized content.
-
-## Architecture Overview
-
-The Ethos API is architected as a stateless RESTful service, versioned at `/api/v1`, exposing endpoints for authentication and user profiles across environments (development, staging, production). Core architectural components include:
-
-* **Authentication Service:** Manages login, registration, and token issuance/validation.
-
-* **Profile Service:** Handles user profile retrieval and updates.
-
-* **Token Management Layer:** Issues, validates, and refreshes JWTs for session management.
-
-* **Security Management:** Endpoints for account-level security operations.
-
-**Environment Base URLs (Examples):**
-
-* Production: `https://api.ethos.example.com/api/v1`
-
-* Staging: `https://staging.ethos.example.com/api/v1`
-
-* Development: `http://localhost:8000/api/v1`
-
-All requests and responses use JSON. The API is designed for horizontal scalability and high performance, supporting stateless interactions and optimized for both browser and mobile clients.
-
 ---
 
 ## Core Data Models
 
-This section describes the canonical data types and structures used across Ethos API endpoints. Each model is shown as a TypeScript interface or type alias, with an explanation and references to relevant endpoints that return or accept this shape. All models are actively used by the corresponding endpoints.
-
-### Primitive Type Aliases
-
-type UserId = string; // Unique user identifier (e.g., "user-1234")  
-
-type FeedbackId = string; // Unique feedback item identifier (e.g., "f-001")  
-
-type CommentId = string; // Unique comment identifier (e.g., "c-1001")  
-
-type NotificationId = string; // Unique notification identifier (e.g., "n-01")  
-
-type Timestamp = string; // ISO 8601 formatted string, e.g. "2024-05-04T14:30:00Z"
-
-Commonly referenced throughout all API models to ensure type safety and clarity.
-
----
-
-### UserSummary
-
-A minimal reference to a user, typically embedded within other models such as feedback or comments.
-
-interface UserSummary { id: UserId; name: string; }
-
-* **Used in:** `FeedbackItem`, `FeedbackComment`, and related endpoints for participant attribution.
-
----
-
-### UserProfile
-
-Extends `UserSummary` and surfaces additional profile details for the authenticated or searched user.
-
-interface UserProfile extends UserSummary { email: string; email_verified: boolean; created_at: Timestamp; public_bio?: string; updated_at?: Timestamp; }
-
-* **Returned by:** `GET /profile/me`, `GET /profile/:user_id`
-
-* **Describes:** The complete profile for the requester or queried user.
-
----
-
-### FeedbackVisibility and FeedbackType
-
-Captures constraints and categorization for feedback.
-
-type FeedbackVisibility = "public" | "private" | "team";  
-
-type FeedbackType = "appreciation" | "suggestion" | "issue" | "other";
-
-* **Used in:** `FeedbackItem` to control access and reporting, and allow for filtering by type.
-
----
-
-### FeedbackDimensionScore
-
-Optional dimension-level scoring for structured feedback.
-
-interface FeedbackDimensionScore { dimension: string; // e.g., "clarity", "impact" score: number; // e.g., 1-5 }
-
-* **Used in:** `FeedbackItem.dimensions` for advanced feedback analytics.
-
----
-
-### FeedbackReactionSummary
-
-Summarizes the reaction counts for a feedback item.
-
-interface FeedbackReactionSummary { \[reaction: string\]: number; // e.g., "like": 3, "helpful": 2 }
-
-* **Used in:** `FeedbackItem.reactions`
-
-* **Returned by:** `GET /feedback/feed`, `GET /feedback/:feedback_id`
-
----
-
-### FeedbackItem
-
-The core model for all feedback-related data. Represents an individual feedback post.
-
-interface FeedbackItem { feedback_id: FeedbackId; author: UserSummary; content: string; type?: FeedbackType; visibility?: FeedbackVisibility; reactions: FeedbackReactionSummary; dimensions?: FeedbackDimensionScore\[\]; comments_count: number; created_at: Timestamp; }
-
-* **Returned by:**
-
-  * `GET /feedback/feed` (lists)
-
-  * `GET /profile/:user_id/feedback` (lists)
-
-  * `GET /feedback/:feedback_id` (detail)
-
----
-
-### FeedbackComment
-
-Represents a comment or reply on a feedback post.
-
-interface FeedbackComment { comment_id: CommentId; author: UserSummary; content: string; created_at: Timestamp; parent_comment_id?: CommentId; // for threading/replies }
-
-* **Returned by:** `GET /feedback/:feedback_id/comments`
-
----
-
-### DashboardSnapshot
-
-Aggregated dashboard view for an authenticated user, including activity, statistics, and suggested actions.
-
-interface DashboardSnapshot { recent_feedback: FeedbackItem\[\]; stats: { feedback_given: number; comments: number; \[key: string\]: number; }; suggested_actions: string\[\]; }
-
-* **Returned by:** `GET /dashboard`
-
-* **Purpose:** Personalized dashboard experience aggregating key user data.
-
----
-
-### NotificationType
-
-Defines the set of notification event categories.
-
-type NotificationType = | "feedback_reply" | "feedback_received" | "new_comment" | "system_alert" | "reminder" | "other";
-
-* **Used in:** `Notification.type`
-
----
-
-### Notification
-
-Represents a notification delivered to a user.
-
-interface Notification { notification_id: NotificationId; type: NotificationType; message: string; read: boolean; created_at: Timestamp; }
-
-* **Returned by:** `GET /notifications`
-
-* **Purpose:** Track and display user notifications, including unread status.
-
----
-
-### NotificationPreferences
-
-Tracks delivery channel choices for user notifications.
-
-interface NotificationPreferences { email: boolean; push: boolean; in_app: boolean; }
-
-* **Returned by:** `GET /notifications/preferences`
-
-* **Updated by:** `PUT /notifications/preferences`
-
-* **Purpose:** Controls which notification channels a user has opted into.
-
----
-
-## API Authentication
-
-**JWT-based authentication** is enforced:
-
-* On successful login, clients receive an **access token** (short-lived) and a **refresh token** (longer-lived).
-
-* Protected endpoints require an `Authorization: Bearer <access_token>` header.
-
-* Refresh tokens are used to obtain new access tokens without re-entering credentials.
-
-* No API keys or session cookies are used.
-
-**Security Best Practices:**
-
-* Store tokens securely (not in localStorage if possible; prefer secure HTTP-only cookies on web).
-
-* Always use HTTPS.
-
-* Logout or invalidate refresh tokens on logout.
-
-* Employ short expiry durations for access tokens and regular rotation of refresh tokens.
-
-## Authentication Methods
-
-Supported authentication methods:
-
-1. **Email + Password Login**
-
-  * **Step 1:** POST to `/auth/login` with email and password.
-
-  * **Step 2:** Receive access and refresh tokens on success.
-
-  **Request Example:**
-
-  **POST** `/api/v1/auth/login`
-
-  ```
-  {
-      "email": "user@example.com",
-      "password": "UserPassword123!"
-  }
-```
-
-  **Response Example:**
-
-  ```
-  {
-      "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",
-      "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-  }
-```
-
-2. **Token-based Access**
-
-  * **Step 1:** Attach access token in `Authorization` header for protected requests.
-
-  * **Example Header:**
-
-    Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6...
-
-## Token Management
-
-* **Token Issuance:** After successful authentication, both access and refresh tokens are issued.
-
-* **Access Token:** Short lifespan (e.g., 15 minutes), used for API calls.
-
-* **Refresh Token:** Longer lifespan (e.g., 14 days), used at `/auth/refresh` endpoint.
-
-* **Refreshing Tokens:**
-
-  * POST your refresh token to `/auth/refresh` to receive a new access token.
-
-* **Invalidation:** Log out or password change revokes refresh tokens.
-
-**Example Refresh Request:**
-
-POST /api/v1/auth/refresh { "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6..." }
-
-**Best Practices:**
-
-* Store refresh tokens securely (not in client-side JavaScript if possible).
-
-* Discard expired/invalid tokens promptly.
-
-* Never expose tokens on URLs, logs, or browser storage that isn’t secure.
-
-## Common Issues and Troubleshooting
-
-**Frequent Causes:**
-
-* Using expired or invalid access tokens
-
-* Failing to include or misformatting the `Authorization` header
-
-* Attempting to use a revoked or expired refresh token
-
-* Accessing protected endpoints without login
-
-**Quick Resolutions:**
-
-* Always login again if tokens are expired
-
-* Copy tokens exactly from login/refresh responses
-
-* Ensure HTTP headers are correctly set
-
-* Check server error messages for actionable hints
-
-## Error Messages
-
-The API uses standardized JSON error responses, typically in the format:
-
-```
-{
-    "error": "Invalid credentials",
-    "code": "AUTH_INVALID_CREDENTIALS"
+This section describes the canonical data types and structures used across Ethos API endpoints. Below are model extensions and new models referenced in the enhanced endpoints.
+
+### Updated: FeedbackItem
+
+**Now includes:**
+
+* Reaction analytics
+
+* Helpfulness metric
+
+* Follow-up tracking
+
+* Anonymous flag
+
+```typescript
+interface FeedbackItem {
+  feedback_id: FeedbackId;
+  author: UserSummary;
+  content: string;
+  type?: FeedbackType;
+  visibility: FeedbackVisibility;
+  reactions: FeedbackReactionSummary;
+  helpfulness?: number; // New: percentage or score of helpful feedback
+  reactions_analytics?: {
+    \[reaction: string\]: {
+      count: number;
+      user_ids: UserId\[\];
+    };
+  };
+  follow_ups?: FeedbackFollowUp\[\]; // Tracked follow-up discussions
+  is_anonymous?: boolean; // New: Identifies anonymous submissions
+  dimensions?: FeedbackDimensionScore\[\];
+  comments_count: number;
+  created_at: Timestamp;
 }
+
 ```
 
-Main error types include:
+### New: FeedbackTemplate
 
-* **Authentication errors:** Invalid token, expired token, bad credentials, account not verified
+```typescript
+interface FeedbackTemplate {
+  template_id: string;
+  name: string;
+  description: string;
+  context_tags: string\[\];
+  template_fields: any; // JSON schema describing template content fields
+}
 
-* **Authorization errors:** Missing or malformed token, insufficient permissions
+```
 
-* **Resource errors:** User not found, email not verified, validation failures
+### New: FeedbackFollowUp
 
-* **Server errors:** Unexpected processing issues or outages
+```typescript
+interface FeedbackFollowUp {
+  follow_up_id: string;
+  content: string;
+  author: UserSummary;
+  created_at: Timestamp;
+}
 
-Each error contains a machine-readable code and human-friendly message to aid debugging.
+```
 
-## Error Code List
+### Updated: ModerationState (Richer States)
 
-## Troubleshooting Guide
+```typescript
+type ModerationState =
+  | "pending"
+  | "warned"
+  | "actioned"
+  | "escalated"
+  | "appealed";
 
-1. **Invalid Credentials on Login**
+```
 
-  * Double-check provided email and password.
-
-  * Ensure the account exists and is verified.
-
-2. **Access Token Expired**
-
-  * Use the refresh token at `/auth/refresh` to get a new access token.
-
-  * If refresh token is also expired, log in again.
-
-3. **Invalid or Missing Authorization Header**
-
-  * Verify the header is present and precisely formatted as `Bearer <token>`.
-
-  * Do not include additional spaces or characters.
-
-4. **Email Not Verified**
-
-  * Ensure user has completed email verification.
-
-  * Resend verification email if necessary.
-
-5. **Profile Not Found**
-
-  * Confirm successful login and correct user account.
-
-  * New users may need to complete setup.
-
-**General Best Practices:**
-
-* Use recommended token storage methods.
-
-* Always validate inputs before sending requests.
-
-* Monitor for consistent error codes and handle gracefully.
-
-## Support and Resources
-
-* **Documentation Portal:** Comprehensive API docs and guides (Coming Soon)
-
-* 
-
-* **Community Forums:** forums.ethosapi.example.com (Coming Soon)
-
-* **Knowledge Base:** FAQs and troubleshooting resources (Coming Soon)
-
-*For integration or urgent production issues, please email the support address above.*
+---
 
 ## API Endpoints and Operations
 
-### Domain Grouping
+### Feedback
 
-## GET
+Feedback Templates & Suggestions
 
-### `/auth/me`
+GET `/api/feedback/templates`
 
-* **Status:** Current
-
-* **Usage:** Retrieve information about the currently authenticated user, including email and verification status.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Headers:**
-
-  * `Authorization: Bearer <access_token>`
-
-* **Request Example:**
-
-  * GET `/api/v1/auth/me`
-
-* **Sample Response:**
-
-  ```
-  {
-      "id": "user-1234",
-      "email": "user@example.com",
-      "email_verified": true,
-      "created_at": "2023-10-02T13:21:00Z"
-  }
-```
-
-  *Response Body: UserProfile*
-
-* **Errors:** AUTH_TOKEN_EXPIRED, AUTH_TOKEN_INVALID, AUTH_EMAIL_UNVERIFIED
-
-### `/profile/me`
-
-* **Status:** Current
-
-* **Usage:** Retrieve authenticated user's profile.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Headers:**
-
-  * `Authorization: Bearer <access_token>`
-
-* **Request Example:**
-
-  * GET `/api/v1/profile/me`
-
-* **Sample Response:**
-
-  ```
-  {
-      "id": "user-1234",
-      "email": "user@example.com",
-      "name": "Jane Doe",
-      "email_verified": true,
-      "created_at": "2023-10-02T13:21:00Z"
-  }
-```
-
-  *Response Body: UserProfile*
-
-* **Errors:** PROFILE_NOT_FOUND, AUTH_TOKEN_EXPIRED
-
-### `/profile/user-profile`
-
-* **Status:** Current
-
-* **Usage:** Search or list publicly accessible user profiles.
-
-* **Authorization:** Optional, depending on profile visibility
+**Description:** Retrieve a list of available feedback templates, with contextual details for suggestion.
 
 * **Query Parameters:**
 
-  * `q` (search term),
-
-  * `limit` (default: 25),
-
-  * `offset`
-
-* **Request Example:**
-
-  * GET `/api/v1/profile/user-profile?q=Jane`
-
-* **Sample Response:**
-
-  ```
-  {
-      "results": \[
-          {
-              "id": "user-5678",
-              "name": "Jane Smith",
-              "public_bio": "Educator, runner, mentor."
-          }
-      \],
-      "count": 1
-  }
-```
-
-  *Each user object conforms to UserProfile (with public fields only)*
-
-* **Errors:** VALIDATION_FAILED, SERVER_ERROR
-
-### `/account/security-events`
-
-* **Status:** Current
-
-* **Usage:** Retrieve a list of significant security-related events for the authenticated user’s account.
-
-* **Authorization:** Required
-
-* **Request Example:**
-
-  * GET `/api/v1/account/security-events`
-
-* **Sample Response:**
-
-  ```
-  {
-      "events": \[
-          {
-              "event_id": "evt-01",
-              "type": "login",
-              "timestamp": "2024-01-02T15:09:10Z",
-              "ip": "203.0.113.5",
-              "location": "US"
-          }
-      \]
-  }
-```
-
-* **Errors:** AUTH_TOKEN_EXPIRED, SERVER_ERROR
-
-### `/account/export-data/:export_id/status`
-
-* **Status:** Current
-
-* **Usage:** Retrieve the status of a previously requested account data export.
-
-* **Authorization:** Required
-
-* **Request Example:**
-
-  * GET `/api/v1/account/export-data/exp-12345/status`
-
-* **Sample Response:**
-
-  ```
-  {
-      "export_id": "exp-12345",
-      "status": "completed",
-      "download_url": "https://download.ethos.example.com/exp-12345.zip",
-      "expires_at": "2024-04-03T10:00:00Z"
-  }
-```
-
-* **Errors:** VALIDATION_FAILED, AUTH_TOKEN_EXPIRED, SERVER_ERROR
-
----
-
-### `/feedback/feed`
-
-* **Status:** Current
-
-* **Purpose:** Retrieve a paginated feed of community feedback posts for the main feedback wall.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Query Parameters:**
-
-  * `limit` (default: 20)
-
-  * `offset`
-
-* **Request Example:**
-
-  * GET `/api/v1/feedback/feed?limit=10`
-
-* **Sample Response:**
-
-  ```
-  {
-      "results": \[
-          {
-              "feedback_id": "f-001",
-              "author": { "id": "user-234", "name": "Lisa K." },
-              "content": "Really enjoying the new feature!",
-              "reactions": { "like": 5, "helpful": 2 },
-              "comments_count": 3,
-              "created_at": "2024-05-04T14:30:00Z"
-          }
-      \],
-      "count": 1
-  }
-```
-
-  *Each item in results conforms to FeedbackItem*
-
-### `/feedback/:feedback_id`
-
-* **Status:** Current
-
-* **Purpose:** Retrieve the detail of a specific feedback post, including content, author, total reactions, and comments summary.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Request Example:**
-
-  * GET `/api/v1/feedback/f-001`
-
-* **Sample Response:**
-
-  ```
-  {
-      "feedback_id": "f-001",
-      "author": { "id": "user-234", "name": "Lisa K." },
-      "content": "Really enjoying the new feature!",
-      "reactions": { "like": 5, "helpful": 2 },
-      "created_at": "2024-05-04T14:30:00Z"
-  }
-```
-
-  *Response Body: FeedbackItem*
-
-### `/feedback/:feedback_id/comments`
-
-* **Status:** Current
-
-* **Purpose:** List all comments and replies for a given feedback post.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Request Example:**
-
-  * GET `/api/v1/feedback/f-001/comments`
-
-* **Sample Response:**
-
-  ```
-  {
-      "comments": \[
-          {
-              "comment_id": "c-1001",
-              "author": { "id": "user-111", "name": "Joan P." },
-              "content": "I agree!",
-              "created_at": "2024-05-05T08:22:00Z"
-          }
-      \],
-      "count": 1
-  }
-```
-
-  *Each comment in comments is a FeedbackComment*
-
-### `/people/search`
-
-* **Status:** Current
-
-* **Purpose:** Search for people matching the query string.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Query Parameters:**
-
-  * `q` (search term), `limit`, `offset`
-
-* **Request Example:**
-
-  * GET `/api/v1/people/search?q=alex`
-
-* **Sample Response:**
-
-  ```
-  {
-      "results": \[
-          {
-              "id": "user-8910",
-              "name": "Alex Johnson",
-              "role": "Designer"
-          }
-      \],
-      "count": 1
-  }
-```
-
-### `/people/recommendations`
-
-* **Status:** Current
-
-* **Purpose:** Return a personalized list of people the user may want to connect with.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Request Example:**
-
-  * GET `/api/v1/people/recommendations`
-
-* **Sample Response:**
-
-  ```
-  {
-      "recommendations": \[
-          {
-              "id": "user-1527",
-              "name": "Morgan C.",
-              "role": "Engineer"
-          }
-      \]
-  }
-```
-
-### `/dashboard`
-
-* **Status:** Current
-
-* **Purpose:** Retrieve a personalized dashboard snapshot for the authenticated user, including key activity, stats, and recommendations.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Request Example:**
-
-  * GET `/api/v1/dashboard`
-
-* **Sample Response:**
-
-  ```
-  {
-      "recent_feedback": \[ ... \],
-      "stats": { "feedback_given": 10, "comments": 22 },
-      "suggested_actions": \[ "Complete your profile", "Give feedback" \]
-  }
-```
-
-  *Response Body: DashboardSnapshot*
-
-### `/notifications`
-
-* **Status:** Current
-
-* **Purpose:** List notifications for the authenticated user (paginated).
-
-* **Authorization:** Required (Bearer access token)
-
-* **Query Parameters:**
-
-  * `limit`, `offset`
-
-* **Request Example:**
-
-  * GET `/api/v1/notifications?limit=20`
-
-* **Sample Response:**
-
-  ```
-  {
-      "notifications": \[
-          {
-              "notification_id": "n-01",
-              "type": "feedback_reply",
-              "message": "You received a reply to your feedback.",
-              "read": false,
-              "created_at": "2024-05-07T09:00:00Z"
-          }
-      \],
-      "unread_count": 1
-  }
-```
-
-  *Each notification object conforms to Notification*
-
-### `/notifications/preferences`
-
-* **Status:** Current
-
-* **Purpose:** Get the authenticated user's notification delivery preferences.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Request Example:**
-
-  * GET `/api/v1/notifications/preferences`
-
-* **Sample Response:**
-
-  ```
-  {
-      "preferences": {
-          "email": true,
-          "push": true,
-          "in_app": true
+  * `context` (optional): Provide context (e.g., "performance review", "peer feedback")
+
+  * `tags` (optional): Comma-separated list of tags to filter templates
+
+**Request Example:**
+
+GET `/api/feedback/templates?context=performance_review`
+
+**Response Example:**
+
+```json
+{
+  "results": \[
+    {
+      "template_id": "t-001",
+      "name": "Appreciation Template",
+      "description": "A short message to acknowledge great work.",
+      "context_tags": \["appreciation", "general"\],
+      "template_fields": {
+        "fields": \[
+          { "name": "what_went_well", "type": "text", "label": "What went well?" }
+        \]
       }
-  }
-```
+    }
+  \]
+}
 
-  *Response Body: NotificationPreferences*
-
-### `/community/rules`
-
-* **Status:** Current
-
-* **Purpose:** Retrieve the current community rules and acceptable use policy.
-
-* **Authorization:** Not required
-
-* **Request Example:**
-
-  * GET `/api/v1/community/rules`
-
-* **Sample Response:**
-
-  ```
-  {
-      "title": "Community Rules",
-      "content": "Please respect others and do not post prohibited content."
-  }
-```
-
-## POST
-
-*(No changes required for core model notation in this section)*
-
-## PUT
-
-### `/profile/me`
-
-* **Status:** Current
-
-* **Purpose:** Update authenticated user’s profile details (such as name, display information, or public bio).
-
-* **Authorization:** Required
-
-* **Headers:**
-
-  * `Authorization: Bearer <access_token>`
-
-* **Input Example:**
-
-  ```
-  {
-      "name": "Jane A. Doe",
-      "public_bio": "Lead engineer, coffee enthusiast."
-  }
-```
-
-* **Sample Response:**
-
-  ```
-  {
-      "id": "user-1234",
-      "email": "user@example.com",
-      "name": "Jane A. Doe",
-      "public_bio": "Lead engineer, coffee enthusiast.",
-      "updated_at": "2024-03-01T12:00:00Z"
-  }
-```
-
-  *Response Body: UserProfile*
-
-* **Errors:** VALIDATION_FAILED, AUTH_TOKEN_EXPIRED
-
-### `/notifications/preferences`
-
-* **Status:** Current
-
-* **Purpose:** Update user's preferences for notification delivery channels.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Input Example:**
-
-  ```
-  {
-      "email": false,
-      "push": true,
-      "in_app": true
-  }
-```
-
-* **Sample Response:**
-
-  ```
-  {
-      "preferences": {
-          "email": false,
-          "push": true,
-          "in_app": true
-      }
-  }
-```
-
-  *Response Body: NotificationPreferences*
-
-## PATCH
-
-### `/profile/me/preferences`
-
-* **Status:** Current
-
-* **Purpose:** Update user-specific profile preferences (notifications, locale, etc.).
-
-* **Authorization:** Required
-
-* **Headers:**
-
-  * `Authorization: Bearer <access_token>`
-
-* **Input Example:**
-
-  ```
-  {
-      "notify_on_login": false,
-      "locale": "en-US"
-  }
-```
-
-* **Sample Response:**
-
-  ```
-  {
-      "preferences": {
-          "notify_on_login": false,
-          "locale": "en-US"
-      }
-  }
-```
-
-* **Errors:** VALIDATION_FAILED, AUTH_TOKEN_EXPIRED
-
-## DELETE
-
-### `/profile/me`
-
-* **Status:** Current
-
-* **Purpose:** Request permanent deletion of the authenticated user’s account.
-
-* **Authorization:** Required
-
-* **Headers:**
-
-  * `Authorization: Bearer <access_token>`
-
-* **Request Example:**
-
-  * DELETE `/api/v1/profile/me`
-
-* **Sample Response:**
-
-  ```
-  {
-      "message": "Account scheduled for deletion. You will receive a confirmation email."
-  }
-```
-
-* **Errors:** AUTH_TOKEN_EXPIRED, SERVER_ERROR
-
-### `/auth/setup-2fa`
-
-* **Status:** Current
-
-* **Purpose:** Disable or remove two-factor authentication from the user account.
-
-* **Authorization:** Required
-
-* **Headers:**
-
-  * `Authorization: Bearer <access_token>`
-
-* **Request Example:**
-
-  * DELETE `/api/v1/auth/setup-2fa`
-
-* **Sample Response:**
-
-  ```
-  {
-      "message": "Two-factor authentication disabled for your account."
-  }
-```
-
-* **Errors:** AUTH_TOKEN_EXPIRED, SERVER_ERROR
-
----
-
-### `/feedback/:feedback_id/react`
-
-* **Status:** Current
-
-* **Purpose:** Remove a reaction from a given feedback post for the current user.
-
-* **Authorization:** Required (Bearer access token)
-
-* **Request Example:**
-
-  * DELETE `/api/v1/feedback/f-101/react`
-
-* **Sample Response:**
-
-  ```
-  {
-      "feedback_id": "f-101",
-      "message": "Reaction removed"
-  }
 ```
 
 ---
 
-*End of Ethos API Documentation*
+POST `/api/feedback/template_suggestions`
+
+**Description:** Suggest a new template or signal an in-context template need.
+
+* **Body:**
+
+  * `suggested_by` (UserId): (Optional if user is authenticated)
+
+  * `usage_context` (string): Context for which the template is needed (e.g., "1:1 meetings", "onboarding")
+
+  * `details` (string): Free-text description of the needed template
+
+  * `desired_fields` (optional): Array of desired field names/types
+
+**Request Example:**
+
+```json
+{
+  "usage_context": "peer review",
+  "details": "Need a short, positive feedback template for quick peer recognition.",
+  "desired_fields": \[
+    { "name": "positive_note", "type": "text" }
+  \]
+}
+
+```
+
+**Response Example:**
+
+```json
+{
+  "status": "suggestion_received"
+}
+
+```
+
+---
+
+Impact & Analytics
+
+Model Enhancements
+
+* `helpfulness` (number): Score or ratio representing community evaluation of this feedback.
+
+* `reactions_analytics` (object): For each reaction, a count and optionally a list of user IDs who reacted.
+
+* `follow_ups` (array): List of follow-up messages on the feedback.
+
+* All new fields are returned in `GET /feedback/feed`, `GET /feedback/:feedback_id`, and relevant listing endpoints.
+
+GET `/api/feedback/impact`
+
+**Description:** Aggregate analytics on feedback collected, including reactions, helpfulness over time, and follow-up trends.
+
+* **Query Parameters:**
+
+  * `user_id` (optional): Filter impact by feedback received by a specific user
+
+  * `from`, `to` (optional): Date range for aggregation (ISO dates)
+
+**Request Example:**
+
+GET `/api/feedback/impact?user_id=user-8822&from=2024-01-01&to=2024-07-01`
+
+**Response Example:**
+
+```json
+{
+  "feedback_count": 31,
+  "average_helpfulness": 0.87,
+  "reaction_totals": { "like": 120, "helpful": 53, "insightful": 12 },
+  "follow_up_count": 7,
+  "trends": \[
+    { "date": "2024-06-01", "helpfulness": 0.91, "feedback_submitted": 4 }
+  \]
+}
+
+```
+
+---
+
+Anonymous and Batch Feedback
+
+Model Update
+
+* `is_anonymous` (boolean): Indicates if feedback was submitted without surface author identity. Anonymous feedbacks mask the `author` field in certain responses based on permission.
+
+POST `/api/feedback/batch`
+
+**Description:** Batch create feedback items in a single operation, supporting anonymous and mixed-visibility submissions.
+
+**Request Example:**
+
+```json
+{
+  "items": \[
+    {
+      "content": "Great presentation in the meeting!",
+      "type": "appreciation",
+      "visibility": "public",
+      "is_anonymous": false
+    },
+    {
+      "content": "Consider slowing down during the Q&A.",
+      "type": "suggestion",
+      "visibility": "org",
+      "is_anonymous": true
+    }
+  \]
+}
+
+```
+
+**Response Example:**
+
+```json
+{
+  "submitted": \[
+    { "feedback_id": "f-741", "status": "created" },
+    { "feedback_id": "f-742", "status": "created" }
+  \]
+}
+
+```
+
+---
+
+### People / Search
+
+Advanced Feed & People Filters
+
+Enhanced Filters for Feedback and People
+
+`GET /api/feedback/feed` and `GET /people/search` now accept:
+
+* `reviewer_type`: `"public"` or `"org"` (to filter by type of feedback reviewer)
+
+* `context`: Filter feedback/people by context (e.g., "project", "team", "initiative")
+
+* `verification`: `"verified"`, `"unverified"` (filter results accordingly)
+
+* `tags`: Comma-separated list to match feedback or user tags
+
+Example: GET `/api/feedback/feed?reviewer_type=org&context=team-building&tags=leadership,initiative`
+
+Reviewer Context in Models
+
+**All applicable models now include:**
+
+* `reviewer_context` (object): Rich JSON depicting the review scope, e.g.:
+
+  * `{"type": "org", "tenant_id": "org-1234", "department": "Engineering"}`
+
+  * This is returned with all feedback search and listing endpoints.
+
+---
+
+Bookmark and Export Endpoints
+
+GET `/api/feedback/bookmarks`
+
+* **Description:** Get paginated list of feedback items the user has bookmarked.
+
+* **Sample Response:** 
+
+  ```json
+  {
+    "results": \[
+      {
+        "feedback_id": "f-53091",
+        "content": "Excellent mentoring this quarter!",
+        "reviewer_context": { "type": "org", "tenant_id": "org-12" }
+      }
+    \]
+  }
+  
+```
+
+POST `/api/feedback/bookmarks/:feedback_id`
+
+* **Description:** Bookmark or remove bookmark from a feedback item.
+
+* **Body:** `{ "action": "add" | "remove" }`
+
+GET `/api/feedback/export`
+
+* **Description:** Export feedback matching filters (by type, tag, reviewer, date, etc.)
+
+* **Query Parameters:** Accepts the same filter set as `/feedback/feed`
+
+* **Response:** Download/export file (CSV, JSON), delivered as direct payload or via a downloadable export asset.
+
+---
+
+### Moderation / Admin
+
+Moderation Appeal
+
+POST `/api/moderation/appeals`
+
+* **Description:** Submit an appeal for a moderation decision.
+
+* **Body:**
+
+  * `moderated_item_id` (string)
+
+  * `item_type` ("feedback" | "comment" | "profile" | ...)
+
+  * `reason` (string)
+
+  * `details` (optional)
+
+* **Request Example:** 
+
+  ```json
+  {
+    "moderated_item_id": "f-2098",
+    "item_type": "feedback",
+    "reason": "Feedback was incorrectly removed",
+    "details": "The post complies with all community guidelines."
+  }
+  
+```
+
+* **Response Example:** 
+
+  ```json
+  {
+    "status": "appeal_submitted",
+    "appeal_id": "a-10233"
+  }
+  
+```
+
+---
+
+Rich Moderation State
+
+Moderation status for any moderated item is now one of:
+
+* `pending`: Awaiting review
+
+* `warned`: User has been warned, item may still be visible/limited
+
+* `actioned`: Item was removed or restricted due to violation
+
+* `escalated`: Issue referred to higher-level admin
+
+* `appealed`: Appeal is under review
+
+This field is present in all moderation-related response objects.
+
+---
+
+GET `/api/moderation/context`
+
+* **Description:** Get the moderation context and active rules for a given item.
+
+* **Query Parameters:** `item_id`, `item_type`
+
+**Request Example:**  
+
+GET `/api/moderation/context?item_id=f-2098&item_type=feedback`
+
+**Response Example:**
+
+```json
+{
+  "item_id": "f-2098",
+  "item_type": "feedback",
+  "current_state": "warned",
+  "rules_applied": \[
+    { "rule_id": "r-offensive-language", "description": "Avoid offensive or discriminatory language.", "status": "applied" }
+  \],
+  "reviewer_notes": "Content was borderline but repeated offenses were observed."
+}
+
+```
+
+---
+
+Moderation Workflow
+
+1. **Pending:** All new flagged items enter `pending` review.
+
+2. **Warned:** Moderator can issue a warning, with item still visible but limited.
+
+3. **Actioned:** Item restricted or removed after review.
+
+4. **Escalated:** For serious/complex cases, item is escalated to a senior moderator or admin.
+
+5. **Appealed:** If appealed by the user, status changes to `appealed` until re-review.
+
+6. **Outcome:** Review decision is delivered to user, status is updated in feedback or item record.
+
+---
+
+### Privacy / Data Control
+
+Data Control & Opt-Out Endpoints
+
+POST `/api/profile/opt-out`
+
+* **Description:** User requests to opt-out from certain features or data processing (e.g., public profile search).
+
+* **Body:**
+
+  * `from`: which data/feature to opt out from (e.g., `"public_search"`, `"analytics_use"`)
+
+  * `reason` (optional)
+
+* **Request Example:**
+
+  ```json
+  {
+    "from": "public_search",
+    "reason": "Prefer not to show up in company-wide searches."
+  }
+  
+```
+
+* **Response Example:**
+
+  ```json
+  { "status": "opted_out", "changed": true }
+  
+```
+
+---
+
+POST `/api/profile/anonymize`
+
+* **Description:** User requests anonymization of their personal data to meet privacy regulations.
+
+* **Response:** Success confirmation, eventual propagated effect across all references (e.g., their feedback appears as from "Anonymous User").
+
+**Response Example:**
+
+```json
+{ "status": "in_progress", "expected_completion": "2024-07-15T12:00:00Z" }
+
+```
+
+---
+
+POST `/api/profile/delete_request`
+
+* **Description:** User requests complete deletion of profile and associated data. This triggers an irreversible deletion workflow.
+
+* **Request Example:**
+
+  ```json
+  { "confirm": true, "reason": "Leaving the company" }
+  
+```
+
+* **Response Example:**
+
+  ```json
+  {
+    "status": "delete_requested",
+    "expected_completion": "2024-07-20T18:00:00Z"
+  }
+  
+```
+
+---
+
+### Scenario and Model Updates
+
+All relevant user, feedback, and moderation data models reflect new optional boolean fields for anonymity and opt-out request tracking:
+
+* `UserProfile.opt_outs: string[]`
+
+* `FeedbackItem.is_anonymous: boolean`
+
+* Moderation objects include detailed workflow states (`pending`, `warned`, etc.)
+
+---
+
+## Summary Table of Enhancements
+
+---
+
+*This documentation is ready for implementation by both product and engineering teams, with all new endpoints and model changes action-ready.*

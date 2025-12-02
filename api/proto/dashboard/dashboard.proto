@@ -5,7 +5,7 @@ package dashboard;
 option go_package = "ethos/api/proto/dashboard";
 
 import "google/protobuf/timestamp.proto";
-import "feedback/feedback.proto";
+import "api/proto/feedback/feedback.proto";
 
 // DashboardStats represents aggregated statistics
 message DashboardStats {

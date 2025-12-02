@@ -21,8 +21,18 @@ func NewProfileService(repo repository.Repository) Service {
 	}
 }
 
-// GetProfile retrieves a user profile by ID
+// GetProfile retrieves a user profile by ID (for authenticated user)
 func (s *ProfileService) GetProfile(ctx context.Context, userID string) (*model.UserProfile, error) {
+	profile, err := s.repo.GetUserProfile(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return profile, nil
+}
+
+// GetUserProfile retrieves a user profile by ID (for any user)
+func (s *ProfileService) GetUserProfile(ctx context.Context, userID string) (*model.UserProfile, error) {
 	profile, err := s.repo.GetUserProfile(ctx, userID)
 	if err != nil {
 		return nil, err

@@ -38,6 +38,7 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 				profileProtected.DELETE("/me", profileHandler.DeleteProfile)
 			}
 			profile.GET("/user-profile", profileHandler.SearchProfiles)
+			profile.GET("/:user_id", profileHandler.GetUserProfileByID)
 		}
 
 		feedback := v1.Group("/feedback")

@@ -20,16 +20,12 @@ import (
 	communityHandler "ethos/internal/community/handler"
 	dashboardHandler "ethos/internal/dashboard/handler"
 	dashboardRepository "ethos/internal/dashboard/repository"
-	dashboardService "ethos/internal/dashboard/service"
 	feedbackHandler "ethos/internal/feedback/handler"
 	feedbackRepository "ethos/internal/feedback/repository"
-	feedbackService "ethos/internal/feedback/service"
 	notificationHandler "ethos/internal/notifications/handler"
 	notificationRepository "ethos/internal/notifications/repository"
-	notificationService "ethos/internal/notifications/service"
 	peopleHandler "ethos/internal/people/handler"
 	peopleRepository "ethos/internal/people/repository"
-	peopleService "ethos/internal/people/service"
 	profileHandler "ethos/internal/profile/handler"
 	profileRepository "ethos/internal/profile/repository"
 	profileService "ethos/internal/profile/service"
@@ -41,6 +37,7 @@ import (
 	"ethos/pkg/email"
 	"ethos/pkg/jwt"
 	"ethos/pkg/otel"
+	grpcClient "ethos/pkg/grpc/client"
 )
 
 func main() {
@@ -120,24 +117,39 @@ func main() {
 	profileSvc := profileService.NewProfileService(profileRepo)
 	profileHandler := profileHandler.NewProfileHandler(profileSvc)
 
+	// Initialize gRPC client manager if enabled
+	var grpcManager *grpcClient.ClientManager
+	if cfg.GRPC.Enabled {
+		grpcManager = grpcClient.NewClientManager(grpcClient.Config{
+			FeedbackEndpoint:      cfg.GRPC.FeedbackEndpoint,
+			DashboardEndpoint:     cfg.GRPC.DashboardEndpoint,
+			NotificationsEndpoint: cfg.GRPC.NotificationsEndpoint,
+			PeopleEndpoint:        cfg.GRPC.PeopleEndpoint,
+			Timeout:               cfg.GRPC.Timeout,
+			Retries:               cfg.GRPC.Retries,
+		})
+		defer grpcManager.Close()
+		log.Println("gRPC client manager initialized")
+	}
+
 	// Initialize feedback dependencies
 	feedbackRepo := feedbackRepository.NewPostgresRepository(db)
-	feedbackSvc := feedbackService.NewFeedbackService(feedbackRepo)
+	feedbackSvc := grpcClient.CreateFeedbackService(cfg, grpcManager, feedbackRepo)
 	feedbackHandler := feedbackHandler.NewFeedbackHandler(feedbackSvc)
 
 	// Initialize notification dependencies
 	notificationRepo := notificationRepository.NewPostgresRepository(db)
-	notificationSvc := notificationService.NewNotificationService(notificationRepo)
+	notificationSvc := grpcClient.CreateNotificationService(cfg, grpcManager, notificationRepo)
 	notificationHandler := notificationHandler.NewNotificationHandler(notificationSvc)
 
 	// Initialize dashboard dependencies
 	dashboardRepo := dashboardRepository.NewPostgresRepository(db)
-	dashboardSvc := dashboardService.NewDashboardService(dashboardRepo)
+	dashboardSvc := grpcClient.CreateDashboardService(cfg, grpcManager, dashboardRepo)
 	dashboardHandler := dashboardHandler.NewDashboardHandler(dashboardSvc)
 
 	// Initialize people dependencies
 	peopleRepo := peopleRepository.NewPostgresRepository(db)
-	peopleSvc := peopleService.NewPeopleService(peopleRepo)
+	peopleSvc := grpcClient.CreatePeopleService(cfg, grpcManager, peopleRepo)
 	peopleHandler := peopleHandler.NewPeopleHandler(peopleSvc)
 
 	// Initialize community handler

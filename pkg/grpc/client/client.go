@@ -5,6 +5,10 @@ import (
 	"time"
 
 	"ethos/pkg/grpc/interceptors"
+	feedbackpb "ethos/api/proto/feedback"
+	dashboardpb "ethos/api/proto/dashboard"
+	notificationpb "ethos/api/proto/notifications"
+	peoplepb "ethos/api/proto/people"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -26,10 +30,10 @@ type ClientManager struct {
 	dashboardConn       *grpc.ClientConn
 	notificationsConn   *grpc.ClientConn
 	peopleConn          *grpc.ClientConn
-	feedbackClient      interface{} // Will be typed after proto generation
-	dashboardClient     interface{} // Will be typed after proto generation
-	notificationsClient interface{} // Will be typed after proto generation
-	peopleClient        interface{} // Will be typed after proto generation
+	feedbackClient      feedbackpb.FeedbackServiceClient
+	dashboardClient     dashboardpb.DashboardServiceClient
+	notificationsClient notificationpb.NotificationServiceClient
+	peopleClient        peoplepb.PeopleServiceClient
 	mu                  sync.RWMutex
 }
 
@@ -41,7 +45,7 @@ func NewClientManager(config Config) *ClientManager {
 }
 
 // GetFeedbackClient returns or creates the feedback gRPC client
-func (m *ClientManager) GetFeedbackClient() interface{} {
+func (m *ClientManager) GetFeedbackClient() feedbackpb.FeedbackServiceClient {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -51,29 +55,23 @@ func (m *ClientManager) GetFeedbackClient() interface{} {
 			conn, err := grpc.NewClient(
 				m.config.FeedbackEndpoint,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithTimeout(m.config.Timeout),
 				grpc.WithUnaryInterceptor(interceptors.TracingUnaryClientInterceptor()),
 				grpc.WithStreamInterceptor(interceptors.TracingStreamClientInterceptor()),
 			)
 			if err != nil {
-				// Return stub client for testing (will be replaced after proto generation)
-				m.feedbackClient = &stubFeedbackClient{}
-				return m.feedbackClient
+				// Return nil if connection fails (caller should handle)
+				return nil
 			}
 			m.feedbackConn = conn
 		}
-		// TODO: Create actual client after proto generation
-		// m.feedbackClient = feedbackpb.NewFeedbackServiceClient(m.feedbackConn)
-		// For now, return stub client
-		if m.feedbackClient == nil {
-			m.feedbackClient = &stubFeedbackClient{}
-		}
+		// Create actual client from generated proto
+		m.feedbackClient = feedbackpb.NewFeedbackServiceClient(m.feedbackConn)
 	}
 	return m.feedbackClient
 }
 
 // GetDashboardClient returns or creates the dashboard gRPC client
-func (m *ClientManager) GetDashboardClient() interface{} {
+func (m *ClientManager) GetDashboardClient() dashboardpb.DashboardServiceClient {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -82,26 +80,21 @@ func (m *ClientManager) GetDashboardClient() interface{} {
 			conn, err := grpc.NewClient(
 				m.config.DashboardEndpoint,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithTimeout(m.config.Timeout),
 				grpc.WithUnaryInterceptor(interceptors.TracingUnaryClientInterceptor()),
 				grpc.WithStreamInterceptor(interceptors.TracingStreamClientInterceptor()),
 			)
 			if err != nil {
-				m.dashboardClient = &stubDashboardClient{}
-				return m.dashboardClient
+				return nil
 			}
 			m.dashboardConn = conn
 		}
-		// TODO: Create actual client after proto generation
-		if m.dashboardClient == nil {
-			m.dashboardClient = &stubDashboardClient{}
-		}
+		m.dashboardClient = dashboardpb.NewDashboardServiceClient(m.dashboardConn)
 	}
 	return m.dashboardClient
 }
 
 // GetNotificationsClient returns or creates the notifications gRPC client
-func (m *ClientManager) GetNotificationsClient() interface{} {
+func (m *ClientManager) GetNotificationsClient() notificationpb.NotificationServiceClient {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -110,26 +103,21 @@ func (m *ClientManager) GetNotificationsClient() interface{} {
 			conn, err := grpc.NewClient(
 				m.config.NotificationsEndpoint,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithTimeout(m.config.Timeout),
 				grpc.WithUnaryInterceptor(interceptors.TracingUnaryClientInterceptor()),
 				grpc.WithStreamInterceptor(interceptors.TracingStreamClientInterceptor()),
 			)
 			if err != nil {
-				m.notificationsClient = &stubNotificationsClient{}
-				return m.notificationsClient
+				return nil
 			}
 			m.notificationsConn = conn
 		}
-		// TODO: Create actual client after proto generation
-		if m.notificationsClient == nil {
-			m.notificationsClient = &stubNotificationsClient{}
-		}
+		m.notificationsClient = notificationpb.NewNotificationServiceClient(m.notificationsConn)
 	}
 	return m.notificationsClient
 }
 
 // GetPeopleClient returns or creates the people gRPC client
-func (m *ClientManager) GetPeopleClient() interface{} {
+func (m *ClientManager) GetPeopleClient() peoplepb.PeopleServiceClient {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -138,20 +126,15 @@ func (m *ClientManager) GetPeopleClient() interface{} {
 			conn, err := grpc.NewClient(
 				m.config.PeopleEndpoint,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithTimeout(m.config.Timeout),
 				grpc.WithUnaryInterceptor(interceptors.TracingUnaryClientInterceptor()),
 				grpc.WithStreamInterceptor(interceptors.TracingStreamClientInterceptor()),
 			)
 			if err != nil {
-				m.peopleClient = &stubPeopleClient{}
-				return m.peopleClient
+				return nil
 			}
 			m.peopleConn = conn
 		}
-		// TODO: Create actual client after proto generation
-		if m.peopleClient == nil {
-			m.peopleClient = &stubPeopleClient{}
-		}
+		m.peopleClient = peoplepb.NewPeopleServiceClient(m.peopleConn)
 	}
 	return m.peopleClient
 }
@@ -188,16 +171,4 @@ func (m *ClientManager) Close() error {
 	}
 	return nil
 }
-
-// stubFeedbackClient is a stub client for testing (will be replaced after proto generation)
-type stubFeedbackClient struct{}
-
-// stubDashboardClient is a stub client for testing
-type stubDashboardClient struct{}
-
-// stubNotificationsClient is a stub client for testing
-type stubNotificationsClient struct{}
-
-// stubPeopleClient is a stub client for testing
-type stubPeopleClient struct{}
 

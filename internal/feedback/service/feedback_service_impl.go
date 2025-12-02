@@ -9,44 +9,39 @@ import (
 
 // FeedbackService implements the Service interface
 type FeedbackService struct {
-	repo repository.Repository
+	client FeedbackClient // Can be REST or gRPC client
+	repo   repository.Repository // Kept for write operations (CreateFeedback, CreateComment, AddReaction, RemoveReaction)
 }
 
-// NewFeedbackService creates a new feedback service
+// NewFeedbackService creates a new feedback service with REST client
 func NewFeedbackService(repo repository.Repository) Service {
 	return &FeedbackService{
-		repo: repo,
+		client: NewRESTFeedbackClient(repo),
+		repo:   repo,
+	}
+}
+
+// NewFeedbackServiceWithClient creates a feedback service with a custom client (REST or gRPC)
+func NewFeedbackServiceWithClient(client FeedbackClient, repo repository.Repository) Service {
+	return &FeedbackService{
+		client: client,
+		repo:   repo,
 	}
 }
 
 // GetFeed retrieves a paginated feed of feedback items
 func (s *FeedbackService) GetFeed(ctx context.Context, limit, offset int) ([]*model.FeedbackItem, int, error) {
-	items, count, err := s.repo.GetFeed(ctx, limit, offset)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return items, count, nil
+	return s.client.GetFeed(ctx, limit, offset)
 }
 
 // GetFeedbackByID retrieves a feedback item by ID
 func (s *FeedbackService) GetFeedbackByID(ctx context.Context, feedbackID string) (*model.FeedbackItem, error) {
-	item, err := s.repo.GetFeedbackByID(ctx, feedbackID)
-	if err != nil {
-		return nil, err
-	}
-
-	return item, nil
+	return s.client.GetFeedbackByID(ctx, feedbackID)
 }
 
 // GetComments retrieves comments for a feedback item
 func (s *FeedbackService) GetComments(ctx context.Context, feedbackID string, limit, offset int) ([]*model.FeedbackComment, int, error) {
-	comments, count, err := s.repo.GetComments(ctx, feedbackID, limit, offset)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return comments, count, nil
+	return s.client.GetComments(ctx, feedbackID, limit, offset)
 }
 
 // CreateFeedback creates a new feedback item

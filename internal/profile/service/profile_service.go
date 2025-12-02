@@ -21,8 +21,11 @@ type UpdatePreferencesRequest struct {
 
 // Service defines the interface for profile business logic
 type Service interface {
-	// GetProfile retrieves a user profile by ID
+	// GetProfile retrieves a user profile by ID (for authenticated user)
 	GetProfile(ctx context.Context, userID string) (*model.UserProfile, error)
+
+	// GetUserProfile retrieves a user profile by ID (for any user)
+	GetUserProfile(ctx context.Context, userID string) (*model.UserProfile, error)
 
 	// UpdateProfile updates a user profile
 	UpdateProfile(ctx context.Context, userID string, req *UpdateProfileRequest) (*model.UserProfile, error)

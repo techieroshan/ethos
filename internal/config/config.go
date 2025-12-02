@@ -77,13 +77,18 @@ type MailpitConfig struct {
 
 // GRPCConfig holds gRPC client configuration
 type GRPCConfig struct {
-	FeedbackEndpoint     string
-	DashboardEndpoint    string
+	FeedbackEndpoint      string
+	DashboardEndpoint     string
 	NotificationsEndpoint string
-	PeopleEndpoint       string
-	Timeout              time.Duration
-	Retries              int
-	Enabled              bool
+	PeopleEndpoint        string
+	Timeout               time.Duration
+	Retries               int
+	Enabled               bool
+	// Protocol selection per service (defaults to "rest" if not set)
+	FeedbackProtocol      string // "rest" or "grpc"
+	DashboardProtocol     string // "rest" or "grpc"
+	NotificationsProtocol string // "rest" or "grpc"
+	PeopleProtocol         string // "rest" or "grpc"
 }
 
 // Load loads configuration from environment variables
@@ -133,13 +138,17 @@ func Load() (*Config, error) {
 			Enabled:   getBoolEnv("MAILPIT_ENABLED", false),
 		},
 		GRPC: GRPCConfig{
-			FeedbackEndpoint:     getEnv("GRPC_FEEDBACK_ENDPOINT", "localhost:50051"),
-			DashboardEndpoint:    getEnv("GRPC_DASHBOARD_ENDPOINT", "localhost:50052"),
+			FeedbackEndpoint:      getEnv("GRPC_FEEDBACK_ENDPOINT", "localhost:50051"),
+			DashboardEndpoint:     getEnv("GRPC_DASHBOARD_ENDPOINT", "localhost:50052"),
 			NotificationsEndpoint: getEnv("GRPC_NOTIFICATIONS_ENDPOINT", "localhost:50053"),
-			PeopleEndpoint:       getEnv("GRPC_PEOPLE_ENDPOINT", "localhost:50054"),
-			Timeout:              getDurationEnv("GRPC_TIMEOUT", 5*time.Second),
-			Retries:              getIntEnv("GRPC_RETRIES", 3),
-			Enabled:              getBoolEnv("GRPC_ENABLED", false),
+			PeopleEndpoint:        getEnv("GRPC_PEOPLE_ENDPOINT", "localhost:50054"),
+			Timeout:               getDurationEnv("GRPC_TIMEOUT", 5*time.Second),
+			Retries:               getIntEnv("GRPC_RETRIES", 3),
+			Enabled:               getBoolEnv("GRPC_ENABLED", false),
+			FeedbackProtocol:      getEnv("GRPC_FEEDBACK_PROTOCOL", "rest"),
+			DashboardProtocol:     getEnv("GRPC_DASHBOARD_PROTOCOL", "rest"),
+			NotificationsProtocol: getEnv("GRPC_NOTIFICATIONS_PROTOCOL", "rest"),
+			PeopleProtocol:         getEnv("GRPC_PEOPLE_PROTOCOL", "rest"),
 		},
 	}
 
