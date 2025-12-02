@@ -36,6 +36,7 @@ import (
 	"ethos/internal/config"
 	"ethos/internal/database"
 	checkerClient "ethos/pkg/email/checker"
+	"ethos/pkg/email"
 	"ethos/pkg/jwt"
 	"ethos/pkg/otel"
 )
@@ -86,8 +87,30 @@ func main() {
 			Retries: cfg.Checker.Retries,
 		})
 	}
+
+	// Initialize email sender (Emailit for prod, Mailpit for local)
+	var emailSender email.EmailSender
+	if cfg.Mailpit.Enabled {
+		emailSender = mailpitClient.NewMailpit(mailpitClient.Config{
+			SMTPHost:  cfg.Mailpit.SMTPHost,
+			SMTPPort:  cfg.Mailpit.SMTPPort,
+			FromEmail: cfg.Mailpit.FromEmail,
+		})
+		log.Println("Using Mailpit for email sending (local development)")
+	} else if cfg.Emailit.APIKey != "" {
+		emailSender = emailitClient.NewEmailit(emailitClient.Config{
+			APIKey:  cfg.Emailit.APIKey,
+			BaseURL: cfg.Emailit.BaseURL,
+			Timeout: cfg.Emailit.Timeout,
+			Retries: cfg.Emailit.Retries,
+		})
+		log.Println("Using Emailit for email sending (production)")
+	} else {
+		emailSender = email.NewNoOpEmailSender() // Use no-op if not configured
+		log.Println("Warning: No email sender configured, using no-op")
+	}
 	
-	authService := service.NewAuthService(authRepo, tokenGen, emailChecker)
+	authService := service.NewAuthService(authRepo, tokenGen, emailChecker, emailSender)
 	authHandler := handler.NewAuthHandler(authService)
 
 	// Initialize profile dependencies

@@ -4,11 +4,14 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"ethos/internal/auth/model"
 	"ethos/internal/auth/repository"
+	"ethos/pkg/email"
+	emailTemplates "ethos/pkg/email/templates"
 	"ethos/pkg/errors"
 	"ethos/pkg/jwt"
 )
@@ -18,19 +21,26 @@ type EmailChecker interface {
 	ValidateEmail(ctx context.Context, email string) (bool, error)
 }
 
+// EmailSender defines the interface for sending emails
+type EmailSender interface {
+	SendEmail(ctx context.Context, req email.SendEmailRequest) error
+}
+
 // AuthService implements the Service interface
 type AuthService struct {
 	repo          repository.Repository
 	tokenGenerator *jwt.TokenGenerator
 	emailChecker   EmailChecker
+	emailSender    EmailSender
 }
 
 // NewAuthService creates a new authentication service
-func NewAuthService(repo repository.Repository, tokenGen *jwt.TokenGenerator, emailChecker EmailChecker) Service {
+func NewAuthService(repo repository.Repository, tokenGen *jwt.TokenGenerator, emailChecker EmailChecker, emailSender EmailSender) Service {
 	return &AuthService{
 		repo:          repo,
 		tokenGenerator: tokenGen,
 		emailChecker:  emailChecker,
+		emailSender:   emailSender,
 	}
 }
 
@@ -109,6 +119,28 @@ func (s *AuthService) Register(ctx context.Context, req *RegisterRequest) (*mode
 
 	if err := s.repo.CreateUser(ctx, user); err != nil {
 		return nil, err
+	}
+
+	// Send verification email if sender is configured
+	if s.emailSender != nil {
+		template := emailTemplates.GetTemplate(emailTemplates.TemplateEmailVerification)
+		emailReq := email.SendEmailRequest{
+			To:           req.Email,
+			Subject:      template["subject"].(string),
+			TemplateID:   template["template_id"].(string),
+			TemplateData: map[string]interface{}{
+				"name":  req.Name,
+				"email": req.Email,
+				"user_id": user.ID,
+			},
+		}
+		// Send email asynchronously (don't fail registration if email fails)
+		go func() {
+			if err := s.emailSender.SendEmail(context.Background(), emailReq); err != nil {
+				// Log error but don't fail registration
+				fmt.Printf("Failed to send verification email: %v\n", err)
+			}
+		}()
 	}
 
 	return user.ToProfile(), nil
