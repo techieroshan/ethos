@@ -31,6 +31,11 @@ func (s *PeopleService) SearchPeople(ctx context.Context, query string, limit, o
 	return s.client.SearchPeople(ctx, query, limit, offset)
 }
 
+// SearchPeopleWithFilters searches for people with enhanced filtering
+func (s *PeopleService) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *PeopleSearchFilters) ([]*model.UserProfile, int, error) {
+	return s.client.SearchPeopleWithFilters(ctx, query, limit, offset, filters)
+}
+
 // GetRecommendations gets people recommendations
 func (s *PeopleService) GetRecommendations(ctx context.Context, userID string) ([]*model.UserProfile, error) {
 	return s.client.GetRecommendations(ctx, userID)

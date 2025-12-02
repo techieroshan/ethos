@@ -236,3 +236,114 @@ func (h *ProfileHandler) GetUserProfileByID(c *gin.Context) {
 
 	c.JSON(http.StatusOK, profile)
 }
+
+// OptOut handles POST /api/profile/opt-out
+func (h *ProfileHandler) OptOut(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid token",
+			"code":  "AUTH_TOKEN_INVALID",
+		})
+		return
+	}
+
+	var req service.OptOutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	err := h.service.OptOut(c.Request.Context(), userID.(string), &req)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "opted_out",
+		"changed": true,
+	})
+}
+
+// Anonymize handles POST /api/profile/anonymize
+func (h *ProfileHandler) Anonymize(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid token",
+			"code":  "AUTH_TOKEN_INVALID",
+		})
+		return
+	}
+
+	response, err := h.service.Anonymize(c.Request.Context(), userID.(string))
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// RequestDeletion handles POST /api/profile/delete_request
+func (h *ProfileHandler) RequestDeletion(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid token",
+			"code":  "AUTH_TOKEN_INVALID",
+		})
+		return
+	}
+
+	var req service.DeleteRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request format",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	response, err := h.service.RequestDeletion(c.Request.Context(), userID.(string), &req)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}

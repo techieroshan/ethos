@@ -71,6 +71,18 @@ var (
 		Code:       "SERVER_ERROR",
 		HTTPStatus: http.StatusInternalServerError,
 	}
+
+	ErrForbidden = &APIError{
+		Message:    "You do not have permission to perform this action",
+		Code:       "FORBIDDEN",
+		HTTPStatus: http.StatusForbidden,
+	}
+
+	ErrNotFound = &APIError{
+		Message:    "Resource not found",
+		Code:       "NOT_FOUND",
+		HTTPStatus: http.StatusNotFound,
+	}
 )
 
 // NewValidationError creates a validation error with a custom message
@@ -86,4 +98,3 @@ func NewValidationError(message string) *APIError {
 func WrapError(err error, context string) error {
 	return fmt.Errorf("%s: %w", context, err)
 }
-

@@ -73,6 +73,69 @@ func (m *MockFeedbackService) RemoveReaction(ctx context.Context, userID, feedba
 	return args.Error(0)
 }
 
+func (m *MockFeedbackService) GetTemplates(ctx context.Context, contextFilter, tagsFilter string) ([]*fbModel.FeedbackTemplate, error) {
+	args := m.Called(ctx, contextFilter, tagsFilter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*fbModel.FeedbackTemplate), args.Error(1)
+}
+
+func (m *MockFeedbackService) SubmitTemplateSuggestion(ctx context.Context, req *service.TemplateSuggestionRequest) error {
+	args := m.Called(ctx, req)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackService) GetImpact(ctx context.Context, userID *string, from, to *time.Time) (*fbModel.FeedbackImpact, error) {
+	args := m.Called(ctx, userID, from, to)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackImpact), args.Error(1)
+}
+
+func (m *MockFeedbackService) CreateBatchFeedback(ctx context.Context, userID string, req *service.BatchFeedbackRequest) (*service.BatchFeedbackResponse, error) {
+	args := m.Called(ctx, userID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*service.BatchFeedbackResponse), args.Error(1)
+}
+
+func (m *MockFeedbackService) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *service.FeedFilters) ([]*fbModel.FeedbackItem, int, error) {
+	args := m.Called(ctx, limit, offset, filters)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*fbModel.FeedbackItem), args.Get(1).(int), args.Error(2)
+}
+
+func (m *MockFeedbackService) GetBookmarks(ctx context.Context, userID string, limit, offset int) ([]*fbModel.FeedbackItem, int, error) {
+	args := m.Called(ctx, userID, limit, offset)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*fbModel.FeedbackItem), args.Get(1).(int), args.Error(2)
+}
+
+func (m *MockFeedbackService) AddBookmark(ctx context.Context, userID, feedbackID string) error {
+	args := m.Called(ctx, userID, feedbackID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackService) RemoveBookmark(ctx context.Context, userID, feedbackID string) error {
+	args := m.Called(ctx, userID, feedbackID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackService) ExportFeedback(ctx context.Context, filters *service.FeedFilters, format string) (*service.ExportResponse, error) {
+	args := m.Called(ctx, filters, format)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*service.ExportResponse), args.Error(1)
+}
+
 func setupFeedbackRouter(handler *FeedbackHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()

@@ -76,6 +76,21 @@ func (s *ProfileService) DeleteProfile(ctx context.Context, userID string) error
 	return nil
 }
 
+// OptOut handles opt-out requests from certain features
+func (s *ProfileService) OptOut(ctx context.Context, userID string, req *OptOutRequest) error {
+	return s.repo.OptOut(ctx, userID, req)
+}
+
+// Anonymize anonymizes user personal data
+func (s *ProfileService) Anonymize(ctx context.Context, userID string) (*AnonymizeResponse, error) {
+	return s.repo.Anonymize(ctx, userID)
+}
+
+// RequestDeletion requests account deletion
+func (s *ProfileService) RequestDeletion(ctx context.Context, userID string, req *DeleteRequest) (*DeleteResponse, error) {
+	return s.repo.RequestDeletion(ctx, userID, req)
+}
+
 // SearchProfiles searches for user profiles
 func (s *ProfileService) SearchProfiles(ctx context.Context, query string, limit, offset int) ([]*model.UserProfile, int, error) {
 	if query == "" {

@@ -69,6 +69,27 @@ func (m *MockProfileService) GetUserProfile(ctx context.Context, userID string) 
 	return args.Get(0).(*model.UserProfile), args.Error(1)
 }
 
+func (m *MockProfileService) OptOut(ctx context.Context, userID string, req *service.OptOutRequest) error {
+	args := m.Called(ctx, userID, req)
+	return args.Error(0)
+}
+
+func (m *MockProfileService) Anonymize(ctx context.Context, userID string) (*service.AnonymizeResponse, error) {
+	args := m.Called(ctx, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*service.AnonymizeResponse), args.Error(1)
+}
+
+func (m *MockProfileService) RequestDeletion(ctx context.Context, userID string, req *service.DeleteRequest) (*service.DeleteResponse, error) {
+	args := m.Called(ctx, userID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*service.DeleteResponse), args.Error(1)
+}
+
 func setupProfileRouter(handler *ProfileHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()

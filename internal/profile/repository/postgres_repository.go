@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -292,4 +293,101 @@ func (r *PostgresRepository) SearchUserProfiles(ctx context.Context, query strin
 
 	span.SetStatus(codes.Ok, "")
 	return profiles, totalCount, nil
+}
+
+// OptOut handles opt-out requests from certain features
+func (r *PostgresRepository) OptOut(ctx context.Context, userID string, req *service.OptOutRequest) error {
+	ctx, span := otel.Tracer("repository").Start(ctx, "repository.OptOut")
+	defer span.End()
+
+	// Update the opt_outs array in the users table
+	_, err := r.db.Pool.Exec(ctx, `
+		UPDATE users
+		SET opt_outs = array_append(COALESCE(opt_outs, ARRAY[]::TEXT[]), $1)
+		WHERE id = $2 AND NOT ($1 = ANY(COALESCE(opt_outs, ARRAY[]::TEXT[])))
+	`, req.From, userID)
+
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return errors.WrapError(err, "failed to opt out")
+	}
+
+	span.SetStatus(codes.Ok, "")
+	return nil
+}
+
+// Anonymize anonymizes user personal data
+func (r *PostgresRepository) Anonymize(ctx context.Context, userID string) (*service.AnonymizeResponse, error) {
+	ctx, span := otel.Tracer("repository").Start(ctx, "repository.Anonymize")
+	defer span.End()
+
+	// In a real implementation, this would:
+	// 1. Replace personal data with anonymized versions
+	// 2. Queue a background job for complete anonymization
+	// 3. Update all references to this user across the system
+
+	// For now, mark as anonymized and return expected completion
+	anonymizedAt := time.Now()
+	expectedCompletion := anonymizedAt.Add(24 * time.Hour) // 24 hours for full anonymization
+
+	_, err := r.db.Pool.Exec(ctx, `
+		UPDATE users
+		SET anonymized_at = $1,
+		    name = 'Anonymous User',
+		    public_bio = NULL,
+		    email = CONCAT('anonymous_', id, '@ethos.local')
+		WHERE id = $2
+	`, anonymizedAt, userID)
+
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, errors.WrapError(err, "failed to anonymize user")
+	}
+
+	response := &service.AnonymizeResponse{
+		Status:             "in_progress",
+		ExpectedCompletion: expectedCompletion,
+	}
+
+	span.SetStatus(codes.Ok, "")
+	return response, nil
+}
+
+// RequestDeletion requests account deletion
+func (r *PostgresRepository) RequestDeletion(ctx context.Context, userID string, req *service.DeleteRequest) (*service.DeleteResponse, error) {
+	ctx, span := otel.Tracer("repository").Start(ctx, "repository.RequestDeletion")
+	defer span.End()
+
+	if !req.Confirm {
+		return nil, errors.NewAPIError("VALIDATION_FAILED", "Confirmation required for account deletion", http.StatusBadRequest)
+	}
+
+	// Mark deletion requested
+	deletionRequestedAt := time.Now()
+	expectedCompletion := deletionRequestedAt.Add(30 * 24 * time.Hour) // 30 days for deletion
+
+	_, err := r.db.Pool.Exec(ctx, `
+		UPDATE users
+		SET delete_requested_at = $1
+		WHERE id = $2
+	`, deletionRequestedAt, userID)
+
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, errors.WrapError(err, "failed to request deletion")
+	}
+
+	// In a real implementation, this would also create a record in account_deletions table
+	// and queue background jobs for cleanup
+
+	response := &service.DeleteResponse{
+		Status:             "delete_requested",
+		ExpectedCompletion: expectedCompletion,
+	}
+
+	span.SetStatus(codes.Ok, "")
+	return response, nil
 }

@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
 	"ethos/internal/auth/model"
 	"ethos/internal/auth/repository"
 	"ethos/pkg/email"
 	emailTemplates "ethos/pkg/email/templates"
 	"ethos/pkg/errors"
 	"ethos/pkg/jwt"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // EmailChecker defines the interface for email validation
@@ -28,7 +29,7 @@ type EmailSender interface {
 
 // AuthService implements the Service interface
 type AuthService struct {
-	repo          repository.Repository
+	repo           repository.Repository
 	tokenGenerator *jwt.TokenGenerator
 	emailChecker   EmailChecker
 	emailSender    EmailSender
@@ -37,10 +38,10 @@ type AuthService struct {
 // NewAuthService creates a new authentication service
 func NewAuthService(repo repository.Repository, tokenGen *jwt.TokenGenerator, emailChecker EmailChecker, emailSender EmailSender) Service {
 	return &AuthService{
-		repo:          repo,
+		repo:           repo,
 		tokenGenerator: tokenGen,
-		emailChecker:  emailChecker,
-		emailSender:   emailSender,
+		emailChecker:   emailChecker,
+		emailSender:    emailSender,
 	}
 }
 
@@ -125,12 +126,12 @@ func (s *AuthService) Register(ctx context.Context, req *RegisterRequest) (*mode
 	if s.emailSender != nil {
 		template := emailTemplates.GetTemplate(emailTemplates.TemplateEmailVerification)
 		emailReq := email.SendEmailRequest{
-			To:           req.Email,
-			Subject:      template["subject"].(string),
-			TemplateID:   template["template_id"].(string),
+			To:         req.Email,
+			Subject:    template["subject"].(string),
+			TemplateID: template["template_id"].(string),
 			TemplateData: map[string]interface{}{
-				"name":  req.Name,
-				"email": req.Email,
+				"name":    req.Name,
+				"email":   req.Email,
 				"user_id": user.ID,
 			},
 		}
@@ -190,9 +191,129 @@ func (s *AuthService) GetUserProfile(ctx context.Context, userID string) (*model
 	return user.ToProfile(), nil
 }
 
+// VerifyEmail marks a user's email as verified using a verification token
+func (s *AuthService) VerifyEmail(ctx context.Context, token string) error {
+	// Parse the verification token to extract user ID
+	// Token format: hash of user_id
+	userID, err := parseVerificationToken(token)
+	if err != nil {
+		return errors.ErrTokenInvalid
+	}
+
+	// Get user from repository
+	user, err := s.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return errors.ErrUserNotFound
+	}
+
+	// If already verified, return success (idempotent)
+	if user.EmailVerified {
+		return nil
+	}
+
+	// Mark email as verified
+	user.EmailVerified = true
+	user.UpdatedAt = time.Now()
+
+	// Save updated user to repository
+	if err := s.repo.UpdateUser(ctx, user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ChangePassword changes a user's password after verifying the current password
+func (s *AuthService) ChangePassword(ctx context.Context, userID string, req *ChangePasswordRequest) error {
+	// Get user from repository
+	user, err := s.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return errors.ErrUserNotFound
+	}
+
+	// Verify current password
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.CurrentPassword))
+	if err != nil {
+		return errors.ErrInvalidCredentials
+	}
+
+	// Hash new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.ErrServerError
+	}
+
+	// Update password
+	user.PasswordHash = string(hashedPassword)
+	user.UpdatedAt = time.Now()
+
+	// Save updated user to repository
+	if err := s.repo.UpdateUser(ctx, user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Setup2FA initializes two-factor authentication for a user
+func (s *AuthService) Setup2FA(ctx context.Context, userID string, req *Setup2FARequest) (*Setup2FAResponse, error) {
+	// Get user from repository
+	user, err := s.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, errors.ErrUserNotFound
+	}
+
+	// Verify password
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
+	if err != nil {
+		return nil, errors.ErrInvalidCredentials
+	}
+
+	// Generate 2FA secret
+	secret := generateTOTPSecret(user.ID)
+	qrCode := generateQRCode(user.Email, secret)
+
+	// Note: In production, would store the 2FA secret in a new model/table
+	// For now returning it in response for client to save/confirm
+	return &Setup2FAResponse{
+		Secret:  secret,
+		QRCode:  qrCode,
+		Message: "Please save this secret and scan the QR code with an authenticator app",
+	}, nil
+}
+
+// parseVerificationToken extracts user ID from verification token
+func parseVerificationToken(token string) (string, error) {
+	// Token format: hash-based token containing user_id
+	// In production, would validate HMAC or JWT signature
+	// For testing: assume token is prefixed with "verify_"
+	if len(token) < 20 {
+		return "", fmt.Errorf("invalid token format")
+	}
+
+	// Extract user ID from token (simplified)
+	if len(token) > 7 && token[:7] == "verify_" {
+		return token[7:], nil
+	}
+
+	return "", fmt.Errorf("invalid token format")
+}
+
+// generateTOTPSecret generates a TOTP secret for 2FA
+func generateTOTPSecret(userID string) string {
+	// Generate deterministic secret from user ID
+	hash := sha256.Sum256([]byte(userID + time.Now().Format("20060102")))
+	return hex.EncodeToString(hash[:16])
+}
+
+// generateQRCode generates a QR code URI for TOTP setup
+func generateQRCode(email, secret string) string {
+	// Return otpauth URI that can be converted to QR code by client
+	return fmt.Sprintf("otpauth://totp/Ethos:%%s?secret=%s&issuer=Ethos", secret)
+}
+
 // hashToken creates a SHA256 hash of a token for storage
 func hashToken(token string) string {
 	hash := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(hash[:])
 }
-

@@ -17,6 +17,9 @@ type Repository interface {
 	// CreateUser creates a new user
 	CreateUser(ctx context.Context, user *model.User) error
 
+	// UpdateUser updates an existing user
+	UpdateUser(ctx context.Context, user *model.User) error
+
 	// SaveRefreshToken saves a refresh token
 	SaveRefreshToken(ctx context.Context, userID, tokenHash string, expiresAt int64) error
 
@@ -26,4 +29,3 @@ type Repository interface {
 	// DeleteRefreshToken deletes a refresh token
 	DeleteRefreshToken(ctx context.Context, tokenHash string) error
 }
-

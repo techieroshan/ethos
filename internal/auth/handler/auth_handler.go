@@ -3,9 +3,10 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"ethos/internal/auth/service"
 	"ethos/pkg/errors"
+
+	"github.com/gin-gonic/gin"
 )
 
 // AuthHandler handles authentication HTTP requests
@@ -31,7 +32,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-		resp, err := h.service.Login(c.Request.Context(), &req)
+	resp, err := h.service.Login(c.Request.Context(), &req)
 	if err != nil {
 		if apiErr, ok := err.(*errors.APIError); ok {
 			c.JSON(apiErr.HTTPStatus, gin.H{
@@ -140,3 +141,116 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	c.JSON(http.StatusOK, profile)
 }
 
+// VerifyEmail handles GET /api/v1/auth/verify-email/:token
+func (h *AuthHandler) VerifyEmail(c *gin.Context) {
+	token := c.Param("token")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Verification token is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	err := h.service.VerifyEmail(c.Request.Context(), token)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to verify email",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "email_verified",
+		"message": "Your email has been successfully verified",
+	})
+}
+
+// ChangePassword handles POST /api/v1/auth/change-password
+func (h *AuthHandler) ChangePassword(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Authentication required",
+			"code":  "AUTH_REQUIRED",
+		})
+		return
+	}
+
+	var req service.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Validation failed",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	err := h.service.ChangePassword(c.Request.Context(), userID.(string), &req)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to change password",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "password_changed",
+		"message": "Password has been successfully changed",
+	})
+}
+
+// Setup2FA handles POST /api/v1/auth/setup-2fa
+func (h *AuthHandler) Setup2FA(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Authentication required",
+			"code":  "AUTH_REQUIRED",
+		})
+		return
+	}
+
+	var req service.Setup2FARequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Validation failed",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	resp, err := h.service.Setup2FA(c.Request.Context(), userID.(string), &req)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to setup 2FA",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}

@@ -1,21 +1,24 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
 	accountHandler "ethos/internal/account/handler"
 	"ethos/internal/auth/handler"
 	communityHandler "ethos/internal/community/handler"
 	dashboardHandler "ethos/internal/dashboard/handler"
 	feedbackHandler "ethos/internal/feedback/handler"
-	notificationHandler "ethos/internal/notifications/handler"
-	peopleHandler "ethos/internal/people/handler"
 	"ethos/internal/middleware"
+	moderationHandler "ethos/internal/moderation/handler"
+	notificationHandler "ethos/internal/notifications/handler"
+	organizationHandler "ethos/internal/organization/handler"
+	peopleHandler "ethos/internal/people/handler"
 	profileHandler "ethos/internal/profile/handler"
 	"ethos/pkg/jwt"
+
+	"github.com/gin-gonic/gin"
 )
 
 // SetupRoutes configures all API routes
-func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHandler *profileHandler.ProfileHandler, feedbackHandler *feedbackHandler.FeedbackHandler, notificationHandler *notificationHandler.NotificationHandler, dashboardHandler *dashboardHandler.DashboardHandler, peopleHandler *peopleHandler.PeopleHandler, communityHandler *communityHandler.CommunityHandler, accountHandler *accountHandler.AccountHandler, tokenGen *jwt.TokenGenerator) {
+func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHandler *profileHandler.ProfileHandler, feedbackHandler *feedbackHandler.FeedbackHandler, notificationHandler *notificationHandler.NotificationHandler, dashboardHandler *dashboardHandler.DashboardHandler, organizationHandler *organizationHandler.OrganizationHandler, peopleHandler *peopleHandler.PeopleHandler, communityHandler *communityHandler.CommunityHandler, accountHandler *accountHandler.AccountHandler, moderationHandler *moderationHandler.ModerationHandler, tokenGen *jwt.TokenGenerator) {
 	v1 := router.Group("/api/v1")
 	{
 		auth := v1.Group("/auth")
@@ -24,6 +27,9 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/refresh", authHandler.Refresh)
 			auth.GET("/me", middleware.AuthMiddleware(tokenGen), authHandler.Me)
+			auth.GET("/verify-email/:token", authHandler.VerifyEmail)
+			auth.POST("/change-password", middleware.AuthMiddleware(tokenGen), authHandler.ChangePassword)
+			auth.POST("/setup-2fa", middleware.AuthMiddleware(tokenGen), authHandler.Setup2FA)
 			auth.DELETE("/setup-2fa", middleware.AuthMiddleware(tokenGen), accountHandler.Disable2FA)
 		}
 
@@ -36,21 +42,67 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 				profileProtected.PUT("/me", profileHandler.UpdateProfile)
 				profileProtected.PATCH("/me/preferences", profileHandler.UpdatePreferences)
 				profileProtected.DELETE("/me", profileHandler.DeleteProfile)
+				profileProtected.POST("/opt-out", profileHandler.OptOut)
+				profileProtected.POST("/anonymize", profileHandler.Anonymize)
+				profileProtected.POST("/delete_request", profileHandler.RequestDeletion)
 			}
 			profile.GET("/user-profile", profileHandler.SearchProfiles)
 			profile.GET("/:user_id", profileHandler.GetUserProfileByID)
 		}
 
-		feedback := v1.Group("/feedback")
-		feedback.Use(middleware.AuthMiddleware(tokenGen))
+		organizations := v1.Group("/organizations")
+		organizations.Use(middleware.AuthMiddleware(tokenGen))
 		{
-			feedback.GET("/feed", feedbackHandler.GetFeed)
-			feedback.GET("/:feedback_id", feedbackHandler.GetFeedbackByID)
-			feedback.GET("/:feedback_id/comments", feedbackHandler.GetComments)
-			feedback.POST("", feedbackHandler.CreateFeedback)
-			feedback.POST("/:feedback_id/comments", feedbackHandler.CreateComment)
-			feedback.POST("/:feedback_id/react", feedbackHandler.AddReaction)
-			feedback.DELETE("/:feedback_id/react", feedbackHandler.RemoveReaction)
+			organizations.GET("", organizationHandler.ListOrganizations)
+			organizations.POST("", organizationHandler.CreateOrganization)
+			organizations.GET("/:org_id", organizationHandler.GetOrganization)
+			organizations.PUT("/:org_id", organizationHandler.UpdateOrganization)
+			organizations.DELETE("/:org_id", organizationHandler.DeleteOrganization)
+			organizations.GET("/:org_id/members", organizationHandler.ListOrganizationMembers)
+			organizations.POST("/:org_id/members", organizationHandler.AddOrganizationMember)
+			organizations.PUT("/:org_id/members/:user_id", organizationHandler.UpdateOrganizationMemberRole)
+			organizations.DELETE("/:org_id/members/:user_id", organizationHandler.RemoveOrganizationMember)
+			organizations.GET("/:org_id/settings", organizationHandler.GetOrganizationSettings)
+			organizations.PUT("/:org_id/settings", organizationHandler.UpdateOrganizationSettings)
+
+			// Moderation routes nested under organizations
+			moderation := organizations.Group("/:org_id/moderation")
+			{
+				moderation.GET("/appeals", moderationHandler.ListAppeals)
+				moderation.POST("/appeals", moderationHandler.SubmitAppeal)
+				moderation.GET("/appeals/:appeal_id/context", moderationHandler.GetAppealContext)
+				moderation.GET("/actions", moderationHandler.ListModerationActions)
+				moderation.GET("/history/:user_id", moderationHandler.GetModerationHistory)
+			}
+		}
+
+		feedback := v1.Group("/feedback")
+		{
+			feedback.GET("/feed", middleware.AuthMiddleware(tokenGen), feedbackHandler.GetFeed)
+			feedback.GET("/:feedback_id", middleware.AuthMiddleware(tokenGen), feedbackHandler.GetFeedbackByID)
+			feedback.GET("/:feedback_id/comments", middleware.AuthMiddleware(tokenGen), feedbackHandler.GetComments)
+			feedback.POST("", middleware.AuthMiddleware(tokenGen), feedbackHandler.CreateFeedback)
+			feedback.POST("/:feedback_id/comments", middleware.AuthMiddleware(tokenGen), feedbackHandler.CreateComment)
+			feedback.POST("/:feedback_id/react", middleware.AuthMiddleware(tokenGen), feedbackHandler.AddReaction)
+			feedback.DELETE("/:feedback_id/react", middleware.AuthMiddleware(tokenGen), feedbackHandler.RemoveReaction)
+			feedback.GET("/templates", feedbackHandler.GetTemplates)
+			feedback.POST("/template_suggestions", feedbackHandler.PostTemplateSuggestions)
+			feedback.GET("/impact", feedbackHandler.GetImpact)
+			feedback.POST("/batch", feedbackHandler.CreateBatchFeedback)
+			feedback.GET("/bookmarks", feedbackHandler.GetBookmarks)
+			feedback.POST("/bookmarks/:feedback_id", feedbackHandler.AddBookmark)
+			feedback.DELETE("/bookmarks/:feedback_id", feedbackHandler.RemoveBookmark)
+			feedback.GET("/export", feedbackHandler.ExportFeedback)
+			feedback.GET("/analytics", middleware.AuthMiddleware(tokenGen), feedbackHandler.GetFeedbackAnalytics)
+			feedback.PUT("/:feedback_id", middleware.AuthMiddleware(tokenGen), feedbackHandler.UpdateFeedback)
+			feedback.DELETE("/:feedback_id", middleware.AuthMiddleware(tokenGen), feedbackHandler.DeleteFeedback)
+			feedback.PUT("/:feedback_id/comments/:comment_id", middleware.AuthMiddleware(tokenGen), feedbackHandler.UpdateComment)
+			feedback.DELETE("/:feedback_id/comments/:comment_id", middleware.AuthMiddleware(tokenGen), feedbackHandler.DeleteComment)
+			feedback.GET("/search", middleware.AuthMiddleware(tokenGen), feedbackHandler.SearchFeedback)
+			feedback.GET("/trending", middleware.AuthMiddleware(tokenGen), feedbackHandler.GetTrendingFeedback)
+			feedback.POST("/:feedback_id/pin", middleware.AuthMiddleware(tokenGen), feedbackHandler.PinFeedback)
+			feedback.DELETE("/:feedback_id/pin", middleware.AuthMiddleware(tokenGen), feedbackHandler.UnpinFeedback)
+			feedback.GET("/stats", middleware.AuthMiddleware(tokenGen), feedbackHandler.GetFeedbackStats)
 		}
 
 		notifications := v1.Group("/notifications")

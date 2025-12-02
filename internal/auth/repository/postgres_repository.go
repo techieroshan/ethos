@@ -6,13 +6,14 @@ import (
 	"encoding/hex"
 	"time"
 
+	"ethos/internal/auth/model"
+	"ethos/internal/database"
+	"ethos/pkg/errors"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
-	"ethos/internal/auth/model"
-	"ethos/internal/database"
-	"ethos/pkg/errors"
 )
 
 // PostgresRepository implements the Repository interface using PostgreSQL
@@ -139,6 +140,45 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) e
 	return nil
 }
 
+// UpdateUser updates an existing user
+func (r *PostgresRepository) UpdateUser(ctx context.Context, user *model.User) error {
+	ctx, span := otel.Tracer("repository").Start(ctx, "repository.UpdateUser")
+	defer span.End()
+
+	query := `
+		UPDATE users
+		SET email = $1, password_hash = $2, name = $3, email_verified = $4, public_bio = $5, updated_at = $6
+		WHERE id = $7
+	`
+
+	now := time.Now()
+	result, err := r.db.Pool.Exec(ctx, query,
+		user.Email,
+		user.PasswordHash,
+		user.Name,
+		user.EmailVerified,
+		user.PublicBio,
+		now,
+		user.ID,
+	)
+
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return errors.WrapError(err, "failed to update user")
+	}
+
+	if result.RowsAffected() == 0 {
+		span.RecordError(errors.ErrUserNotFound)
+		span.SetStatus(codes.Error, "user not found")
+		return errors.ErrUserNotFound
+	}
+
+	user.UpdatedAt = now
+	span.SetStatus(codes.Ok, "")
+	return nil
+}
+
 // SaveRefreshToken saves a refresh token
 func (r *PostgresRepository) SaveRefreshToken(ctx context.Context, userID, tokenHash string, expiresAt int64) error {
 	ctx, span := otel.Tracer("repository").Start(ctx, "repository.SaveRefreshToken")
@@ -219,4 +259,3 @@ func hashToken(token string) string {
 	hash := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(hash[:])
 }
-

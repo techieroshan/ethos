@@ -2,11 +2,14 @@ package repository
 
 import (
 	"context"
+	"strconv"
+	"strings"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	"ethos/internal/auth/model"
 	"ethos/internal/database"
+	"ethos/internal/people/service"
 	"ethos/pkg/errors"
 )
 
@@ -138,5 +141,119 @@ func (r *PostgresRepository) GetRecommendations(ctx context.Context, userID stri
 
 	span.SetStatus(codes.Ok, "")
 	return recommendations, nil
+}
+
+// SearchPeopleWithFilters searches for people with enhanced filtering
+func (r *PostgresRepository) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *service.PeopleSearchFilters) ([]*model.UserProfile, int, error) {
+	ctx, span := otel.Tracer("repository").Start(ctx, "repository.SearchPeopleWithFilters")
+	defer span.End()
+
+	searchPattern := "%" + query + "%"
+
+	// Build base query
+	querySQL := `
+		SELECT id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+		FROM users
+		WHERE (name ILIKE $1 OR email ILIKE $1)
+	`
+
+	countQuery := `
+		SELECT COUNT(*)
+		FROM users
+		WHERE (name ILIKE $1 OR email ILIKE $1)
+	`
+
+	args := []interface{}{searchPattern}
+	argCount := 1
+
+	// Apply filters
+	if filters != nil {
+		// Verification filter
+		if filters.Verification != nil {
+			if *filters.Verification == "verified" {
+				querySQL += ` AND email_verified = true`
+				countQuery += ` AND email_verified = true`
+			} else if *filters.Verification == "unverified" {
+				querySQL += ` AND email_verified = false`
+				countQuery += ` AND email_verified = false`
+			}
+		}
+
+		// For reviewer_type and context filters, we would need to join with feedback data
+		// This is a simplified implementation - in a real system, you'd have user roles/attributes
+		if filters.ReviewerType != nil {
+			if *filters.ReviewerType == "org" {
+				// Users who have given feedback (simplified org reviewer logic)
+				querySQL += ` AND EXISTS (SELECT 1 FROM feedback_items WHERE author_id = users.id)`
+				countQuery += ` AND EXISTS (SELECT 1 FROM feedback_items WHERE author_id = users.id)`
+			}
+			// For "public" reviewer type, no additional filter needed (default)
+		}
+
+		// Context filter would require additional user attributes or role-based filtering
+		// This is simplified - in practice you'd have departments, teams, etc.
+		if filters.Context != nil {
+			// Placeholder - would filter by user context/attributes
+			span.SetAttributes("filter.context", *filters.Context)
+		}
+
+		// Tags filter would require user tagging system
+		if len(filters.Tags) > 0 {
+			// Placeholder - would filter by user tags
+			span.SetAttributes("filter.tags", strings.Join(filters.Tags, ","))
+		}
+	}
+
+	// Add ordering and pagination
+	querySQL += ` ORDER BY name ASC LIMIT $` + strconv.Itoa(argCount+1) + ` OFFSET $` + strconv.Itoa(argCount+2)
+	args = append(args, limit, offset)
+
+	// Get total count
+	var totalCount int
+	err := r.db.Pool.QueryRow(ctx, countQuery, args[:argCount]...).Scan(&totalCount)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, 0, errors.WrapError(err, "failed to count filtered people")
+	}
+
+	// Get profiles
+	rows, err := r.db.Pool.Query(ctx, querySQL, args...)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, 0, errors.WrapError(err, "failed to search filtered people")
+	}
+	defer rows.Close()
+
+	var profiles []*model.UserProfile
+	for rows.Next() {
+		var user model.User
+		err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&user.PasswordHash,
+			&user.Name,
+			&user.EmailVerified,
+			&user.PublicBio,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			return nil, 0, errors.WrapError(err, "failed to scan user")
+		}
+		profiles = append(profiles, user.ToProfile())
+	}
+
+	if err = rows.Err(); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return nil, 0, errors.WrapError(err, "failed to iterate filtered people")
+	}
+
+	span.SetStatus(codes.Ok, "")
+	return profiles, totalCount, nil
 }
 

@@ -30,6 +30,24 @@ type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
+// ChangePasswordRequest represents a password change request
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password" binding:"required,min=8"`
+	NewPassword     string `json:"new_password" binding:"required,min=8"`
+}
+
+// Setup2FARequest represents a 2FA setup request
+type Setup2FARequest struct {
+	Password string `json:"password" binding:"required,min=8"`
+}
+
+// Setup2FAResponse represents the response after 2FA setup
+type Setup2FAResponse struct {
+	Secret  string `json:"secret"`
+	QRCode  string `json:"qr_code"`
+	Message string `json:"message"`
+}
+
 // Service defines the interface for authentication business logic
 type Service interface {
 	// Login authenticates a user and returns tokens
@@ -43,5 +61,13 @@ type Service interface {
 
 	// GetUserProfile retrieves a user profile by ID
 	GetUserProfile(ctx context.Context, userID string) (*model.UserProfile, error)
-}
 
+	// VerifyEmail marks a user's email as verified
+	VerifyEmail(ctx context.Context, token string) error
+
+	// ChangePassword changes user's password
+	ChangePassword(ctx context.Context, userID string, req *ChangePasswordRequest) error
+
+	// Setup2FA initializes 2FA for a user
+	Setup2FA(ctx context.Context, userID string, req *Setup2FARequest) (*Setup2FAResponse, error)
+}

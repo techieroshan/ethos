@@ -13,7 +13,10 @@ import (
 type PeopleClient interface {
 	// SearchPeople searches for people
 	SearchPeople(ctx context.Context, query string, limit, offset int) ([]*authModel.UserProfile, int, error)
-	
+
+	// SearchPeopleWithFilters searches for people with enhanced filtering
+	SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *PeopleSearchFilters) ([]*authModel.UserProfile, int, error)
+
 	// GetRecommendations gets people recommendations
 	GetRecommendations(ctx context.Context, userID string) ([]*authModel.UserProfile, error)
 }
@@ -31,6 +34,11 @@ func NewRESTPeopleClient(repo repository.Repository) PeopleClient {
 // SearchPeople implements PeopleClient interface using REST
 func (c *RESTPeopleClient) SearchPeople(ctx context.Context, query string, limit, offset int) ([]*authModel.UserProfile, int, error) {
 	return c.repo.SearchPeople(ctx, query, limit, offset)
+}
+
+// SearchPeopleWithFilters implements PeopleClient interface using REST
+func (c *RESTPeopleClient) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *PeopleSearchFilters) ([]*authModel.UserProfile, int, error) {
+	return c.repo.SearchPeopleWithFilters(ctx, query, limit, offset, filters)
 }
 
 // GetRecommendations implements PeopleClient interface using REST
@@ -70,6 +78,12 @@ func (c *GRPCPeopleClient) SearchPeople(ctx context.Context, query string, limit
 	}
 
 	return profiles, int(resp.Count), nil
+}
+
+// SearchPeopleWithFilters implements PeopleClient interface using gRPC
+func (c *GRPCPeopleClient) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *PeopleSearchFilters) ([]*authModel.UserProfile, int, error) {
+	// For now, implement as basic search - gRPC proto would need to be updated for full filtering
+	return c.SearchPeople(ctx, query, limit, offset)
 }
 
 // GetRecommendations implements PeopleClient interface using gRPC

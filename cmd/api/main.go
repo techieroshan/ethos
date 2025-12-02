@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"ethos/api"
 	accountHandler "ethos/internal/account/handler"
 	accountRepository "ethos/internal/account/repository"
@@ -18,26 +17,34 @@ import (
 	"ethos/internal/auth/repository"
 	"ethos/internal/auth/service"
 	communityHandler "ethos/internal/community/handler"
+	"ethos/internal/config"
 	dashboardHandler "ethos/internal/dashboard/handler"
 	dashboardRepository "ethos/internal/dashboard/repository"
+	"ethos/internal/database"
 	feedbackHandler "ethos/internal/feedback/handler"
 	feedbackRepository "ethos/internal/feedback/repository"
+	moderationHandler "ethos/internal/moderation/handler"
+	moderationRepository "ethos/internal/moderation/repository"
+	moderationService "ethos/internal/moderation/service"
 	notificationHandler "ethos/internal/notifications/handler"
 	notificationRepository "ethos/internal/notifications/repository"
+	organizationHandler "ethos/internal/organization/handler"
+	organizationRepository "ethos/internal/organization/repository"
+	organizationService "ethos/internal/organization/service"
 	peopleHandler "ethos/internal/people/handler"
 	peopleRepository "ethos/internal/people/repository"
 	profileHandler "ethos/internal/profile/handler"
 	profileRepository "ethos/internal/profile/repository"
 	profileService "ethos/internal/profile/service"
-	"ethos/internal/config"
-	"ethos/internal/database"
+	"ethos/pkg/email"
 	checkerClient "ethos/pkg/email/checker"
 	emailitClient "ethos/pkg/email/emailit"
 	mailpitClient "ethos/pkg/email/mailpit"
-	"ethos/pkg/email"
+	grpcClient "ethos/pkg/grpc/client"
 	"ethos/pkg/jwt"
 	"ethos/pkg/otel"
-	grpcClient "ethos/pkg/grpc/client"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -75,7 +82,7 @@ func main() {
 		cfg.JWT.AccessTokenExpiry,
 		cfg.JWT.RefreshTokenExpiry,
 	)
-	
+
 	// Initialize email checker (optional - can be nil if not configured)
 	var emailChecker checkerClient.EmailChecker
 	if cfg.Checker.APIKey != "" {
@@ -108,7 +115,7 @@ func main() {
 		emailSender = email.NewNoOpEmailSender() // Use no-op if not configured
 		log.Println("Warning: No email sender configured, using no-op")
 	}
-	
+
 	authService := service.NewAuthService(authRepo, tokenGen, emailChecker, emailSender)
 	authHandler := handler.NewAuthHandler(authService)
 
@@ -160,10 +167,20 @@ func main() {
 	accountSvc := accountService.NewAccountService(accountRepo)
 	accountHandler := accountHandler.NewAccountHandler(accountSvc)
 
+	// Initialize moderation dependencies
+	moderationRepo := moderationRepository.NewPostgresRepository(db)
+	moderationSvc := moderationService.NewModerationService(moderationRepo)
+	moderationHandler := moderationHandler.NewModerationHandler(moderationSvc)
+
+	// Initialize organization dependencies
+	orgRepo := organizationRepository.NewPostgresRepository(db)
+	orgSvc := organizationService.NewOrganizationService(orgRepo)
+	orgHandler := organizationHandler.NewOrganizationHandler(orgSvc)
+
 	// Setup router
 	router := gin.Default()
 	api.SetupMiddleware(router)
-	api.SetupRoutes(router, authHandler, profileHandler, feedbackHandler, notificationHandler, dashboardHandler, peopleHandler, communityHandler, accountHandler, tokenGen)
+	api.SetupRoutes(router, authHandler, profileHandler, feedbackHandler, notificationHandler, dashboardHandler, orgHandler, peopleHandler, communityHandler, accountHandler, moderationHandler, tokenGen)
 
 	// Create HTTP server
 	srv := &http.Server{
