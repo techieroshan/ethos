@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package people;
+
+option go_package = "ethos/api/proto/people";
+
+import "google/protobuf/timestamp.proto";
+
+// UserProfile represents a user profile
+message UserProfile {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  bool email_verified = 4;
+  string public_bio = 5;
+  string role = 6; // Optional role/title
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+// SearchPeopleRequest requests people search
+message SearchPeopleRequest {
+  string query = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+// SearchPeopleResponse returns paginated search results
+message SearchPeopleResponse {
+  repeated UserProfile results = 1;
+  int32 count = 2;
+}
+
+// GetRecommendationsRequest requests people recommendations
+message GetRecommendationsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+
+// GetRecommendationsResponse returns recommendations
+message GetRecommendationsResponse {
+  repeated UserProfile recommendations = 1;
+}
+
+// PeopleService provides people search and recommendations
+service PeopleService {
+  // SearchPeople searches for people matching query
+  rpc SearchPeople(SearchPeopleRequest) returns (SearchPeopleResponse);
+  
+  // GetRecommendations returns personalized recommendations
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+}
+

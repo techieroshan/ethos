@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package dashboard;
+
+option go_package = "ethos/api/proto/dashboard";
+
+import "google/protobuf/timestamp.proto";
+import "feedback/feedback.proto";
+
+// DashboardStats represents aggregated statistics
+message DashboardStats {
+  int32 feedback_given = 1;
+  int32 comments = 2;
+  map<string, int32> additional_stats = 3;
+}
+
+// DashboardSnapshot represents a dashboard view
+message DashboardSnapshot {
+  repeated feedback.FeedbackItem recent_feedback = 1;
+  DashboardStats stats = 2;
+  repeated string suggested_actions = 3;
+}
+
+// GetDashboardRequest requests dashboard data
+message GetDashboardRequest {
+  string user_id = 1;
+}
+
+// GetDashboardResponse returns dashboard snapshot
+message GetDashboardResponse {
+  DashboardSnapshot snapshot = 1;
+}
+
+// DashboardService provides dashboard operations
+service DashboardService {
+  // GetDashboard retrieves dashboard snapshot for a user
+  rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse);
+}
+

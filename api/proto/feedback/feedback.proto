@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package feedback;
+
+option go_package = "ethos/api/proto/feedback";
+
+import "google/protobuf/timestamp.proto";
+
+// UserSummary represents a minimal user reference
+message UserSummary {
+  string id = 1;
+  string name = 2;
+}
+
+// FeedbackVisibility represents visibility levels
+enum FeedbackVisibility {
+  FEEDBACK_VISIBILITY_UNSPECIFIED = 0;
+  FEEDBACK_VISIBILITY_PUBLIC = 1;
+  FEEDBACK_VISIBILITY_PRIVATE = 2;
+  FEEDBACK_VISIBILITY_TEAM = 3;
+}
+
+// FeedbackType represents types of feedback
+enum FeedbackType {
+  FEEDBACK_TYPE_UNSPECIFIED = 0;
+  FEEDBACK_TYPE_APPRECIATION = 1;
+  FEEDBACK_TYPE_SUGGESTION = 2;
+  FEEDBACK_TYPE_ISSUE = 3;
+  FEEDBACK_TYPE_OTHER = 4;
+}
+
+// FeedbackDimensionScore represents dimension-level scoring
+message FeedbackDimensionScore {
+  string dimension = 1;
+  int32 score = 2;
+}
+
+// FeedbackReactionSummary represents reaction counts
+message FeedbackReactionSummary {
+  map<string, int32> reactions = 1;
+}
+
+// FeedbackItem represents a feedback post
+message FeedbackItem {
+  string feedback_id = 1;
+  UserSummary author = 2;
+  string content = 3;
+  FeedbackType type = 4;
+  FeedbackVisibility visibility = 5;
+  FeedbackReactionSummary reactions = 6;
+  repeated FeedbackDimensionScore dimensions = 7;
+  int32 comments_count = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+// FeedbackComment represents a comment on feedback
+message FeedbackComment {
+  string comment_id = 1;
+  UserSummary author = 2;
+  string content = 3;
+  google.protobuf.Timestamp created_at = 4;
+  string parent_comment_id = 5; // Optional, for threading
+}
+
+// GetFeedRequest requests a paginated feed
+message GetFeedRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+// GetFeedResponse returns paginated feedback items
+message GetFeedResponse {
+  repeated FeedbackItem results = 1;
+  int32 count = 2;
+}
+
+// GetFeedbackRequest requests a specific feedback item
+message GetFeedbackRequest {
+  string feedback_id = 1;
+}
+
+// GetFeedbackResponse returns a feedback item
+message GetFeedbackResponse {
+  FeedbackItem feedback = 1;
+}
+
+// GetCommentsRequest requests comments for a feedback item
+message GetCommentsRequest {
+  string feedback_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+// GetCommentsResponse returns paginated comments
+message GetCommentsResponse {
+  repeated FeedbackComment comments = 1;
+  int32 count = 2;
+}
+
+// FeedbackService provides feedback operations
+service FeedbackService {
+  // GetFeed retrieves a paginated feed of feedback posts
+  rpc GetFeed(GetFeedRequest) returns (GetFeedResponse);
+  
+  // GetFeedback retrieves a specific feedback item
+  rpc GetFeedback(GetFeedbackRequest) returns (GetFeedbackResponse);
+  
+  // GetComments retrieves comments for a feedback item
+  rpc GetComments(GetCommentsRequest) returns (GetCommentsResponse);
+}
+
