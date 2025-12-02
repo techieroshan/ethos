@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"ethos/pkg/grpc/interceptors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -51,6 +52,8 @@ func (m *ClientManager) GetFeedbackClient() interface{} {
 				m.config.FeedbackEndpoint,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithTimeout(m.config.Timeout),
+				grpc.WithUnaryInterceptor(interceptors.TracingUnaryClientInterceptor()),
+				grpc.WithStreamInterceptor(interceptors.TracingStreamClientInterceptor()),
 			)
 			if err != nil {
 				// Return stub client for testing (will be replaced after proto generation)
@@ -80,6 +83,8 @@ func (m *ClientManager) GetDashboardClient() interface{} {
 				m.config.DashboardEndpoint,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithTimeout(m.config.Timeout),
+				grpc.WithUnaryInterceptor(interceptors.TracingUnaryClientInterceptor()),
+				grpc.WithStreamInterceptor(interceptors.TracingStreamClientInterceptor()),
 			)
 			if err != nil {
 				m.dashboardClient = &stubDashboardClient{}
@@ -106,6 +111,8 @@ func (m *ClientManager) GetNotificationsClient() interface{} {
 				m.config.NotificationsEndpoint,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithTimeout(m.config.Timeout),
+				grpc.WithUnaryInterceptor(interceptors.TracingUnaryClientInterceptor()),
+				grpc.WithStreamInterceptor(interceptors.TracingStreamClientInterceptor()),
 			)
 			if err != nil {
 				m.notificationsClient = &stubNotificationsClient{}
@@ -132,6 +139,8 @@ func (m *ClientManager) GetPeopleClient() interface{} {
 				m.config.PeopleEndpoint,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithTimeout(m.config.Timeout),
+				grpc.WithUnaryInterceptor(interceptors.TracingUnaryClientInterceptor()),
+				grpc.WithStreamInterceptor(interceptors.TracingStreamClientInterceptor()),
 			)
 			if err != nil {
 				m.peopleClient = &stubPeopleClient{}
