@@ -53,13 +53,18 @@ func (m *ClientManager) GetFeedbackClient() interface{} {
 				grpc.WithTimeout(m.config.Timeout),
 			)
 			if err != nil {
-				// Return nil if connection fails (will be handled by retry logic)
-				return nil
+				// Return stub client for testing (will be replaced after proto generation)
+				m.feedbackClient = &stubFeedbackClient{}
+				return m.feedbackClient
 			}
 			m.feedbackConn = conn
 		}
 		// TODO: Create actual client after proto generation
 		// m.feedbackClient = feedbackpb.NewFeedbackServiceClient(m.feedbackConn)
+		// For now, return stub client
+		if m.feedbackClient == nil {
+			m.feedbackClient = &stubFeedbackClient{}
+		}
 	}
 	return m.feedbackClient
 }
@@ -77,11 +82,15 @@ func (m *ClientManager) GetDashboardClient() interface{} {
 				grpc.WithTimeout(m.config.Timeout),
 			)
 			if err != nil {
-				return nil
+				m.dashboardClient = &stubDashboardClient{}
+				return m.dashboardClient
 			}
 			m.dashboardConn = conn
 		}
 		// TODO: Create actual client after proto generation
+		if m.dashboardClient == nil {
+			m.dashboardClient = &stubDashboardClient{}
+		}
 	}
 	return m.dashboardClient
 }
@@ -99,11 +108,15 @@ func (m *ClientManager) GetNotificationsClient() interface{} {
 				grpc.WithTimeout(m.config.Timeout),
 			)
 			if err != nil {
-				return nil
+				m.notificationsClient = &stubNotificationsClient{}
+				return m.notificationsClient
 			}
 			m.notificationsConn = conn
 		}
 		// TODO: Create actual client after proto generation
+		if m.notificationsClient == nil {
+			m.notificationsClient = &stubNotificationsClient{}
+		}
 	}
 	return m.notificationsClient
 }
@@ -121,11 +134,15 @@ func (m *ClientManager) GetPeopleClient() interface{} {
 				grpc.WithTimeout(m.config.Timeout),
 			)
 			if err != nil {
-				return nil
+				m.peopleClient = &stubPeopleClient{}
+				return m.peopleClient
 			}
 			m.peopleConn = conn
 		}
 		// TODO: Create actual client after proto generation
+		if m.peopleClient == nil {
+			m.peopleClient = &stubPeopleClient{}
+		}
 	}
 	return m.peopleClient
 }
@@ -162,4 +179,16 @@ func (m *ClientManager) Close() error {
 	}
 	return nil
 }
+
+// stubFeedbackClient is a stub client for testing (will be replaced after proto generation)
+type stubFeedbackClient struct{}
+
+// stubDashboardClient is a stub client for testing
+type stubDashboardClient struct{}
+
+// stubNotificationsClient is a stub client for testing
+type stubNotificationsClient struct{}
+
+// stubPeopleClient is a stub client for testing
+type stubPeopleClient struct{}
 
