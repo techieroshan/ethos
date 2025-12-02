@@ -16,6 +16,8 @@ type Config struct {
 	JWT      JWTConfig
 	OTEL     OTELConfig
 	Checker  CheckerConfig
+	Emailit  EmailitConfig
+	Mailpit  MailpitConfig
 }
 
 // ServerConfig holds server-related configuration
@@ -56,6 +58,22 @@ type CheckerConfig struct {
 	Retries int
 }
 
+// EmailitConfig holds Emailit API configuration for email sending
+type EmailitConfig struct {
+	APIKey  string
+	BaseURL string
+	Timeout time.Duration
+	Retries int
+}
+
+// MailpitConfig holds Mailpit configuration for local email testing
+type MailpitConfig struct {
+	SMTPHost  string
+	SMTPPort  int
+	FromEmail string
+	Enabled   bool
+}
+
 // Load loads configuration from environment variables
 func Load() (*Config, error) {
 	// Try to load .env file, but don't fail if it doesn't exist
@@ -89,6 +107,18 @@ func Load() (*Config, error) {
 			BaseURL: getEnv("CHECKER_BASE_URL", "https://api.checker.com"),
 			Timeout: getDurationEnv("CHECKER_TIMEOUT", 5*time.Second),
 			Retries: getIntEnv("CHECKER_RETRIES", 2),
+		},
+		Emailit: EmailitConfig{
+			APIKey:  getEnv("EMAILIT_API_KEY", ""),
+			BaseURL: getEnv("EMAILIT_BASE_URL", "https://api.emailit.com"),
+			Timeout: getDurationEnv("EMAILIT_TIMEOUT", 10*time.Second),
+			Retries: getIntEnv("EMAILIT_RETRIES", 2),
+		},
+		Mailpit: MailpitConfig{
+			SMTPHost:  getEnv("MAILPIT_SMTP_HOST", "localhost"),
+			SMTPPort:  getIntEnv("MAILPIT_SMTP_PORT", 1025),
+			FromEmail: getEnv("MAILPIT_FROM_EMAIL", "noreply@ethos.test"),
+			Enabled:   getBoolEnv("MAILPIT_ENABLED", false),
 		},
 	}
 
