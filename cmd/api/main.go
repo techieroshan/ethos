@@ -36,6 +36,8 @@ import (
 	"ethos/internal/config"
 	"ethos/internal/database"
 	checkerClient "ethos/pkg/email/checker"
+	emailitClient "ethos/pkg/email/emailit"
+	mailpitClient "ethos/pkg/email/mailpit"
 	"ethos/pkg/email"
 	"ethos/pkg/jwt"
 	"ethos/pkg/otel"
