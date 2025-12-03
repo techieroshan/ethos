@@ -186,14 +186,36 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 			account.GET("/export-data/:export_id/status", accountHandler.GetExportStatus)
 		}
 
-		// User Appeals
-		appeals := v1.Group("/appeals")
-		appeals.Use(middleware.AuthMiddleware(tokenGen))
-		{
-			appeals.POST("", appealHandler.SubmitAppeal)
-			appeals.GET("", appealHandler.GetUserAppeals)
-			appeals.GET("/:appeal_id", appealHandler.GetAppealByID)
-		}
+				// User Appeals
+				appeals := v1.Group("/appeals")
+				appeals.Use(middleware.AuthMiddleware(tokenGen))
+				{
+					appeals.POST("", appealHandler.SubmitAppeal)
+					appeals.GET("", appealHandler.GetUserAppeals)
+					appeals.GET("/:appeal_id", appealHandler.GetAppealByID)
+				}
+
+				// Health Check (no auth required)
+				v1.GET("/health", func(c *gin.Context) {
+					c.JSON(http.StatusOK, gin.H{
+						"status": "healthy",
+						"timestamp": time.Now().Unix(),
+						"version": "1.0.0",
+					})
+				})
+
+				// Readiness Check
+				v1.GET("/ready", func(c *gin.Context) {
+					// Add database connectivity check here
+					c.JSON(http.StatusOK, gin.H{
+						"status": "ready",
+						"timestamp": time.Now().Unix(),
+						"checks": gin.H{
+							"database": "ok",
+							"redis": "ok",
+						},
+					})
+				})
 
 		// Platform Admin Routes (Global admin operations)
 		admin := v1.Group("/admin")

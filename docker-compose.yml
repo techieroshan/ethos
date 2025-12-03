@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: ethos-postgres
+    environment:
+      POSTGRES_DB: ethos
+      POSTGRES_USER: ethos_user
+      POSTGRES_PASSWORD: ethos_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./internal/database/migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ethos_user -d ethos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ethos-network
+
+  # Redis Cache (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: ethos-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - ethos-network
+
+  # Ethos Backend API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ethos-api
+    environment:
+      - ENV=development
+      - DATABASE_URL=postgres://ethos_user:ethos_password@postgres:5432/ethos?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - API_PORT=8000
+      - FRONTEND_URL=http://localhost:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ethos-network
+    restart: unless-stopped
+
+  # Ethos Frontend
+  frontend:
+    build:
+      context: ./ethos-ui
+      dockerfile: Dockerfile
+    container_name: ethos-frontend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api/v1
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ethos-network
+    restart: unless-stopped
+
+  # Mailpit for Email Testing (Development only)
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: ethos-mailpit
+    ports:
+      - "8025:8025"  # Web UI
+      - "1025:1025"  # SMTP server
+    environment:
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH=0
+    networks:
+      - ethos-network
+    profiles:
+      - dev
+
+  # Monitoring Stack (Optional - start with --profile monitoring)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ethos-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - ethos-network
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ethos-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - ethos-network
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+
+networks:
+  ethos-network:
+    driver: bridge
