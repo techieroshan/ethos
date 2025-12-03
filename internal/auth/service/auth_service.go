@@ -71,4 +71,12 @@ type Service interface {
 
 	// Setup2FA initializes 2FA for a user
 	Setup2FA(ctx context.Context, userID string, req *Setup2FARequest) (*Setup2FAResponse, error)
+
+	// MULTI-TENANT METHODS
+
+	// GetUserByID gets a user by ID with tenant memberships loaded
+	GetUserByID(ctx context.Context, userID string) (*model.User, error)
+
+	// SwitchUserTenant switches a user's current tenant context
+	SwitchUserTenant(ctx context.Context, userID, tenantID string) error
 }

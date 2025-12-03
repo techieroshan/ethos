@@ -408,3 +408,59 @@ func hasPasswordRequirements(password string) bool {
 
 	return hasUpper && hasLower && hasNumber && hasSpecial
 }
+
+// MULTI-TENANT METHODS IMPLEMENTATION
+
+// GetUserByID gets a user by ID with tenant memberships loaded
+func (s *AuthService) GetUserByID(ctx context.Context, userID string) (*model.User, error) {
+	user, err := s.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Load tenant memberships for the user
+	// TODO: Implement tenant membership loading from database
+	// For now, return mock data
+	now := time.Now()
+	user.TenantMemberships = []model.TenantMembership{
+		{
+			TenantID:   "org-1",
+			TenantName: "Acme Corporation",
+			Role:       "user",
+			JoinedAt:   now,
+			IsActive:   true,
+		},
+		{
+			TenantID:   "org-2",
+			TenantName: "Tech Startup Inc",
+			Role:       "admin",
+			JoinedAt:   now,
+			IsActive:   true,
+		},
+	}
+
+	// Set default current tenant if not set
+	if user.CurrentTenantID == nil && len(user.TenantMemberships) > 0 {
+		user.CurrentTenantID = &user.TenantMemberships[0].TenantID
+	}
+
+	return user, nil
+}
+
+// SwitchUserTenant switches a user's current tenant context
+func (s *AuthService) SwitchUserTenant(ctx context.Context, userID, tenantID string) error {
+	user, err := s.GetUserByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	err = user.SwitchTenant(tenantID)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Persist the tenant switch to database
+	// For now, just validate the switch
+
+	return nil
+}

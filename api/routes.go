@@ -42,6 +42,11 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 			auth.POST("/change-password", middleware.AuthMiddleware(tokenGen), authHandler.ChangePassword)
 			auth.POST("/setup-2fa", middleware.AuthMiddleware(tokenGen), authHandler.Setup2FA)
 			auth.DELETE("/setup-2fa", middleware.AuthMiddleware(tokenGen), accountHandler.Disable2FA)
+
+			// Multi-tenant functionality
+			auth.GET("/tenants", middleware.AuthMiddleware(tokenGen), authHandler.ListUserTenants)
+			auth.POST("/tenants/:tenant_id/switch", middleware.AuthMiddleware(tokenGen), authHandler.SwitchTenant)
+			auth.GET("/tenants/current", middleware.AuthMiddleware(tokenGen), authHandler.GetCurrentTenant)
 		}
 
 		profile := v1.Group("/profile")
@@ -256,5 +261,7 @@ func SetupMiddleware(router *gin.Engine) {
 	router.Use(corsHandler())
 	router.Use(gin.Logger())
 	router.Use(middleware.TracingMiddleware())
+	router.Use(middleware.TenantContextMiddleware(nil)) // Initialize with nil tokenGen for now
+	router.Use(middleware.CrossTenantAuditMiddleware())
 	router.Use(gin.Recovery())
 }

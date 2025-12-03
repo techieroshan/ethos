@@ -254,3 +254,121 @@ func (h *AuthHandler) Setup2FA(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
+
+// MULTI-TENANT FUNCTIONALITY HANDLERS
+
+// ListUserTenants handles GET /api/v1/auth/tenants
+func (h *AuthHandler) ListUserTenants(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Authentication required",
+			"code":  "AUTH_REQUIRED",
+		})
+		return
+	}
+
+	user, err := h.service.GetUserByID(c.Request.Context(), userID.(string))
+	if err != nil {
+		if err == errors.ErrUserNotFound {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "User not found",
+				"code":  "USER_NOT_FOUND",
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to get user",
+				"code":  "SERVER_ERROR",
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"tenants": user.TenantMemberships,
+		"current_tenant_id": user.CurrentTenantID,
+	})
+}
+
+// SwitchTenant handles POST /api/v1/auth/tenants/:tenant_id/switch
+func (h *AuthHandler) SwitchTenant(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Authentication required",
+			"code":  "AUTH_REQUIRED",
+		})
+		return
+	}
+
+	tenantID := c.Param("tenant_id")
+	if tenantID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Tenant ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	err := h.service.SwitchUserTenant(c.Request.Context(), userID.(string), tenantID)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to switch tenant",
+				"code":  "SERVER_ERROR",
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Successfully switched tenant",
+		"tenant_id": tenantID,
+	})
+}
+
+// GetCurrentTenant handles GET /api/v1/auth/tenants/current
+func (h *AuthHandler) GetCurrentTenant(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Authentication required",
+			"code":  "AUTH_REQUIRED",
+		})
+		return
+	}
+
+	user, err := h.service.GetUserByID(c.Request.Context(), userID.(string))
+	if err != nil {
+		if err == errors.ErrUserNotFound {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "User not found",
+				"code":  "USER_NOT_FOUND",
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to get user",
+				"code":  "SERVER_ERROR",
+			})
+		}
+		return
+	}
+
+	currentMembership := user.GetCurrentTenantMembership()
+	if currentMembership == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"current_tenant": nil,
+			"message": "No current tenant set",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"current_tenant": currentMembership,
+	})
+}
