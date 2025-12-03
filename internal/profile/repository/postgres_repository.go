@@ -11,6 +11,7 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"ethos/internal/auth/model"
 	"ethos/internal/database"
+	"ethos/internal/profile"
 	prefModel "ethos/internal/profile/model"
 	"ethos/pkg/errors"
 )
@@ -296,7 +297,7 @@ func (r *PostgresRepository) SearchUserProfiles(ctx context.Context, query strin
 }
 
 // OptOut handles opt-out requests from certain features
-func (r *PostgresRepository) OptOut(ctx context.Context, userID string, req *service.OptOutRequest) error {
+func (r *PostgresRepository) OptOut(ctx context.Context, userID string, req *profile.OptOutRequest) error {
 	ctx, span := otel.Tracer("repository").Start(ctx, "repository.OptOut")
 	defer span.End()
 
@@ -318,7 +319,7 @@ func (r *PostgresRepository) OptOut(ctx context.Context, userID string, req *ser
 }
 
 // Anonymize anonymizes user personal data
-func (r *PostgresRepository) Anonymize(ctx context.Context, userID string) (*service.AnonymizeResponse, error) {
+func (r *PostgresRepository) Anonymize(ctx context.Context, userID string) (*profile.AnonymizeResponse, error) {
 	ctx, span := otel.Tracer("repository").Start(ctx, "repository.Anonymize")
 	defer span.End()
 
@@ -346,7 +347,7 @@ func (r *PostgresRepository) Anonymize(ctx context.Context, userID string) (*ser
 		return nil, errors.WrapError(err, "failed to anonymize user")
 	}
 
-	response := &service.AnonymizeResponse{
+	response := &profile.AnonymizeResponse{
 		Status:             "in_progress",
 		ExpectedCompletion: expectedCompletion,
 	}
@@ -356,7 +357,7 @@ func (r *PostgresRepository) Anonymize(ctx context.Context, userID string) (*ser
 }
 
 // RequestDeletion requests account deletion
-func (r *PostgresRepository) RequestDeletion(ctx context.Context, userID string, req *service.DeleteRequest) (*service.DeleteResponse, error) {
+func (r *PostgresRepository) RequestDeletion(ctx context.Context, userID string, req *profile.DeleteRequest) (*profile.DeleteResponse, error) {
 	ctx, span := otel.Tracer("repository").Start(ctx, "repository.RequestDeletion")
 	defer span.End()
 
@@ -383,7 +384,7 @@ func (r *PostgresRepository) RequestDeletion(ctx context.Context, userID string,
 	// In a real implementation, this would also create a record in account_deletions table
 	// and queue background jobs for cleanup
 
-	response := &service.DeleteResponse{
+	response := &profile.DeleteResponse{
 		Status:             "delete_requested",
 		ExpectedCompletion: expectedCompletion,
 	}

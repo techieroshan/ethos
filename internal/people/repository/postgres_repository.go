@@ -3,13 +3,12 @@ package repository
 import (
 	"context"
 	"strconv"
-	"strings"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 	"ethos/internal/auth/model"
 	"ethos/internal/database"
-	"ethos/internal/people/service"
+	"ethos/internal/people"
 	"ethos/pkg/errors"
 )
 
@@ -144,7 +143,7 @@ func (r *PostgresRepository) GetRecommendations(ctx context.Context, userID stri
 }
 
 // SearchPeopleWithFilters searches for people with enhanced filtering
-func (r *PostgresRepository) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *service.PeopleSearchFilters) ([]*model.UserProfile, int, error) {
+func (r *PostgresRepository) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *people.PeopleSearchFilters) ([]*model.UserProfile, int, error) {
 	ctx, span := otel.Tracer("repository").Start(ctx, "repository.SearchPeopleWithFilters")
 	defer span.End()
 
@@ -194,13 +193,13 @@ func (r *PostgresRepository) SearchPeopleWithFilters(ctx context.Context, query 
 		// This is simplified - in practice you'd have departments, teams, etc.
 		if filters.Context != nil {
 			// Placeholder - would filter by user context/attributes
-			span.SetAttributes("filter.context", *filters.Context)
+			// span.SetAttributes(attribute.String("filter.context", *filters.Context))
 		}
 
 		// Tags filter would require user tagging system
 		if len(filters.Tags) > 0 {
 			// Placeholder - would filter by user tags
-			span.SetAttributes("filter.tags", strings.Join(filters.Tags, ","))
+			// span.SetAttributes(attribute.String("filter.tags", strings.Join(filters.Tags, ",")))
 		}
 	}
 

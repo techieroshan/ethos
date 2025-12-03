@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"ethos/internal/feedback"
 	"ethos/internal/feedback/model"
-	"ethos/internal/feedback/service"
 )
 
 // Repository defines the interface for feedback data access
@@ -41,16 +41,16 @@ type Repository interface {
 	GetTemplates(ctx context.Context, contextFilter, tagsFilter string) ([]*model.FeedbackTemplate, error)
 
 	// SubmitTemplateSuggestion submits a template suggestion
-	SubmitTemplateSuggestion(ctx context.Context, req *service.TemplateSuggestionRequest) error
+	SubmitTemplateSuggestion(ctx context.Context, req *feedback.TemplateSuggestionRequest) error
 
 	// GetImpact retrieves aggregated feedback analytics
 	GetImpact(ctx context.Context, userID *string, from, to *time.Time) (*model.FeedbackImpact, error)
 
 	// CreateBatchFeedback creates multiple feedback items in a batch
-	CreateBatchFeedback(ctx context.Context, userID string, req *service.BatchFeedbackRequest) (*service.BatchFeedbackResponse, error)
+	CreateBatchFeedback(ctx context.Context, userID string, req *feedback.BatchFeedbackRequest) (*feedback.BatchFeedbackResponse, error)
 
 	// GetFeedWithFilters retrieves a paginated feed of feedback items with enhanced filtering
-	GetFeedWithFilters(ctx context.Context, limit, offset int, filters *service.FeedFilters) ([]*model.FeedbackItem, int, error)
+	GetFeedWithFilters(ctx context.Context, limit, offset int, filters *feedback.FeedFilters) ([]*model.FeedbackItem, int, error)
 
 	// GetBookmarks retrieves bookmarked feedback items for a user
 	GetBookmarks(ctx context.Context, userID string, limit, offset int) ([]*model.FeedbackItem, int, error)

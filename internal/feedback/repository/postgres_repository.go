@@ -10,8 +10,8 @@ import (
 
 	authModel "ethos/internal/auth/model"
 	"ethos/internal/database"
+	"ethos/internal/feedback"
 	"ethos/internal/feedback/model"
-	"ethos/internal/feedback/service"
 	"ethos/pkg/errors"
 
 	"github.com/google/uuid"
@@ -533,7 +533,7 @@ func (r *PostgresRepository) GetTemplates(ctx context.Context, contextFilter, ta
 }
 
 // SubmitTemplateSuggestion submits a template suggestion
-func (r *PostgresRepository) SubmitTemplateSuggestion(ctx context.Context, req *service.TemplateSuggestionRequest) error {
+func (r *PostgresRepository) SubmitTemplateSuggestion(ctx context.Context, req *feedback.TemplateSuggestionRequest) error {
 	ctx, span := otel.Tracer("repository").Start(ctx, "repository.SubmitTemplateSuggestion")
 	defer span.End()
 
@@ -938,7 +938,7 @@ func (r *PostgresRepository) getReactionAnalytics(ctx context.Context, feedbackI
 }
 
 // CreateBatchFeedback creates multiple feedback items in a batch
-func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID string, req *service.BatchFeedbackRequest) (*service.BatchFeedbackResponse, error) {
+func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID string, req *feedback.BatchFeedbackRequest) (*feedback.BatchFeedbackResponse, error) {
 	ctx, span := otel.Tracer("repository").Start(ctx, "repository.CreateBatchFeedback")
 	defer span.End()
 
@@ -946,7 +946,7 @@ func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID str
 		return nil, errors.NewAPIError("VALIDATION_FAILED", "At least one feedback item is required", http.StatusBadRequest)
 	}
 
-	response := &service.BatchFeedbackResponse{
+	response := &feedback.BatchFeedbackResponse{
 		Submitted: make([]service.BatchFeedbackResult, 0, len(req.Items)),
 	}
 
@@ -996,7 +996,7 @@ func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID str
 			return nil, errors.WrapError(err, "failed to insert feedback item")
 		}
 
-		response.Submitted = append(response.Submitted, service.BatchFeedbackResult{
+		response.Submitted = append(response.Submitted, feedback.BatchFeedbackResult{
 			FeedbackID: feedbackID,
 			Status:     "created",
 		})
@@ -1015,7 +1015,7 @@ func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID str
 }
 
 // GetFeedWithFilters retrieves a paginated feed of feedback items with enhanced filtering
-func (r *PostgresRepository) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *service.FeedFilters) ([]*model.FeedbackItem, int, error) {
+func (r *PostgresRepository) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *feedback.FeedFilters) ([]*model.FeedbackItem, int, error) {
 	ctx, span := otel.Tracer("repository").Start(ctx, "repository.GetFeedWithFilters")
 	defer span.End()
 

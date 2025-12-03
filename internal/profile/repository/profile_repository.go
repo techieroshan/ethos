@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"ethos/internal/auth/model"
+	"ethos/internal/profile"
 	prefModel "ethos/internal/profile/model"
-	"ethos/internal/profile/service"
 )
 
 // Repository defines the interface for profile data access
@@ -26,12 +26,12 @@ type Repository interface {
 	SearchUserProfiles(ctx context.Context, query string, limit, offset int) ([]*model.UserProfile, int, error)
 
 	// OptOut handles opt-out requests
-	OptOut(ctx context.Context, userID string, req *service.OptOutRequest) error
+	OptOut(ctx context.Context, userID string, req *profile.OptOutRequest) error
 
 	// Anonymize anonymizes user personal data
-	Anonymize(ctx context.Context, userID string) (*service.AnonymizeResponse, error)
+	Anonymize(ctx context.Context, userID string) (*profile.AnonymizeResponse, error)
 
 	// RequestDeletion requests account deletion
-	RequestDeletion(ctx context.Context, userID string, req *service.DeleteRequest) (*service.DeleteResponse, error)
+	RequestDeletion(ctx context.Context, userID string, req *profile.DeleteRequest) (*profile.DeleteResponse, error)
 }
 
