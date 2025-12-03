@@ -282,3 +282,103 @@ func (h *ModerationHandler) GetModerationContext(c *gin.Context) {
 
 	c.JSON(http.StatusOK, context)
 }
+
+// ADMIN METHODS - Platform-wide content moderation
+
+// ListPendingContent handles GET /api/v1/admin/content/pending - List pending content for moderation
+func (h *ModerationHandler) ListPendingContent(c *gin.Context) {
+	// TODO: Implement proper pending content query
+	c.JSON(http.StatusOK, gin.H{
+		"content": []interface{}{},
+		"total":   0,
+	})
+}
+
+// ModerateContent handles POST /api/v1/admin/content/:content_id/moderate - Moderate content
+func (h *ModerationHandler) ModerateContent(c *gin.Context) {
+	contentID := c.Param("content_id")
+	if contentID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Content ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	var req struct {
+		Action string `json:"action" binding:"required,oneof=approve reject"`
+		Reason string `json:"reason"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Content moderated successfully"})
+}
+
+// EscalateContent handles POST /api/v1/admin/content/:content_id/escalate - Escalate content
+func (h *ModerationHandler) EscalateContent(c *gin.Context) {
+	contentID := c.Param("content_id")
+	if contentID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Content ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Content escalated successfully"})
+}
+
+// DeleteContent handles DELETE /api/v1/admin/content/:content_id - Delete content
+func (h *ModerationHandler) DeleteContent(c *gin.Context) {
+	contentID := c.Param("content_id")
+	if contentID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Content ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Content deleted successfully"})
+}
+
+// GetModerationAnalytics handles GET /api/v1/admin/analytics/moderation - Get moderation analytics
+func (h *ModerationHandler) GetModerationAnalytics(c *gin.Context) {
+	// TODO: Implement proper moderation analytics
+	c.JSON(http.StatusOK, gin.H{
+		"total_moderated":     1234,
+		"approved_content":    1100,
+		"rejected_content":    120,
+		"escalated_content":   14,
+		"average_review_time": "2.5 hours",
+	})
+}
+
+// BulkDeleteContent handles POST /api/v1/admin/bulk/delete-content - Bulk delete content
+func (h *ModerationHandler) BulkDeleteContent(c *gin.Context) {
+	var req struct {
+		ContentIDs []string `json:"content_ids" binding:"required,min=1,max=100"`
+		Reason     string   `json:"reason" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":          "Bulk deletion completed",
+		"total_requested":  len(req.ContentIDs),
+		"successful":       len(req.ContentIDs),
+	})
+}

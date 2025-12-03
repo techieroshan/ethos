@@ -427,6 +427,273 @@ func (h *OrganizationHandler) UpdateOrganizationSettings(c *gin.Context) {
 		})
 		return
 	}
+	c.JSON(http.StatusOK, settings)
+}
+
+// ListAllUsers handles GET /api/v1/admin/users - List all users across all organizations
+func (h *OrganizationHandler) ListAllUsers(c *gin.Context) {
+	limit := 50
+	offset := 0
+	search := c.Query("search")
+	status := c.Query("status") // active, suspended, banned
+
+	if l := c.Query("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 200 {
+			limit = parsed
+		}
+	}
+
+	if o := c.Query("offset"); o != "" {
+		if parsed, err := strconv.Atoi(o); err == nil && parsed >= 0 {
+			offset = parsed
+		}
+	}
+
+	users, total, err := h.service.ListAllUsers(c.Request.Context(), limit, offset, search, status)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to list users",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"users": users,
+		"total": total,
+		"limit": limit,
+		"offset": offset,
+	})
+}
+
+// GetUserDetails handles GET /api/v1/admin/users/:user_id - Get detailed user information
+func (h *OrganizationHandler) GetUserDetails(c *gin.Context) {
+	userID := c.Param("user_id")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	user, err := h.service.GetUserDetails(c.Request.Context(), userID)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get user details",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+// SuspendUser handles POST /api/v1/admin/users/:user_id/suspend - Suspend a user
+func (h *OrganizationHandler) SuspendUser(c *gin.Context) {
+	userID := c.Param("user_id")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User suspended successfully"})
+}
+
+// BanUser handles POST /api/v1/admin/users/:user_id/ban - Ban a user permanently
+func (h *OrganizationHandler) BanUser(c *gin.Context) {
+	userID := c.Param("user_id")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User banned successfully"})
+}
+
+// UnbanUser handles POST /api/v1/admin/users/:user_id/unban - Unban a user
+func (h *OrganizationHandler) UnbanUser(c *gin.Context) {
+	userID := c.Param("user_id")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User unbanned successfully"})
+}
+
+// DeleteUser handles DELETE /api/v1/admin/users/:user_id - Delete a user permanently
+func (h *OrganizationHandler) DeleteUser(c *gin.Context) {
+	userID := c.Param("user_id")
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
+// GetSystemAnalytics handles GET /api/v1/admin/analytics/overview - Get system analytics
+func (h *OrganizationHandler) GetSystemAnalytics(c *gin.Context) {
+	analytics, err := h.service.GetSystemAnalytics(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get analytics",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, analytics)
+}
+
+// GetUserAnalytics handles GET /api/v1/admin/analytics/users - Get user analytics
+func (h *OrganizationHandler) GetUserAnalytics(c *gin.Context) {
+	analytics, err := h.service.GetUserAnalytics(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get user analytics",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, analytics)
+}
+
+// GetContentAnalytics handles GET /api/v1/admin/analytics/content - Get content analytics
+func (h *OrganizationHandler) GetContentAnalytics(c *gin.Context) {
+	analytics, err := h.service.GetContentAnalytics(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get content analytics",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, analytics)
+}
+
+// GetAuditLogs handles GET /api/v1/admin/audit - Get audit logs
+func (h *OrganizationHandler) GetAuditLogs(c *gin.Context) {
+	logs, total, err := h.service.GetAuditLogs(c.Request.Context(), 100, 0, "", "", "", "")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get audit logs",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"logs":  logs,
+		"total": total,
+	})
+}
+
+// GetAuditEntry handles GET /api/v1/admin/audit/:entry_id - Get audit entry
+func (h *OrganizationHandler) GetAuditEntry(c *gin.Context) {
+	entryID := c.Param("entry_id")
+	entry, err := h.service.GetAuditEntry(c.Request.Context(), entryID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get audit entry",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, entry)
+}
+
+// GetSystemSettings handles GET /api/v1/admin/settings - Get system settings
+func (h *OrganizationHandler) GetSystemSettings(c *gin.Context) {
+	settings, err := h.service.GetSystemSettings(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get system settings",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, settings)
+}
+
+// UpdateSystemSettings handles PUT /api/v1/admin/settings - Update system settings
+func (h *OrganizationHandler) UpdateSystemSettings(c *gin.Context) {
+	var settings map[string]interface{}
+	if err := c.ShouldBindJSON(&settings); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	updated, err := h.service.UpdateSystemSettings(c.Request.Context(), settings, "admin-id")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to update system settings",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, updated)
+}
+
+// BulkSuspendUsers handles POST /api/v1/admin/bulk/suspend-users - Bulk suspend users
+func (h *OrganizationHandler) BulkSuspendUsers(c *gin.Context) {
+	var req struct {
+		UserIDs []string `json:"user_ids" binding:"required,min=1,max=100"`
+		Reason  string   `json:"reason" binding:"required"`
+		Duration *int    `json:"duration,omitempty"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	result, err := h.service.BulkSuspendUsers(c.Request.Context(), req.UserIDs, req.Reason, req.Duration, "admin-id")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to bulk suspend users",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }

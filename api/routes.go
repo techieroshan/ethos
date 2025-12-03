@@ -159,6 +159,44 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 			appeals.GET("", appealHandler.GetUserAppeals)
 			appeals.GET("/:appeal_id", appealHandler.GetAppealByID)
 		}
+
+		// Platform Admin Routes (Global admin operations)
+		admin := v1.Group("/admin")
+		admin.Use(middleware.AuthMiddleware(tokenGen))
+		admin.Use(middleware.AdminMiddleware()) // Platform admin only
+		{
+			// User Management
+			admin.GET("/users", organizationHandler.ListAllUsers)
+			admin.GET("/users/:user_id", organizationHandler.GetUserDetails)
+			admin.POST("/users/:user_id/suspend", organizationHandler.SuspendUser)
+			admin.POST("/users/:user_id/ban", organizationHandler.BanUser)
+			admin.POST("/users/:user_id/unban", organizationHandler.UnbanUser)
+			admin.DELETE("/users/:user_id", organizationHandler.DeleteUser)
+
+			// Content Moderation
+			admin.GET("/content/pending", moderationHandler.ListPendingContent)
+			admin.POST("/content/:content_id/moderate", moderationHandler.ModerateContent)
+			admin.POST("/content/:content_id/escalate", moderationHandler.EscalateContent)
+			admin.DELETE("/content/:content_id", moderationHandler.DeleteContent)
+
+			// System Analytics
+			admin.GET("/analytics/overview", organizationHandler.GetSystemAnalytics)
+			admin.GET("/analytics/users", organizationHandler.GetUserAnalytics)
+			admin.GET("/analytics/content", organizationHandler.GetContentAnalytics)
+			admin.GET("/analytics/moderation", moderationHandler.GetModerationAnalytics)
+
+			// Audit Logs
+			admin.GET("/audit", organizationHandler.GetAuditLogs)
+			admin.GET("/audit/:entry_id", organizationHandler.GetAuditEntry)
+
+			// System Settings
+			admin.GET("/settings", organizationHandler.GetSystemSettings)
+			admin.PUT("/settings", organizationHandler.UpdateSystemSettings)
+
+			// Bulk Operations
+			admin.POST("/bulk/suspend-users", organizationHandler.BulkSuspendUsers)
+			admin.POST("/bulk/delete-content", moderationHandler.BulkDeleteContent)
+		}
 	}
 }
 

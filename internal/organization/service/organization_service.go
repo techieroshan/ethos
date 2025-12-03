@@ -43,4 +43,48 @@ type Service interface {
 
 	// UpdateOrganizationSettings updates organization settings
 	UpdateOrganizationSettings(ctx context.Context, orgID string, req *model.UpdateSettingsRequest) (*model.OrganizationSettings, error)
+
+	// ADMIN METHODS - Platform-wide operations
+
+	// ListAllUsers lists all users across all organizations (admin only)
+	ListAllUsers(ctx context.Context, limit, offset int, search, status string) ([]*model.UserAdminResponse, int, error)
+
+	// GetUserDetails gets detailed user information (admin only)
+	GetUserDetails(ctx context.Context, userID string) (*model.UserAdminResponse, error)
+
+	// SuspendUser suspends a user account (admin only)
+	SuspendUser(ctx context.Context, userID, reason string, duration *int, adminID string) error
+
+	// BanUser permanently bans a user (admin only)
+	BanUser(ctx context.Context, userID, reason, adminID string) error
+
+	// UnbanUser removes a ban from a user (admin only)
+	UnbanUser(ctx context.Context, userID, adminID string) error
+
+	// DeleteUser permanently deletes a user account (admin only)
+	DeleteUser(ctx context.Context, userID, adminID string) error
+
+	// GetSystemAnalytics gets system-wide analytics (admin only)
+	GetSystemAnalytics(ctx context.Context) (*model.SystemAnalytics, error)
+
+	// GetUserAnalytics gets user-related analytics (admin only)
+	GetUserAnalytics(ctx context.Context) (*model.UserAnalytics, error)
+
+	// GetContentAnalytics gets content-related analytics (admin only)
+	GetContentAnalytics(ctx context.Context) (*model.ContentAnalytics, error)
+
+	// GetAuditLogs gets audit logs (admin only)
+	GetAuditLogs(ctx context.Context, limit, offset int, userID, action, startDate, endDate string) ([]*model.AuditLogEntry, int, error)
+
+	// GetAuditEntry gets a specific audit log entry (admin only)
+	GetAuditEntry(ctx context.Context, entryID string) (*model.AuditLogEntry, error)
+
+	// GetSystemSettings gets system-wide settings (admin only)
+	GetSystemSettings(ctx context.Context) (*model.SystemSettings, error)
+
+	// UpdateSystemSettings updates system-wide settings (admin only)
+	UpdateSystemSettings(ctx context.Context, settings map[string]interface{}, adminID string) (*model.SystemSettings, error)
+
+	// BulkSuspendUsers suspends multiple users at once (admin only)
+	BulkSuspendUsers(ctx context.Context, userIDs []string, reason string, duration *int, adminID string) (*model.BulkOperationResult, error)
 }

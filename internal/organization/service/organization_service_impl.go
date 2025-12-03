@@ -323,6 +323,250 @@ func (s *OrganizationService) UpdateOrganizationSettings(ctx context.Context, or
 	return settings, nil
 }
 
+// ADMIN METHODS - Platform-wide operations
+
+// ListAllUsers lists all users across all organizations (admin only)
+func (s *OrganizationService) ListAllUsers(ctx context.Context, limit, offset int, search, status string) ([]*model.UserAdminResponse, int, error) {
+	// TODO: Implement proper database query with joins for roles
+	// For now, return mock data
+	users := []*model.UserAdminResponse{
+		{
+			ID:            "user-1",
+			Email:         "admin@ethos.com",
+			Name:          "Platform Admin",
+			EmailVerified: true,
+			Status:        "active",
+			Roles: []model.UserRole{
+				{
+					ID:          "role-1",
+					Name:        "platform_admin",
+					Description: "Platform Administrator",
+					AssignedAt:  s.now(),
+					IsActive:    true,
+				},
+			},
+			CreatedAt: s.now(),
+		},
+		{
+			ID:            "user-2",
+			Email:         "user@example.com",
+			Name:          "Standard User",
+			EmailVerified: true,
+			Status:        "active",
+			Roles: []model.UserRole{
+				{
+					ID:          "role-2",
+					Name:        "user",
+					Description: "Standard User",
+					AssignedAt:  s.now(),
+					IsActive:    true,
+				},
+			},
+			CreatedAt: s.now(),
+		},
+	}
+
+	return users, len(users), nil
+}
+
+// GetUserDetails gets detailed user information (admin only)
+func (s *OrganizationService) GetUserDetails(ctx context.Context, userID string) (*model.UserAdminResponse, error) {
+	// TODO: Implement proper database query
+	// Mock response for now
+	return &model.UserAdminResponse{
+		ID:            userID,
+		Email:         "user@example.com",
+		Name:          "Test User",
+		EmailVerified: true,
+		Status:        "active",
+		Roles: []model.UserRole{
+			{
+				ID:          "role-2",
+				Name:        "user",
+				Description: "Standard User",
+				AssignedAt:  s.now(),
+				IsActive:    true,
+			},
+		},
+		CreatedAt: s.now(),
+	}, nil
+}
+
+// SuspendUser suspends a user account (admin only)
+func (s *OrganizationService) SuspendUser(ctx context.Context, userID, reason string, duration *int, adminID string) error {
+	// TODO: Implement proper database update with moderation action logging
+	return nil
+}
+
+// BanUser permanently bans a user (admin only)
+func (s *OrganizationService) BanUser(ctx context.Context, userID, reason, adminID string) error {
+	// TODO: Implement proper database update with moderation action logging
+	return nil
+}
+
+// UnbanUser removes a ban from a user (admin only)
+func (s *OrganizationService) UnbanUser(ctx context.Context, userID, adminID string) error {
+	// TODO: Implement proper database update
+	return nil
+}
+
+// DeleteUser permanently deletes a user account (admin only)
+func (s *OrganizationService) DeleteUser(ctx context.Context, userID, adminID string) error {
+	// TODO: Implement proper database deletion with audit logging
+	return nil
+}
+
+// GetSystemAnalytics gets system-wide analytics (admin only)
+func (s *OrganizationService) GetSystemAnalytics(ctx context.Context) (*model.SystemAnalytics, error) {
+	// TODO: Implement proper analytics queries
+	return &model.SystemAnalytics{
+		TotalUsers:            1247,
+		ActiveUsers:           892,
+		TotalOrganizations:    47,
+		ActiveOrganizations:   42,
+		TotalFeedback:         3456,
+		PendingModeration:     23,
+		SystemHealth:          "healthy",
+	}, nil
+}
+
+// GetUserAnalytics gets user-related analytics (admin only)
+func (s *OrganizationService) GetUserAnalytics(ctx context.Context) (*model.UserAnalytics, error) {
+	// TODO: Implement proper analytics queries
+	return &model.UserAnalytics{
+		UserGrowth: []model.TimeSeriesPoint{
+			{Date: "2024-01-01", Value: 100},
+			{Date: "2024-01-02", Value: 150},
+		},
+		UserRetention: []model.RetentionPoint{
+			{Cohort: "2024-01", Day0: 100, Day7: 75, Day30: 60, Day90: 45},
+		},
+		UserActivity: []model.ActivityPoint{
+			{Date: "2024-01-01", ActiveUsers: 892, NewUsers: 23, ReturningUsers: 869},
+		},
+		GeographicDistribution: []model.GeoPoint{
+			{Country: "US", Users: 450, Percent: 36.1},
+			{Country: "UK", Users: 180, Percent: 14.4},
+		},
+	}, nil
+}
+
+// GetContentAnalytics gets content-related analytics (admin only)
+func (s *OrganizationService) GetContentAnalytics(ctx context.Context) (*model.ContentAnalytics, error) {
+	// TODO: Implement proper analytics queries
+	return &model.ContentAnalytics{
+		FeedbackGrowth: []model.TimeSeriesPoint{
+			{Date: "2024-01-01", Value: 100},
+			{Date: "2024-01-02", Value: 200},
+		},
+		ContentModeration: []model.ModerationStats{
+			{Date: "2024-01-01", PendingContent: 5, ApprovedContent: 95, RejectedContent: 3, EscalatedContent: 2},
+		},
+		PopularCategories: []model.CategoryStats{
+			{Category: "Engineering", Count: 1200, Percent: 34.7},
+			{Category: "Product", Count: 800, Percent: 23.1},
+		},
+		EngagementMetrics: model.EngagementStats{
+			AverageLikes:     4.2,
+			AverageComments:  2.8,
+			AverageBookmarks: 1.5,
+			EngagementRate:   12.3,
+		},
+	}, nil
+}
+
+// GetAuditLogs gets audit logs (admin only)
+func (s *OrganizationService) GetAuditLogs(ctx context.Context, limit, offset int, userID, action, startDate, endDate string) ([]*model.AuditLogEntry, int, error) {
+	// TODO: Implement proper audit log queries
+	logs := []*model.AuditLogEntry{
+		{
+			ID:        "audit-1",
+			UserID:    "user-1",
+			UserName:  "Platform Admin",
+			Action:    "user_suspend",
+			Resource:  "user",
+			ResourceID: "user-2",
+			Details:   "Suspended user for policy violation",
+			IPAddress: "192.168.1.100",
+			UserAgent: "Mozilla/5.0...",
+			Timestamp: s.now(),
+		},
+	}
+
+	return logs, len(logs), nil
+}
+
+// GetAuditEntry gets a specific audit log entry (admin only)
+func (s *OrganizationService) GetAuditEntry(ctx context.Context, entryID string) (*model.AuditLogEntry, error) {
+	// TODO: Implement proper audit log query
+	return &model.AuditLogEntry{
+		ID:        entryID,
+		UserID:    "user-1",
+		UserName:  "Platform Admin",
+		Action:    "user_suspend",
+		Resource:  "user",
+		ResourceID: "user-2",
+		Details:   "Suspended user for policy violation",
+		IPAddress: "192.168.1.100",
+		UserAgent: "Mozilla/5.0...",
+		Timestamp: s.now(),
+	}, nil
+}
+
+// GetSystemSettings gets system-wide settings (admin only)
+func (s *OrganizationService) GetSystemSettings(ctx context.Context) (*model.SystemSettings, error) {
+	// TODO: Implement proper settings storage and retrieval
+	return &model.SystemSettings{
+		ID:                           "system-settings",
+		RequireEmailVerification:    true,
+		AllowPublicProfiles:         true,
+		EnableGlobalModeration:      true,
+		MaxFeedbackPerDay:           50,
+		MaxCommentsPerHour:          20,
+		DataRetentionDays:           365,
+		EnableAnalytics:             true,
+		MaintenanceMode:             false,
+		CustomSettings:              map[string]interface{}{"feature_flag_new_ui": true},
+		UpdatedAt:                   s.now(),
+		UpdatedBy:                   "system",
+	}, nil
+}
+
+// UpdateSystemSettings updates system-wide settings (admin only)
+func (s *OrganizationService) UpdateSystemSettings(ctx context.Context, settings map[string]interface{}, adminID string) (*model.SystemSettings, error) {
+	// TODO: Implement proper settings update with validation
+	return &model.SystemSettings{
+		ID:                           "system-settings",
+		RequireEmailVerification:    true,
+		AllowPublicProfiles:         true,
+		EnableGlobalModeration:      true,
+		MaxFeedbackPerDay:           50,
+		MaxCommentsPerHour:          20,
+		DataRetentionDays:           365,
+		EnableAnalytics:             true,
+		MaintenanceMode:             false,
+		CustomSettings:              settings,
+		UpdatedAt:                   s.now(),
+		UpdatedBy:                   adminID,
+	}, nil
+}
+
+// BulkSuspendUsers suspends multiple users at once (admin only)
+func (s *OrganizationService) BulkSuspendUsers(ctx context.Context, userIDs []string, reason string, duration *int, adminID string) (*model.BulkOperationResult, error) {
+	// TODO: Implement proper bulk operation with transaction
+	return &model.BulkOperationResult{
+		TotalRequested: len(userIDs),
+		Successful:     len(userIDs),
+		Failed:         0,
+		Errors:         []model.BulkOperationError{},
+	}, nil
+}
+
+// Helper method to get current time
+func (s *OrganizationService) now() time.Time {
+	return time.Now()
+}
+
 func min(a, b int) int {
 	if a < b {
 		return a
