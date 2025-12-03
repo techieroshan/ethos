@@ -116,3 +116,27 @@ type ModerationHistoryResponse struct {
 	PerformerName  string    `json:"performer_name"`
 	CreatedAt      time.Time `json:"created_at"`
 }
+// ORGANIZATION ADMIN MODERATION MODELS
+
+// PendingContentItem represents a content item pending moderation
+type PendingContentItem struct {
+	ID          string `json:"id"`
+	Type        string `json:"type"` // feedback, comment
+	AuthorID    string `json:"author_id"`
+	AuthorName  string `json:"author_name"`
+	Content     string `json:"content"`
+	SubmittedAt time.Time `json:"submitted_at"`
+	Flags       []string `json:"flags"` // spam, harassment, inappropriate, etc.
+	Priority    string `json:"priority"` // low, medium, high
+}
+
+// OrganizationModerationStats represents moderation statistics for an organization
+type OrganizationModerationStats struct {
+	TotalModerated     int64 `json:"total_moderated"`
+	PendingContent     int64 `json:"pending_content"`
+	ApprovedContent    int64 `json:"approved_content"`
+	RejectedContent    int64 `json:"rejected_content"`
+	EscalatedContent   int64 `json:"escalated_content"`
+	AverageReviewTime  float64 `json:"average_review_time_hours"`
+	ModeratorWorkload  int64 `json:"moderator_workload"`
+}

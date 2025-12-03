@@ -697,3 +697,449 @@ func (h *OrganizationHandler) BulkSuspendUsers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+
+// ORGANIZATION ADMIN METHODS - Organization-specific admin operations
+
+// GetOrganizationAnalytics handles GET /api/v1/organizations/:org_id/admin/analytics/overview
+func (h *OrganizationHandler) GetOrganizationAnalytics(c *gin.Context) {
+	orgID := c.Param("org_id")
+
+	analytics, err := h.service.GetOrganizationAnalytics(c.Request.Context(), orgID)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get organization analytics",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, analytics)
+}
+
+// GetOrganizationUserAnalytics handles GET /api/v1/organizations/:org_id/admin/analytics/users
+func (h *OrganizationHandler) GetOrganizationUserAnalytics(c *gin.Context) {
+	orgID := c.Param("org_id")
+
+	analytics, err := h.service.GetOrganizationUserAnalytics(c.Request.Context(), orgID)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get organization user analytics",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, analytics)
+}
+
+// GetOrganizationContentAnalytics handles GET /api/v1/organizations/:org_id/admin/analytics/content
+func (h *OrganizationHandler) GetOrganizationContentAnalytics(c *gin.Context) {
+	orgID := c.Param("org_id")
+
+	analytics, err := h.service.GetOrganizationContentAnalytics(c.Request.Context(), orgID)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get organization content analytics",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, analytics)
+}
+
+// ListOrganizationUsers handles GET /api/v1/organizations/:org_id/admin/users
+func (h *OrganizationHandler) ListOrganizationUsers(c *gin.Context) {
+	orgID := c.Param("org_id")
+	limit := 50
+	offset := 0
+	search := c.Query("search")
+	status := c.Query("status")
+
+	if l := c.Query("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 200 {
+			limit = parsed
+		}
+	}
+
+	if o := c.Query("offset"); o != "" {
+		if parsed, err := strconv.Atoi(o); err == nil && parsed >= 0 {
+			offset = parsed
+		}
+	}
+
+	users, total, err := h.service.ListOrganizationUsers(c.Request.Context(), orgID, limit, offset, search, status)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to list organization users",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"users": users,
+		"total": total,
+		"limit": limit,
+		"offset": offset,
+	})
+}
+
+// SuspendOrganizationUser handles POST /api/v1/organizations/:org_id/admin/users/:user_id/suspend
+func (h *OrganizationHandler) SuspendOrganizationUser(c *gin.Context) {
+	orgID := c.Param("org_id")
+	userID := c.Param("user_id")
+
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	var req struct {
+		Reason  string `json:"reason" binding:"required"`
+		Duration *int  `json:"duration,omitempty"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	// Get admin user ID from context
+	adminID, _ := c.Get("user_id")
+
+	err := h.service.SuspendOrganizationUser(c.Request.Context(), orgID, userID, req.Reason, req.Duration, adminID.(string))
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to suspend organization user",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User suspended successfully"})
+}
+
+// UnsuspendOrganizationUser handles POST /api/v1/organizations/:org_id/admin/users/:user_id/unsuspend
+func (h *OrganizationHandler) UnsuspendOrganizationUser(c *gin.Context) {
+	orgID := c.Param("org_id")
+	userID := c.Param("user_id")
+
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	// Get admin user ID from context
+	adminID, _ := c.Get("user_id")
+
+	err := h.service.UnsuspendOrganizationUser(c.Request.Context(), orgID, userID, adminID.(string))
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to unsuspend organization user",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User unsuspended successfully"})
+}
+
+// RemoveOrganizationUser handles DELETE /api/v1/organizations/:org_id/admin/users/:user_id
+func (h *OrganizationHandler) RemoveOrganizationUser(c *gin.Context) {
+	orgID := c.Param("org_id")
+	userID := c.Param("user_id")
+
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User ID is required",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	// Get admin user ID from context
+	adminID, _ := c.Get("user_id")
+
+	err := h.service.RemoveOrganizationUser(c.Request.Context(), orgID, userID, adminID.(string))
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to remove organization user",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User removed from organization successfully"})
+}
+
+// GetOrganizationAuditLogs handles GET /api/v1/organizations/:org_id/admin/audit
+func (h *OrganizationHandler) GetOrganizationAuditLogs(c *gin.Context) {
+	orgID := c.Param("org_id")
+	limit := 100
+	offset := 0
+	userID := c.Query("user_id")
+	action := c.Query("action")
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+
+	if l := c.Query("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 1000 {
+			limit = parsed
+		}
+	}
+
+	if o := c.Query("offset"); o != "" {
+		if parsed, err := strconv.Atoi(o); err == nil && parsed >= 0 {
+			offset = parsed
+		}
+	}
+
+	logs, total, err := h.service.GetOrganizationAuditLogs(c.Request.Context(), orgID, limit, offset, userID, action, startDate, endDate)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get organization audit logs",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"logs":  logs,
+		"total": total,
+		"limit": limit,
+		"offset": offset,
+	})
+}
+
+// ExportOrganizationAuditLogs handles GET /api/v1/organizations/:org_id/admin/audit/export
+func (h *OrganizationHandler) ExportOrganizationAuditLogs(c *gin.Context) {
+	orgID := c.Param("org_id")
+	format := c.Query("format") // csv, json, pdf
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+
+	if format == "" {
+		format = "csv"
+	}
+
+	data, filename, err := h.service.ExportOrganizationAuditLogs(c.Request.Context(), orgID, format, startDate, endDate)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to export organization audit logs",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	// Set appropriate headers for file download
+	contentType := "text/csv"
+	if format == "json" {
+		contentType = "application/json"
+	} else if format == "pdf" {
+		contentType = "application/pdf"
+	}
+
+	c.Header("Content-Disposition", "attachment; filename="+filename)
+	c.Header("Content-Type", contentType)
+	c.Data(http.StatusOK, contentType, data)
+}
+
+// ListOrganizationIncidents handles GET /api/v1/organizations/:org_id/admin/incidents
+func (h *OrganizationHandler) ListOrganizationIncidents(c *gin.Context) {
+	orgID := c.Param("org_id")
+	limit := 50
+	offset := 0
+	status := c.Query("status")
+	priority := c.Query("priority")
+
+	if l := c.Query("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 200 {
+			limit = parsed
+		}
+	}
+
+	if o := c.Query("offset"); o != "" {
+		if parsed, err := strconv.Atoi(o); err == nil && parsed >= 0 {
+			offset = parsed
+		}
+	}
+
+	incidents, total, err := h.service.ListOrganizationIncidents(c.Request.Context(), orgID, limit, offset, status, priority)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to list organization incidents",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"incidents": incidents,
+		"total":     total,
+		"limit":     limit,
+		"offset":    offset,
+	})
+}
+
+// CreateOrganizationIncident handles POST /api/v1/organizations/:org_id/admin/incidents
+func (h *OrganizationHandler) CreateOrganizationIncident(c *gin.Context) {
+	orgID := c.Param("org_id")
+
+	var req struct {
+		Title       string `json:"title" binding:"required"`
+		Description string `json:"description" binding:"required"`
+		Priority    string `json:"priority" binding:"required,oneof=low medium high critical"`
+		Category    string `json:"category" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	// Get admin user ID from context
+	adminID, _ := c.Get("user_id")
+
+	incident, err := h.service.CreateOrganizationIncident(c.Request.Context(), orgID, req.Title, req.Description, req.Priority, req.Category, adminID.(string))
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to create organization incident",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, incident)
+}
+
+// UpdateOrganizationIncident handles PUT /api/v1/organizations/:org_id/admin/incidents/:incident_id
+func (h *OrganizationHandler) UpdateOrganizationIncident(c *gin.Context) {
+	orgID := c.Param("org_id")
+	incidentID := c.Param("incident_id")
+
+	var req struct {
+		Status      *string `json:"status,omitempty"`
+		Priority    *string `json:"priority,omitempty"`
+		AssignedTo  *string `json:"assigned_to,omitempty"`
+		Resolution  *string `json:"resolution,omitempty"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	// Get admin user ID from context
+	adminID, _ := c.Get("user_id")
+
+	incident, err := h.service.UpdateOrganizationIncident(c.Request.Context(), orgID, incidentID, req.Status, req.Priority, req.AssignedTo, req.Resolution, adminID.(string))
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to update organization incident",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, incident)
+}

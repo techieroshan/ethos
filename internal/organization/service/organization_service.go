@@ -87,4 +87,43 @@ type Service interface {
 
 	// BulkSuspendUsers suspends multiple users at once (admin only)
 	BulkSuspendUsers(ctx context.Context, userIDs []string, reason string, duration *int, adminID string) (*model.BulkOperationResult, error)
+
+	// UpdateOrganizationIncident updates an incident for a specific organization (org admin only)
+	UpdateOrganizationIncident(ctx context.Context, orgID, incidentID string, status, priority, assignedTo, resolution *string, updatedBy string) (*model.OrganizationIncident, error)
+
+	// ORGANIZATION ADMIN METHODS
+	// GetOrganizationAnalytics gets analytics for a specific organization (org admin only)
+	GetOrganizationAnalytics(ctx context.Context, orgID string) (*model.OrganizationAnalytics, error)
+
+	// GetOrganizationUserAnalytics gets user analytics for a specific organization (org admin only)
+	GetOrganizationUserAnalytics(ctx context.Context, orgID string) (*model.OrganizationUserAnalytics, error)
+
+	// GetOrganizationContentAnalytics gets content analytics for a specific organization (org admin only)
+	GetOrganizationContentAnalytics(ctx context.Context, orgID string) (*model.OrganizationContentAnalytics, error)
+
+	// ListOrganizationUsers lists all users in an organization (org admin only)
+	ListOrganizationUsers(ctx context.Context, orgID string, limit, offset int, search, status string) ([]*model.OrganizationUser, int, error)
+
+	// SuspendOrganizationUser suspends a user within an organization (org admin only)
+	SuspendOrganizationUser(ctx context.Context, orgID, userID, reason string, duration *int, adminID string) error
+
+	// UnsuspendOrganizationUser unsuspends a user within an organization (org admin only)
+	UnsuspendOrganizationUser(ctx context.Context, orgID, userID, adminID string) error
+
+	// RemoveOrganizationUser removes a user from an organization (org admin only)
+	RemoveOrganizationUser(ctx context.Context, orgID, userID, adminID string) error
+
+	// GetOrganizationAuditLogs gets audit logs for a specific organization (org admin only)
+	GetOrganizationAuditLogs(ctx context.Context, orgID string, limit, offset int, userID, action, startDate, endDate string) ([]*model.OrganizationAuditEntry, int, error)
+
+	// ExportOrganizationAuditLogs exports audit logs for a specific organization (org admin only)
+	ExportOrganizationAuditLogs(ctx context.Context, orgID, format, startDate, endDate string) ([]byte, string, error)
+
+	// ListOrganizationIncidents lists incidents for a specific organization (org admin only)
+	ListOrganizationIncidents(ctx context.Context, orgID string, limit, offset int, status, priority string) ([]*model.OrganizationIncident, int, error)
+
+	// CreateOrganizationIncident creates a new incident for a specific organization (org admin only)
+	CreateOrganizationIncident(ctx context.Context, orgID, title, description, priority, category, createdBy string) (*model.OrganizationIncident, error)
+
+	// UpdateOrganizationIncident updates an incident for a specific organization (org admin only)
 }

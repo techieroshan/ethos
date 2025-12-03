@@ -382,3 +382,91 @@ func (h *ModerationHandler) BulkDeleteContent(c *gin.Context) {
 		"successful":       len(req.ContentIDs),
 	})
 }
+
+// ORGANIZATION ADMIN MODERATION METHODS
+
+// ListOrganizationPendingContent handles GET /api/v1/organizations/:org_id/admin/moderation/pending
+func (h *ModerationHandler) ListOrganizationPendingContent(c *gin.Context) {
+	orgID := c.Param("org_id")
+	limit := 50
+	offset := 0
+	contentType := c.Query("type")
+
+	if l := c.Query("limit"); l != "" {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 200 {
+			limit = parsed
+		}
+	}
+
+	if o := c.Query("offset"); o != "" {
+		if parsed, err := strconv.Atoi(o); err == nil && parsed >= 0 {
+			offset = parsed
+		}
+	}
+
+	content, total, err := h.service.ListOrganizationPendingContent(c.Request.Context(), orgID, limit, offset, contentType)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to list organization pending content",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"content": content,
+		"total":   total,
+		"limit":   limit,
+		"offset":  offset,
+	})
+}
+
+// ReviewOrganizationContent handles POST /api/v1/organizations/:org_id/admin/moderation/:content_id/review
+func (h *ModerationHandler) ReviewOrganizationContent(c *gin.Context) {
+	orgID := c.Param("org_id")
+	contentID := c.Param("content_id")
+
+	var req struct {
+		Action   string `json:"action" binding:"required,oneof=approve reject escalate"`
+		Reason   string `json:"reason"`
+		Escalate bool   `json:"escalate"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid request body",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	// Get admin user ID from context
+	adminID, _ := c.Get("user_id")
+
+	err := h.service.ReviewOrganizationContent(c.Request.Context(), orgID, contentID, req.Action, req.Reason, req.Escalate, adminID.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to review organization content",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Content reviewed successfully"})
+}
+
+// GetOrganizationModerationStats handles GET /api/v1/organizations/:org_id/admin/moderation/stats
+func (h *ModerationHandler) GetOrganizationModerationStats(c *gin.Context) {
+	orgID := c.Param("org_id")
+
+	stats, err := h.service.GetOrganizationModerationStats(c.Request.Context(), orgID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to get organization moderation stats",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
+}

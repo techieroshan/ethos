@@ -259,3 +259,79 @@ type BulkOperationError struct {
 	UserID string `json:"user_id"`
 	Error  string `json:"error"`
 }
+// ORGANIZATION ADMIN MODELS
+
+// OrganizationAnalytics represents organization-specific analytics
+type OrganizationAnalytics struct {
+	TotalUsers       int64 `json:"total_users"`
+	ActiveUsers      int64 `json:"active_users"`
+	TotalFeedback    int64 `json:"total_feedback"`
+	PendingModeration int64 `json:"pending_moderation"`
+	OpenIncidents    int64 `json:"open_incidents"`
+	UserGrowth       []TimeSeriesPoint `json:"user_growth"`
+	ActivityLevel    string `json:"activity_level"` // low, medium, high
+}
+
+// OrganizationUserAnalytics represents organization user analytics
+type OrganizationUserAnalytics struct {
+	UserRetention      []RetentionPoint  `json:"user_retention"`
+	UserActivity       []ActivityPoint   `json:"user_activity"`
+	RoleDistribution   []RoleStats       `json:"role_distribution"`
+	EngagementMetrics  EngagementStats   `json:"engagement_metrics"`
+}
+
+// OrganizationContentAnalytics represents organization content analytics
+type OrganizationContentAnalytics struct {
+	ContentGrowth      []TimeSeriesPoint `json:"content_growth"`
+	ContentModeration  []ModerationStats `json:"content_moderation"`
+	PopularCategories  []CategoryStats   `json:"popular_categories"`
+	EngagementRate     float64           `json:"engagement_rate"`
+}
+
+// OrganizationUser represents a user within an organization context
+type OrganizationUser struct {
+	UserID      string    `json:"user_id"`
+	Name        string    `json:"name"`
+	Email       string    `json:"email"`
+	Role        string    `json:"role"`
+	Status      string    `json:"status"` // active, suspended, invited
+	JoinedAt    time.Time `json:"joined_at"`
+	LastActive  *time.Time `json:"last_active,omitempty"`
+	FeedbackCount int64   `json:"feedback_count"`
+}
+
+// OrganizationAuditEntry represents an audit entry for organization actions
+type OrganizationAuditEntry struct {
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	UserName  string    `json:"user_name"`
+	Action    string    `json:"action"`
+	Resource  string    `json:"resource"`
+	ResourceID string   `json:"resource_id"`
+	Details   string    `json:"details"`
+	IPAddress string    `json:"ip_address"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// OrganizationIncident represents an incident within an organization
+type OrganizationIncident struct {
+	ID          string     `json:"id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Status      string     `json:"status"` // open, investigating, resolved, closed
+	Priority    string     `json:"priority"` // low, medium, high, critical
+	Category    string     `json:"category"`
+	AssignedTo  *string    `json:"assigned_to,omitempty"`
+	CreatedBy   string     `json:"created_by"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+	ResolvedAt  *time.Time `json:"resolved_at,omitempty"`
+	Resolution  *string    `json:"resolution,omitempty"`
+}
+
+// RoleStats represents role distribution statistics
+type RoleStats struct {
+	Role  string  `json:"role"`
+	Count int64   `json:"count"`
+	Percent float64 `json:"percent"`
+}

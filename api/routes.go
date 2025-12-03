@@ -76,6 +76,36 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 			organizations.GET("/:org_id/settings", organizationHandler.GetOrganizationSettings)
 			organizations.PUT("/:org_id/settings", organizationHandler.UpdateOrganizationSettings)
 
+			// Organization Admin Routes (require org_admin role)
+			orgAdmin := organizations.Group("/:org_id/admin")
+			orgAdmin.Use(middleware.OrgAdminMiddleware(tokenGen)) // Organization admin only
+			{
+				// Organization Analytics
+				orgAdmin.GET("/analytics/overview", organizationHandler.GetOrganizationAnalytics)
+				orgAdmin.GET("/analytics/users", organizationHandler.GetOrganizationUserAnalytics)
+				orgAdmin.GET("/analytics/content", organizationHandler.GetOrganizationContentAnalytics)
+
+				// Organization User Management
+				orgAdmin.GET("/users", organizationHandler.ListOrganizationUsers)
+				orgAdmin.POST("/users/:user_id/suspend", organizationHandler.SuspendOrganizationUser)
+				orgAdmin.POST("/users/:user_id/unsuspend", organizationHandler.UnsuspendOrganizationUser)
+				orgAdmin.DELETE("/users/:user_id", organizationHandler.RemoveOrganizationUser)
+
+				// Organization Content Moderation
+				orgAdmin.GET("/moderation/pending", moderationHandler.ListOrganizationPendingContent)
+				orgAdmin.POST("/moderation/:content_id/review", moderationHandler.ReviewOrganizationContent)
+				orgAdmin.GET("/moderation/stats", moderationHandler.GetOrganizationModerationStats)
+
+				// Organization Audit & Compliance
+				orgAdmin.GET("/audit", organizationHandler.GetOrganizationAuditLogs)
+				orgAdmin.GET("/audit/export", organizationHandler.ExportOrganizationAuditLogs)
+
+				// Organization Incident Management
+				orgAdmin.GET("/incidents", organizationHandler.ListOrganizationIncidents)
+				orgAdmin.POST("/incidents", organizationHandler.CreateOrganizationIncident)
+				orgAdmin.PUT("/incidents/:incident_id", organizationHandler.UpdateOrganizationIncident)
+			}
+
 			// Moderation routes nested under organizations
 			moderation := organizations.Group("/:org_id/moderation")
 			{

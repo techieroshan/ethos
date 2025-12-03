@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	authModel "ethos/internal/auth/model"
 	"ethos/internal/moderation/model"
@@ -104,4 +105,45 @@ func (s *ModerationService) GetModerationHistory(ctx context.Context, orgID, use
 // GetModerationContext retrieves moderation context for an item
 func (s *ModerationService) GetModerationContext(ctx context.Context, itemID, itemType string) (*model.ModerationContext, error) {
 	return s.repo.GetModerationContext(ctx, itemID, itemType)
+}
+
+// ORGANIZATION ADMIN MODERATION METHODS
+
+// ListOrganizationPendingContent lists pending content for moderation in an organization (org admin only)
+func (s *ModerationService) ListOrganizationPendingContent(ctx context.Context, orgID string, limit, offset int, contentType string) ([]*model.PendingContentItem, int, error) {
+	// TODO: Implement proper database queries with organization filtering
+	content := []*model.PendingContentItem{
+		{
+			ID:          "content-1",
+			Type:        "feedback",
+			AuthorID:    "user-1",
+			AuthorName:  "John Doe",
+			Content:     "This is potentially inappropriate content...",
+			SubmittedAt: time.Now().Add(-time.Hour),
+			Flags:       []string{"inappropriate", "spam"},
+			Priority:    "medium",
+		},
+	}
+
+	return content, len(content), nil
+}
+
+// ReviewOrganizationContent reviews content in an organization (org admin only)
+func (s *ModerationService) ReviewOrganizationContent(ctx context.Context, orgID, contentID, action, reason string, escalate bool, adminID string) error {
+	// TODO: Implement proper content review logic with audit logging
+	return nil
+}
+
+// GetOrganizationModerationStats gets moderation statistics for an organization (org admin only)
+func (s *ModerationService) GetOrganizationModerationStats(ctx context.Context, orgID string) (*model.OrganizationModerationStats, error) {
+	// TODO: Implement proper statistics queries
+	return &model.OrganizationModerationStats{
+		TotalModerated:    245,
+		PendingContent:    3,
+		ApprovedContent:   220,
+		RejectedContent:   20,
+		EscalatedContent:  5,
+		AverageReviewTime: 2.3,
+		ModeratorWorkload: 15,
+	}, nil
 }

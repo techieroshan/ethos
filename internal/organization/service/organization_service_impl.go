@@ -573,3 +573,212 @@ func min(a, b int) int {
 	}
 	return b
 }
+// ORGANIZATION ADMIN METHODS - Implementation
+
+// GetOrganizationAnalytics gets analytics for a specific organization (org admin only)
+func (s *OrganizationService) GetOrganizationAnalytics(ctx context.Context, orgID string) (*model.OrganizationAnalytics, error) {
+	// TODO: Implement proper analytics queries
+	return &model.OrganizationAnalytics{
+		TotalUsers:        25,
+		ActiveUsers:       18,
+		TotalFeedback:     156,
+		PendingModeration: 3,
+		OpenIncidents:     1,
+		UserGrowth: []model.TimeSeriesPoint{
+			{Date: "2024-01-01", Value: 20},
+			{Date: "2024-01-02", Value: 25},
+		},
+		ActivityLevel: "high",
+	}, nil
+}
+
+// GetOrganizationUserAnalytics gets user analytics for a specific organization (org admin only)
+func (s *OrganizationService) GetOrganizationUserAnalytics(ctx context.Context, orgID string) (*model.OrganizationUserAnalytics, error) {
+	// TODO: Implement proper analytics queries
+	return &model.OrganizationUserAnalytics{
+		UserRetention: []model.RetentionPoint{
+			{Cohort: "2024-01", Day0: 100, Day7: 85, Day30: 70, Day90: 55},
+		},
+		UserActivity: []model.ActivityPoint{
+			{Date: "2024-01-01", ActiveUsers: 18, NewUsers: 2, ReturningUsers: 16},
+		},
+		RoleDistribution: []model.RoleStats{
+			{Role: "user", Count: 20, Percent: 80.0},
+			{Role: "moderator", Count: 3, Percent: 12.0},
+			{Role: "admin", Count: 2, Percent: 8.0},
+		},
+		EngagementMetrics: model.EngagementStats{
+			AverageLikes:     3.2,
+			AverageComments:  1.8,
+			AverageBookmarks: 0.9,
+			EngagementRate:   8.5,
+		},
+	}, nil
+}
+
+// GetOrganizationContentAnalytics gets content analytics for a specific organization (org admin only)
+func (s *OrganizationService) GetOrganizationContentAnalytics(ctx context.Context, orgID string) (*model.OrganizationContentAnalytics, error) {
+	// TODO: Implement proper analytics queries
+	return &model.OrganizationContentAnalytics{
+		ContentGrowth: []model.TimeSeriesPoint{
+			{Date: "2024-01-01", Value: 50},
+			{Date: "2024-01-02", Value: 75},
+		},
+		ContentModeration: []model.ModerationStats{
+			{Date: "2024-01-01", PendingContent: 2, ApprovedContent: 48, RejectedContent: 1, EscalatedContent: 0},
+		},
+		PopularCategories: []model.CategoryStats{
+			{Category: "Engineering", Count: 45, Percent: 60.0},
+			{Category: "Product", Count: 20, Percent: 26.7},
+			{Category: "Design", Count: 10, Percent: 13.3},
+		},
+		EngagementRate: 8.5,
+	}, nil
+}
+
+// ListOrganizationUsers lists all users in an organization (org admin only)
+func (s *OrganizationService) ListOrganizationUsers(ctx context.Context, orgID string, limit, offset int, search, status string) ([]*model.OrganizationUser, int, error) {
+	// TODO: Implement proper database queries
+	users := []*model.OrganizationUser{
+		{
+			UserID:        "user-1",
+			Name:          "John Doe",
+			Email:         "john@company.com",
+			Role:          "user",
+			Status:        "active",
+			JoinedAt:      s.now(),
+			LastActive:    &[]time.Time{s.now()}[0],
+			FeedbackCount: 12,
+		},
+		{
+			UserID:        "user-2",
+			Name:          "Jane Smith",
+			Email:         "jane@company.com",
+			Role:          "moderator",
+			Status:        "active",
+			JoinedAt:      s.now(),
+			LastActive:    &[]time.Time{s.now()}[0],
+			FeedbackCount: 8,
+		},
+	}
+
+	return users, len(users), nil
+}
+
+// SuspendOrganizationUser suspends a user within an organization (org admin only)
+func (s *OrganizationService) SuspendOrganizationUser(ctx context.Context, orgID, userID, reason string, duration *int, adminID string) error {
+	// TODO: Implement proper suspension logic with moderation actions
+	return nil
+}
+
+// UnsuspendOrganizationUser unsuspends a user within an organization (org admin only)
+func (s *OrganizationService) UnsuspendOrganizationUser(ctx context.Context, orgID, userID, adminID string) error {
+	// TODO: Implement proper unsuspension logic
+	return nil
+}
+
+// RemoveOrganizationUser removes a user from an organization (org admin only)
+func (s *OrganizationService) RemoveOrganizationUser(ctx context.Context, orgID, userID, adminID string) error {
+	// TODO: Implement proper user removal with audit logging
+	return nil
+}
+
+// GetOrganizationAuditLogs gets audit logs for a specific organization (org admin only)
+func (s *OrganizationService) GetOrganizationAuditLogs(ctx context.Context, orgID string, limit, offset int, userID, action, startDate, endDate string) ([]*model.OrganizationAuditEntry, int, error) {
+	// TODO: Implement proper audit log queries
+	logs := []*model.OrganizationAuditEntry{
+		{
+			ID:        "audit-1",
+			UserID:    "user-1",
+			UserName:  "John Doe",
+			Action:    "feedback_created",
+			Resource:  "feedback",
+			ResourceID: "feedback-123",
+			Details:   "Created new feedback item",
+			IPAddress: "192.168.1.100",
+			Timestamp: s.now(),
+		},
+	}
+
+	return logs, len(logs), nil
+}
+
+// ExportOrganizationAuditLogs exports audit logs for a specific organization (org admin only)
+func (s *OrganizationService) ExportOrganizationAuditLogs(ctx context.Context, orgID, format, startDate, endDate string) ([]byte, string, error) {
+	// TODO: Implement proper export functionality
+	filename := "org-audit-" + orgID + "-" + s.now().Format("2006-01-02") + "." + format
+
+	if format == "csv" {
+		csvData := "ID,User,Action,Timestamp\n" +
+			"audit-1,John Doe,feedback_created," + s.now().Format("2006-01-02 15:04:05") + "\n"
+		return []byte(csvData), filename, nil
+	} else if format == "json" {
+		jsonData := `[{"id":"audit-1","user":"John Doe","action":"feedback_created"}]`
+		return []byte(jsonData), filename, nil
+	}
+
+	return []byte("Export data"), filename, nil
+}
+
+// ListOrganizationIncidents lists incidents for a specific organization (org admin only)
+func (s *OrganizationService) ListOrganizationIncidents(ctx context.Context, orgID string, limit, offset int, status, priority string) ([]*model.OrganizationIncident, int, error) {
+	// TODO: Implement proper incident queries
+	incidents := []*model.OrganizationIncident{
+		{
+			ID:          "incident-1",
+			Title:       "User reported harassment",
+			Description: "User reported receiving harassing feedback",
+			Status:      "investigating",
+			Priority:    "high",
+			Category:    "harassment",
+			AssignedTo:  &[]string{"moderator-1"}[0],
+			CreatedBy:   "user-1",
+			CreatedAt:   s.now(),
+			UpdatedAt:   s.now(),
+		},
+	}
+
+	return incidents, len(incidents), nil
+}
+
+// CreateOrganizationIncident creates a new incident for a specific organization (org admin only)
+func (s *OrganizationService) CreateOrganizationIncident(ctx context.Context, orgID, title, description, priority, category, createdBy string) (*model.OrganizationIncident, error) {
+	// TODO: Implement proper incident creation
+	return &model.OrganizationIncident{
+		ID:          "incident-" + s.now().Format("20060102150405"),
+		Title:       title,
+		Description: description,
+		Status:      "open",
+		Priority:    priority,
+		Category:    category,
+		CreatedBy:   createdBy,
+		CreatedAt:   s.now(),
+		UpdatedAt:   s.now(),
+	}, nil
+}
+
+// UpdateOrganizationIncident updates an incident for a specific organization (org admin only)
+func (s *OrganizationService) UpdateOrganizationIncident(ctx context.Context, orgID, incidentID string, status, priority, assignedTo, resolution *string, updatedBy string) (*model.OrganizationIncident, error) {
+	// TODO: Implement proper incident updates
+	incident := &model.OrganizationIncident{
+		ID:        incidentID,
+		UpdatedAt: s.now(),
+	}
+
+	if status != nil {
+		incident.Status = *status
+	}
+	if priority != nil {
+		incident.Priority = *priority
+	}
+	if assignedTo != nil {
+		incident.AssignedTo = assignedTo
+	}
+	if resolution != nil {
+		incident.Resolution = resolution
+		now := s.now()
+		incident.ResolvedAt = &now
+	}
+
+	return incident, nil
+}

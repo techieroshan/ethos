@@ -37,4 +37,15 @@ type Service interface {
 	// Context-related methods
 	// GetModerationContext retrieves moderation context for an item
 	GetModerationContext(ctx context.Context, itemID, itemType string) (*model.ModerationContext, error)
+
+	// ORGANIZATION ADMIN MODERATION METHODS
+
+	// ListOrganizationPendingContent lists pending content for moderation in an organization (org admin only)
+	ListOrganizationPendingContent(ctx context.Context, orgID string, limit, offset int, contentType string) ([]*model.PendingContentItem, int, error)
+
+	// ReviewOrganizationContent reviews content in an organization (org admin only)
+	ReviewOrganizationContent(ctx context.Context, orgID, contentID, action, reason string, escalate bool, adminID string) error
+
+	// GetOrganizationModerationStats gets moderation statistics for an organization (org admin only)
+	GetOrganizationModerationStats(ctx context.Context, orgID string) (*model.OrganizationModerationStats, error)
 }
