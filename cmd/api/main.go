@@ -170,7 +170,7 @@ func main() {
 	orgHandler := organizationHandler.NewOrganizationHandler(orgSvc)
 
 	// Setup router
-	router := gin.Default()
+	router := gin.New()
 	api.SetupMiddleware(router)
 	api.SetupRoutes(router, authHandler, profileHandler, feedbackHandler, notificationHandler, dashboardHandler, orgHandler, peopleHandler, communityHandler, accountHandler, moderationHandler, tokenGen)
 
