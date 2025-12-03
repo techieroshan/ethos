@@ -1,0 +1,109 @@
+{
+  "Comment": "Ethos Platform CDN Configuration",
+  "CallerReference": "ethos-platform-cdn-2024",
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "ethos-static-origin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "AllowedMethods": ["GET", "HEAD", "OPTIONS"],
+    "Compress": true,
+    "ForwardedValues": {
+      "QueryString": false,
+      "Cookies": {
+        "Forward": "none"
+      }
+    },
+    "MinTTL": 0,
+    "DefaultTTL": 86400,
+    "MaxTTL": 31536000,
+    "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+  },
+  "CacheBehaviors": [
+    {
+      "PathPattern": "/api/*",
+      "TargetOriginId": "ethos-api-origin",
+      "ViewerProtocolPolicy": "https-only",
+      "AllowedMethods": ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"],
+      "Compress": true,
+      "ForwardedValues": {
+        "QueryString": true,
+        "Cookies": {
+          "Forward": "all"
+        },
+        "Headers": ["Authorization", "X-Tenant-ID", "X-Requested-With"]
+      },
+      "MinTTL": 0,
+      "DefaultTTL": 0,
+      "MaxTTL": 0,
+      "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    },
+    {
+      "PathPattern": "/static/*",
+      "TargetOriginId": "ethos-static-origin",
+      "ViewerProtocolPolicy": "redirect-to-https",
+      "AllowedMethods": ["GET", "HEAD", "OPTIONS"],
+      "Compress": true,
+      "ForwardedValues": {
+        "QueryString": true,
+        "Cookies": {
+          "Forward": "none"
+        }
+      },
+      "MinTTL": 86400,
+      "DefaultTTL": 604800,
+      "MaxTTL": 31536000,
+      "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    },
+    {
+      "PathPattern": "/assets/*",
+      "TargetOriginId": "ethos-static-origin",
+      "ViewerProtocolPolicy": "redirect-to-https",
+      "AllowedMethods": ["GET", "HEAD", "OPTIONS"],
+      "Compress": true,
+      "ForwardedValues": {
+        "QueryString": true,
+        "Cookies": {
+          "Forward": "none"
+        }
+      },
+      "MinTTL": 31536000,
+      "DefaultTTL": 31536000,
+      "MaxTTL": 31536000,
+      "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+    }
+  ],
+  "Origins": {
+    "Quantity": 2,
+    "Items": [
+      {
+        "Id": "ethos-static-origin",
+        "DomainName": "ethos-static.your-domain.com",
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "https-only",
+          "OriginReadTimeout": 30,
+          "OriginKeepaliveTimeout": 5
+        }
+      },
+      {
+        "Id": "ethos-api-origin",
+        "DomainName": "api.your-domain.com",
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "https-only",
+          "OriginReadTimeout": 60,
+          "OriginKeepaliveTimeout": 5
+        }
+      }
+    ]
+  },
+  "Enabled": true,
+  "Aliases": {
+    "Quantity": 2,
+    "Items": ["ethos.your-domain.com", "cdn.ethos.your-domain.com"]
+  },
+  "WebACLId": "your-web-acl-id",
+  "HttpVersion": "http2",
+  "IsIPV6Enabled": true
+}

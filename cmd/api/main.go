@@ -19,15 +19,18 @@ import (
 	"ethos/internal/auth/handler"
 	"ethos/internal/auth/repository"
 	"ethos/internal/auth/service"
+	"ethos/internal/cache"
 	communityHandler "ethos/internal/community/handler"
 	"ethos/internal/config"
 	dashboardHandler "ethos/internal/dashboard/handler"
 	"ethos/internal/database"
 	feedbackHandler "ethos/internal/feedback/handler"
+	"ethos/internal/monitoring"
 	moderationHandler "ethos/internal/moderation/handler"
 	moderationRepository "ethos/internal/moderation/repository"
 	moderationService "ethos/internal/moderation/service"
 	notificationHandler "ethos/internal/notifications/handler"
+	"ethos/internal/ratelimit"
 	organizationHandler "ethos/internal/organization/handler"
 	organizationRepository "ethos/internal/organization/repository"
 	organizationService "ethos/internal/organization/service"
@@ -72,6 +75,27 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer db.Close()
+
+	// Initialize performance monitoring
+	perfMonitor := monitoring.NewPerformanceMonitor()
+
+	// Initialize caching
+	cacheService := cache.NewCacheService(
+		cache.NewRedisCache(cfg.Redis.URL, cfg.Redis.Password, cfg.Redis.DB),
+	)
+
+	// Initialize rate limiting
+	rateLimiter := ratelimit.NewRedisRateLimiter(
+		cache.NewRedisCache(cfg.Redis.URL, cfg.Redis.Password, cfg.Redis.DB),
+	)
+
+	// Initialize health monitor
+	healthMonitor := monitoring.NewHealthMonitor()
+
+	// Add health checkers
+	healthMonitor.AddChecker(&databaseHealthChecker{db: db})
+	healthMonitor.AddChecker(&cacheHealthChecker{cache: cacheService})
+	healthMonitor.AddChecker(&redisHealthChecker{url: cfg.Redis.URL})
 
 	// Initialize dependencies
 	authRepo := repository.NewPostgresRepository(db)
@@ -210,4 +234,42 @@ func main() {
 	}
 
 	log.Println("Server exited")
+}
+// Health checkers for system components
+type databaseHealthChecker struct {
+	db *database.DB
+}
+
+func (h *databaseHealthChecker) HealthCheck(ctx context.Context) error {
+	return h.db.Ping(ctx)
+}
+
+func (h *databaseHealthChecker) Name() string {
+	return "database"
+}
+
+type cacheHealthChecker struct {
+	cache *cache.CacheService
+}
+
+func (h *cacheHealthChecker) HealthCheck(ctx context.Context) error {
+	return h.cache.HealthCheck(ctx)
+}
+
+func (h *cacheHealthChecker) Name() string {
+	return "cache"
+}
+
+type redisHealthChecker struct {
+	url string
+}
+
+func (h *redisHealthChecker) HealthCheck(ctx context.Context) error {
+	redisClient := cache.NewRedisCache(h.url, "", 0)
+	defer redisClient.Close()
+	return redisClient.HealthCheck(ctx)
+}
+
+func (h *redisHealthChecker) Name() string {
+	return "redis"
 }
