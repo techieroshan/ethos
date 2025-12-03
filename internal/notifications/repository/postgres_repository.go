@@ -200,3 +200,37 @@ func (r *PostgresRepository) UpdatePreferences(ctx context.Context, userID strin
 	return &prefs, nil
 }
 
+// MarkAsRead marks a notification as read or unread
+func (r *PostgresRepository) MarkAsRead(ctx context.Context, userID, notificationID string, read bool) error {
+	ctx, span := otel.Tracer("repository").Start(ctx, "repository.MarkAsRead")
+	defer span.End()
+
+	query := `UPDATE notifications SET read = $1 WHERE notification_id = $2 AND user_id = $3`
+	_, err := r.db.Pool.Exec(ctx, query, read, notificationID, userID)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return errors.WrapError(err, "failed to mark notification as read")
+	}
+
+	span.SetStatus(codes.Ok, "")
+	return nil
+}
+
+// MarkAllAsRead marks all notifications as read for a user
+func (r *PostgresRepository) MarkAllAsRead(ctx context.Context, userID string) error {
+	ctx, span := otel.Tracer("repository").Start(ctx, "repository.MarkAllAsRead")
+	defer span.End()
+
+	query := `UPDATE notifications SET read = true WHERE user_id = $1 AND read = false`
+	_, err := r.db.Pool.Exec(ctx, query, userID)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+		return errors.WrapError(err, "failed to mark all notifications as read")
+	}
+
+	span.SetStatus(codes.Ok, "")
+	return nil
+}
+

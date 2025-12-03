@@ -18,6 +18,12 @@ type Service interface {
 	// GetNotifications retrieves notifications for a user
 	GetNotifications(ctx context.Context, userID string, limit, offset int) ([]*model.Notification, int, int, error)
 
+	// MarkAsRead marks a notification as read or unread
+	MarkAsRead(ctx context.Context, userID, notificationID string, read bool) error
+
+	// MarkAllAsRead marks all notifications as read for a user
+	MarkAllAsRead(ctx context.Context, userID string) error
+
 	// GetPreferences retrieves notification preferences for a user
 	GetPreferences(ctx context.Context, userID string) (*model.NotificationPreferences, error)
 

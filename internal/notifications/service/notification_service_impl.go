@@ -44,6 +44,16 @@ func (s *NotificationService) GetPreferences(ctx context.Context, userID string)
 	return prefs, nil
 }
 
+// MarkAsRead marks a notification as read or unread
+func (s *NotificationService) MarkAsRead(ctx context.Context, userID, notificationID string, read bool) error {
+	return s.repo.MarkAsRead(ctx, userID, notificationID, read)
+}
+
+// MarkAllAsRead marks all notifications as read for a user
+func (s *NotificationService) MarkAllAsRead(ctx context.Context, userID string) error {
+	return s.repo.MarkAllAsRead(ctx, userID)
+}
+
 // UpdatePreferences updates notification preferences
 func (s *NotificationService) UpdatePreferences(ctx context.Context, userID string, req *UpdatePreferencesRequest) (*model.NotificationPreferences, error) {
 	prefs, err := s.repo.UpdatePreferences(ctx, userID, req.Email, req.Push, req.InApp)

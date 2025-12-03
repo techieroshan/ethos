@@ -19,28 +19,20 @@ github.com/gin-gonic/gin"
 
 // SetupRoutes configures all API routes
 func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHandler *profileHandler.ProfileHandler, feedbackHandler *feedbackHandler.FeedbackHandler, notificationHandler *notificationHandler.NotificationHandler, dashboardHandler *dashboardHandler.DashboardHandler, organizationHandler *organizationHandler.OrganizationHandler, peopleHandler *peopleHandler.PeopleHandler, communityHandler *communityHandler.CommunityHandler, accountHandler *accountHandler.AccountHandler, moderationHandler *moderationHandler.ModerationHandler, tokenGen *jwt.TokenGenerator) {
-	// Handle OPTIONS requests for CORS
-	router.OPTIONS("/*path", func(c *gin.Context) {
+	// Global OPTIONS handler for all API routes
+	router.OPTIONS("/api/*path", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Origin, Content-Length, Content-Type, Authorization")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Length, Content-Type, Authorization, Accept, X-Requested-With")
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Access-Control-Max-Age", "43200")
-		c.JSON(200, gin.H{"message": "CORS preflight"})
+		c.Status(200)
 	})
 
 	v1 := router.Group("/api/v1")
 	{
 		auth := v1.Group("/auth")
 		{
-			auth.OPTIONS("/login", func(c *gin.Context) {
-				c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
-				c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
-				c.Header("Access-Control-Allow-Headers", "Origin, Content-Length, Content-Type, Authorization")
-				c.Header("Access-Control-Allow-Credentials", "true")
-				c.Header("Access-Control-Max-Age", "43200")
-				c.JSON(200, gin.H{"message": "CORS preflight"})
-			})
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/refresh", authHandler.Refresh)
@@ -127,6 +119,8 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 		notifications.Use(middleware.AuthMiddleware(tokenGen))
 		{
 			notifications.GET("", notificationHandler.GetNotifications)
+			notifications.PUT("/:id/read", notificationHandler.MarkAsRead)
+			notifications.PUT("/mark-all-read", notificationHandler.MarkAllAsRead)
 			notifications.GET("/preferences", notificationHandler.GetPreferences)
 			notifications.PUT("/preferences", notificationHandler.UpdatePreferences)
 		}
@@ -158,18 +152,20 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 	}
 }
 
-// corsMiddleware handles CORS for development
-func corsMiddleware() gin.HandlerFunc {
+
+// corsHandler handles CORS for all requests
+func corsHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Add CORS headers to all responses
 		c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Origin, Content-Length, Content-Type, Authorization")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Length, Content-Type, Authorization, Accept, X-Requested-With")
 		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Access-Control-Max-Age", "43200") // 12 hours
+		c.Header("Access-Control-Max-Age", "43200")
 
+		// Handle preflight OPTIONS requests
 		if c.Request.Method == "OPTIONS" {
-			c.JSON(200, gin.H{"message": "CORS preflight"})
-			c.Abort()
+			c.AbortWithStatus(200)
 			return
 		}
 
@@ -179,7 +175,7 @@ func corsMiddleware() gin.HandlerFunc {
 
 // SetupMiddleware configures global middleware
 func SetupMiddleware(router *gin.Engine) {
-	router.Use(corsMiddleware())
+	router.Use(corsHandler())
 	router.Use(gin.Logger())
 	router.Use(middleware.TracingMiddleware())
 	router.Use(gin.Recovery())
