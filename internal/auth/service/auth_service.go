@@ -20,9 +20,10 @@ type LoginResponse struct {
 
 // RegisterRequest represents a registration request
 type RegisterRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8"`
-	Name     string `json:"name" binding:"required"`
+	Email       string `json:"email" binding:"required,email"`
+	Password    string `json:"password" binding:"required,min=8"`
+	Name        string `json:"name" binding:"required"`
+	AcceptTerms bool   `json:"accept_terms" binding:"required"`
 }
 
 // RefreshRequest represents a token refresh request

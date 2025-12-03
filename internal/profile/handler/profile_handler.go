@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"ethos/internal/profile"
 	"ethos/internal/profile/service"
 	"ethos/pkg/errors"
 )
@@ -62,7 +63,7 @@ func (h *ProfileHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	var req service.UpdateProfileRequest
+	var req profile.UpdateProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Validation failed",
@@ -110,7 +111,7 @@ func (h *ProfileHandler) UpdatePreferences(c *gin.Context) {
 		return
 	}
 
-	var req service.UpdatePreferencesRequest
+	var req profile.UpdatePreferencesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Validation failed",
@@ -248,7 +249,7 @@ func (h *ProfileHandler) OptOut(c *gin.Context) {
 		return
 	}
 
-	var req service.OptOutRequest
+	var req profile.OptOutRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid request format",
@@ -320,7 +321,7 @@ func (h *ProfileHandler) RequestDeletion(c *gin.Context) {
 		return
 	}
 
-	var req service.DeleteRequest
+	var req profile.DeleteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid request format",

@@ -774,9 +774,7 @@ func (r *PostgresRepository) GetBookmarks(ctx context.Context, userID string, li
 
 		// Set author information
 		item.Author.Name = authorName
-		if authorRole != nil {
-			item.Author.Role = *authorRole
-		}
+		// Note: Role assignment removed as UserSummary doesn't have Role field
 
 		// Get reactions for this feedback item
 		reactions, err := r.getReactionsForFeedback(ctx, item.FeedbackID)
@@ -823,7 +821,11 @@ func (r *PostgresRepository) AddBookmark(ctx context.Context, userID, feedbackID
 		return errors.WrapError(err, "failed to check feedback existence")
 	}
 	if !exists {
-		return errors.NewAPIError("NOT_FOUND", "Feedback item not found", http.StatusNotFound)
+		return &errors.APIError{
+			Message:    "Feedback item not found",
+			Code:       "NOT_FOUND",
+			HTTPStatus: http.StatusNotFound,
+		}
 	}
 
 	// Insert bookmark (ignore if already exists - idempotent operation)
@@ -943,11 +945,15 @@ func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID str
 	defer span.End()
 
 	if len(req.Items) == 0 {
-		return nil, errors.NewAPIError("VALIDATION_FAILED", "At least one feedback item is required", http.StatusBadRequest)
+		return nil, &errors.APIError{
+			Message:    "At least one feedback item is required",
+			Code:       "VALIDATION_FAILED",
+			HTTPStatus: http.StatusBadRequest,
+		}
 	}
 
 	response := &feedback.BatchFeedbackResponse{
-		Submitted: make([]service.BatchFeedbackResult, 0, len(req.Items)),
+		Submitted: make([]feedback.BatchFeedbackResult, 0, len(req.Items)),
 	}
 
 	// Begin transaction
@@ -958,17 +964,6 @@ func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID str
 		return nil, errors.WrapError(err, "failed to begin transaction")
 	}
 	defer tx.Rollback(ctx)
-
-	// Prepare the insert statement
-	stmt, err := tx.Prepare(ctx, "insert_feedback_batch",
-		`INSERT INTO feedback_items (feedback_id, author_id, content, type, visibility, is_anonymous, created_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`)
-	if err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
-		return nil, errors.WrapError(err, "failed to prepare statement")
-	}
-	defer stmt.Close(ctx)
 
 	// Process each feedback item
 	for _, item := range req.Items {
@@ -982,7 +977,10 @@ func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID str
 			actualAuthorID = userID
 		}
 
-		_, err = stmt.Exec(ctx,
+		// Insert the feedback item directly
+		_, err = tx.Exec(ctx,
+			`INSERT INTO feedback_items (feedback_id, author_id, content, type, visibility, is_anonymous, created_at)
+			 VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
 			feedbackID,
 			actualAuthorID,
 			item.Content,
@@ -1153,9 +1151,7 @@ func (r *PostgresRepository) GetFeedWithFilters(ctx context.Context, limit, offs
 
 		// Set author information
 		item.Author.Name = authorName
-		if authorRole != nil {
-			item.Author.Role = *authorRole
-		}
+		// Note: Role assignment removed as UserSummary doesn't have Role field
 
 		// Parse reviewer context JSON if present
 		if len(reviewerContext) > 0 {

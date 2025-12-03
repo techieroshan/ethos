@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ethos/internal/auth/model"
+	"ethos/internal/profile"
 	"ethos/internal/profile/repository"
 	prefModel "ethos/internal/profile/model"
 	"ethos/pkg/errors"
@@ -42,7 +43,7 @@ func (s *ProfileService) GetUserProfile(ctx context.Context, userID string) (*mo
 }
 
 // UpdateProfile updates a user profile
-func (s *ProfileService) UpdateProfile(ctx context.Context, userID string, req *UpdateProfileRequest) (*model.UserProfile, error) {
+func (s *ProfileService) UpdateProfile(ctx context.Context, userID string, req *profile.UpdateProfileRequest) (*model.UserProfile, error) {
 	// Validate request
 	if req.Name == "" && req.PublicBio == "" {
 		return nil, errors.NewValidationError("at least one field must be provided")
@@ -57,7 +58,7 @@ func (s *ProfileService) UpdateProfile(ctx context.Context, userID string, req *
 }
 
 // UpdatePreferences updates user preferences
-func (s *ProfileService) UpdatePreferences(ctx context.Context, userID string, req *UpdatePreferencesRequest) (*prefModel.UserPreferences, error) {
+func (s *ProfileService) UpdatePreferences(ctx context.Context, userID string, req *profile.UpdatePreferencesRequest) (*prefModel.UserPreferences, error) {
 	prefs, err := s.repo.UpdateUserPreferences(ctx, userID, req.NotifyOnLogin, req.Locale)
 	if err != nil {
 		return nil, err
@@ -77,17 +78,17 @@ func (s *ProfileService) DeleteProfile(ctx context.Context, userID string) error
 }
 
 // OptOut handles opt-out requests from certain features
-func (s *ProfileService) OptOut(ctx context.Context, userID string, req *OptOutRequest) error {
+func (s *ProfileService) OptOut(ctx context.Context, userID string, req *profile.OptOutRequest) error {
 	return s.repo.OptOut(ctx, userID, req)
 }
 
 // Anonymize anonymizes user personal data
-func (s *ProfileService) Anonymize(ctx context.Context, userID string) (*AnonymizeResponse, error) {
+func (s *ProfileService) Anonymize(ctx context.Context, userID string) (*profile.AnonymizeResponse, error) {
 	return s.repo.Anonymize(ctx, userID)
 }
 
 // RequestDeletion requests account deletion
-func (s *ProfileService) RequestDeletion(ctx context.Context, userID string, req *DeleteRequest) (*DeleteResponse, error) {
+func (s *ProfileService) RequestDeletion(ctx context.Context, userID string, req *profile.DeleteRequest) (*profile.DeleteResponse, error) {
 	return s.repo.RequestDeletion(ctx, userID, req)
 }
 

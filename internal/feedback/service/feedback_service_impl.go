@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"ethos/internal/feedback"
 	"ethos/internal/feedback/model"
 	"ethos/internal/feedback/repository"
 	"ethos/pkg/errors"
@@ -102,7 +103,7 @@ func (s *FeedbackService) GetTemplates(ctx context.Context, contextFilter, tagsF
 }
 
 // SubmitTemplateSuggestion submits a template suggestion
-func (s *FeedbackService) SubmitTemplateSuggestion(ctx context.Context, req *TemplateSuggestionRequest) error {
+func (s *FeedbackService) SubmitTemplateSuggestion(ctx context.Context, req *feedback.TemplateSuggestionRequest) error {
 	// In a real implementation, this might save to database or send to a queue
 	// For now, we'll just log it (the API spec shows it just returns success)
 	return s.repo.SubmitTemplateSuggestion(ctx, req)
@@ -114,12 +115,12 @@ func (s *FeedbackService) GetImpact(ctx context.Context, userID *string, from, t
 }
 
 // CreateBatchFeedback creates multiple feedback items in a batch
-func (s *FeedbackService) CreateBatchFeedback(ctx context.Context, userID string, req *BatchFeedbackRequest) (*BatchFeedbackResponse, error) {
+func (s *FeedbackService) CreateBatchFeedback(ctx context.Context, userID string, req *feedback.BatchFeedbackRequest) (*feedback.BatchFeedbackResponse, error) {
 	return s.repo.CreateBatchFeedback(ctx, userID, req)
 }
 
 // GetFeedWithFilters retrieves a paginated feed of feedback items with enhanced filtering
-func (s *FeedbackService) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *FeedFilters) ([]*model.FeedbackItem, int, error) {
+func (s *FeedbackService) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *feedback.FeedFilters) ([]*model.FeedbackItem, int, error) {
 	return s.repo.GetFeedWithFilters(ctx, limit, offset, filters)
 }
 
@@ -139,10 +140,14 @@ func (s *FeedbackService) RemoveBookmark(ctx context.Context, userID, feedbackID
 }
 
 // ExportFeedback exports feedback data with optional filtering
-func (s *FeedbackService) ExportFeedback(ctx context.Context, filters *FeedFilters, format string) (*ExportResponse, error) {
+func (s *FeedbackService) ExportFeedback(ctx context.Context, filters *feedback.FeedFilters, format string) (*feedback.ExportResponse, error) {
 	// Validate format
 	if format != "json" && format != "csv" {
-		return nil, errors.NewAPIError("VALIDATION_FAILED", "Invalid format. Supported formats: json, csv", http.StatusBadRequest)
+		return nil, &errors.APIError{
+			Message:    "Invalid format. Supported formats: json, csv",
+			Code:       "VALIDATION_FAILED",
+			HTTPStatus: http.StatusBadRequest,
+		}
 	}
 
 	// Get all matching feedback items (no pagination for export)
@@ -170,7 +175,7 @@ func (s *FeedbackService) ExportFeedback(ctx context.Context, filters *FeedFilte
 		return nil, err
 	}
 
-	return &ExportResponse{
+	return &feedback.ExportResponse{
 		Format:      format,
 		ContentType: contentType,
 		Data:        data,
@@ -209,9 +214,7 @@ func (s *FeedbackService) formatJSONExport(items []*model.FeedbackItem) (string,
 
 		if item.Author != nil {
 			exportItem.AuthorName = item.Author.Name
-			if item.Author.Role != "" {
-				exportItem.AuthorRole = item.Author.Role
-			}
+			// Note: Role assignment removed as UserSummary doesn't have Role field
 		}
 
 		if item.Type != nil {
@@ -265,7 +268,7 @@ func (s *FeedbackService) formatCSVExport(items []*model.FeedbackItem) (string, 
 			item.FeedbackID,
 			item.Content,
 			item.Author.Name,
-			item.Author.Role,
+			"", // Role not available in UserSummary
 			stringPtrToString(item.Type),
 			stringPtrToString(item.Visibility),
 			boolToString(item.IsAnonymous),
@@ -389,11 +392,24 @@ func (s *FeedbackService) GetFeedbackAnalytics(ctx context.Context, userID *stri
 }
 
 // Helper functions for CSV formatting
-func stringPtrToString(s *model.FeedbackType) string {
-	if s == nil {
+func stringPtrToString(ptr interface{}) string {
+	if ptr == nil {
 		return ""
 	}
-	return string(*s)
+	switch v := ptr.(type) {
+	case *model.FeedbackType:
+		if v == nil {
+			return ""
+		}
+		return string(*v)
+	case *model.FeedbackVisibility:
+		if v == nil {
+			return ""
+		}
+		return string(*v)
+	default:
+		return ""
+	}
 }
 
 func boolToString(b bool) string {

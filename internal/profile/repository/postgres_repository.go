@@ -362,7 +362,11 @@ func (r *PostgresRepository) RequestDeletion(ctx context.Context, userID string,
 	defer span.End()
 
 	if !req.Confirm {
-		return nil, errors.NewAPIError("VALIDATION_FAILED", "Confirmation required for account deletion", http.StatusBadRequest)
+		return nil, &errors.APIError{
+			Message:    "Confirmation required for account deletion",
+			Code:       "VALIDATION_FAILED",
+			HTTPStatus: http.StatusBadRequest,
+		}
 	}
 
 	// Mark deletion requested

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"strings"
 	"time"
 
 	"ethos/internal/auth/model"
@@ -127,8 +128,8 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) e
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		// Check for unique constraint violation
-		if pgErr, ok := err.(interface{ Code() string }); ok && pgErr.Code() == "23505" {
+		// Check for unique constraint violation (PostgreSQL error code 23505)
+		if strings.Contains(err.Error(), "duplicate key value") || strings.Contains(err.Error(), "23505") {
 			return errors.ErrEmailAlreadyExists
 		}
 		return errors.WrapError(err, "failed to create user")

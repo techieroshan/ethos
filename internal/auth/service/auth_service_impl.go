@@ -5,7 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
+	"unicode"
 
 	"ethos/internal/auth/model"
 	"ethos/internal/auth/repository"
@@ -33,6 +36,9 @@ type AuthService struct {
 	tokenGenerator *jwt.TokenGenerator
 	emailChecker   EmailChecker
 	emailSender    EmailSender
+	// Simple in-memory rate limiting (in production, use Redis)
+	loginAttempts map[string]int
+	lockedAccounts map[string]time.Time
 }
 
 // NewAuthService creates a new authentication service
@@ -42,15 +48,35 @@ func NewAuthService(repo repository.Repository, tokenGen *jwt.TokenGenerator, em
 		tokenGenerator: tokenGen,
 		emailChecker:   emailChecker,
 		emailSender:    emailSender,
+		loginAttempts:  make(map[string]int),
+		lockedAccounts: make(map[string]time.Time),
 	}
 }
 
 // Login authenticates a user and returns tokens
 func (s *AuthService) Login(ctx context.Context, req *LoginRequest) (*LoginResponse, error) {
+	// Check if account is locked
+	if lockTime, locked := s.lockedAccounts[req.Email]; locked {
+		if time.Now().Before(lockTime) {
+			return nil, errors.NewValidationError("account is temporarily locked due to too many failed login attempts")
+		}
+		// Lock has expired, remove it
+		delete(s.lockedAccounts, req.Email)
+		delete(s.loginAttempts, req.Email)
+	}
+
+	// Check rate limiting
+	if attempts := s.loginAttempts[req.Email]; attempts >= 5 {
+		// Lock account for 15 minutes
+		s.lockedAccounts[req.Email] = time.Now().Add(15 * time.Minute)
+		return nil, errors.NewValidationError("too many failed login attempts - account locked for 15 minutes")
+	}
+
 	// Get user by email
 	user, err := s.repo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if err == errors.ErrUserNotFound {
+			s.loginAttempts[req.Email]++
 			return nil, errors.ErrInvalidCredentials
 		}
 		return nil, errors.WrapError(err, "failed to get user")
@@ -59,8 +85,12 @@ func (s *AuthService) Login(ctx context.Context, req *LoginRequest) (*LoginRespo
 	// Verify password
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
 	if err != nil {
+		s.loginAttempts[req.Email]++
 		return nil, errors.ErrInvalidCredentials
 	}
+
+	// Successful login - reset attempts
+	delete(s.loginAttempts, req.Email)
 
 	// Check if email is verified
 	if !user.EmailVerified {
@@ -93,11 +123,43 @@ func (s *AuthService) Login(ctx context.Context, req *LoginRequest) (*LoginRespo
 
 // Register creates a new user account
 func (s *AuthService) Register(ctx context.Context, req *RegisterRequest) (*model.UserProfile, error) {
+	// Comprehensive input validation
+	if req.Name == "" || len(strings.TrimSpace(req.Name)) == 0 {
+		return nil, errors.NewValidationError("name is required")
+	}
+	if len(req.Name) < 2 || len(req.Name) > 100 {
+		return nil, errors.NewValidationError("name must be between 2 and 100 characters")
+	}
+
+	// Email validation
+	if req.Email == "" {
+		return nil, errors.NewValidationError("email is required")
+	}
+	if !isValidEmailFormat(req.Email) {
+		return nil, errors.NewValidationError("invalid email format")
+	}
+
+	// Password validation
+	if req.Password == "" {
+		return nil, errors.NewValidationError("password is required")
+	}
+	if len(req.Password) < 8 {
+		return nil, errors.NewValidationError("password must be at least 8 characters long")
+	}
+	if !hasPasswordRequirements(req.Password) {
+		return nil, errors.NewValidationError("password must contain at least one uppercase letter, one lowercase letter, one number, and one special character")
+	}
+
+	// Terms acceptance validation
+	if !req.AcceptTerms {
+		return nil, errors.NewValidationError("you must accept the terms and conditions")
+	}
+
 	// Validate email if checker is provided
 	if s.emailChecker != nil {
 		valid, err := s.emailChecker.ValidateEmail(ctx, req.Email)
 		if err != nil {
-			return nil, errors.NewValidationError(err.Error())
+			return nil, errors.NewValidationError("email validation service unavailable")
 		}
 		if !valid {
 			return nil, errors.NewValidationError("invalid email address")
@@ -316,4 +378,33 @@ func generateQRCode(email, secret string) string {
 func hashToken(token string) string {
 	hash := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(hash[:])
+}
+
+// isValidEmailFormat validates email format using regex
+func isValidEmailFormat(email string) bool {
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	return emailRegex.MatchString(email)
+}
+
+// hasPasswordRequirements checks if password meets security requirements
+func hasPasswordRequirements(password string) bool {
+	if len(password) < 8 {
+		return false
+	}
+
+	var hasUpper, hasLower, hasNumber, hasSpecial bool
+	for _, char := range password {
+		switch {
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsDigit(char):
+			hasNumber = true
+		case unicode.IsPunct(char) || unicode.IsSymbol(char):
+			hasSpecial = true
+		}
+	}
+
+	return hasUpper && hasLower && hasNumber && hasSpecial
 }

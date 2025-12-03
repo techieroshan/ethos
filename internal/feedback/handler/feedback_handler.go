@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"ethos/internal/feedback"
 	"ethos/internal/feedback/model"
 	"ethos/internal/feedback/service"
 	"ethos/pkg/errors"
@@ -40,7 +41,7 @@ func (h *FeedbackHandler) GetFeed(c *gin.Context) {
 	}
 
 	// Parse filtering parameters
-	filters := &service.FeedFilters{}
+	filters := &feedback.FeedFilters{}
 
 	if reviewerType := c.Query("reviewer_type"); reviewerType != "" {
 		filters.ReviewerType = &reviewerType
@@ -350,7 +351,7 @@ func (h *FeedbackHandler) GetTemplates(c *gin.Context) {
 
 // PostTemplateSuggestions handles POST /api/feedback/template_suggestions
 func (h *FeedbackHandler) PostTemplateSuggestions(c *gin.Context) {
-	var req service.TemplateSuggestionRequest
+	var req feedback.TemplateSuggestionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid request format",
@@ -382,7 +383,7 @@ func (h *FeedbackHandler) PostTemplateSuggestions(c *gin.Context) {
 
 // GetImpact handles GET /api/feedback/impact
 func (h *FeedbackHandler) GetImpact(c *gin.Context) {
-	userID, exists := c.Get("user_id")
+	_, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "Invalid token",
@@ -557,7 +558,7 @@ func (h *FeedbackHandler) RemoveBookmark(c *gin.Context) {
 
 // ExportFeedback handles GET /api/feedback/export
 func (h *FeedbackHandler) ExportFeedback(c *gin.Context) {
-	userID, exists := c.Get("user_id")
+	_, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "Invalid token",
@@ -577,7 +578,7 @@ func (h *FeedbackHandler) ExportFeedback(c *gin.Context) {
 	}
 
 	// Parse filtering parameters (same as feed filtering)
-	filters := &service.FeedFilters{}
+	filters := &feedback.FeedFilters{}
 
 	if reviewerType := c.Query("reviewer_type"); reviewerType != "" {
 		filters.ReviewerType = &reviewerType
@@ -634,7 +635,7 @@ func (h *FeedbackHandler) CreateBatchFeedback(c *gin.Context) {
 		return
 	}
 
-	var req service.BatchFeedbackRequest
+	var req feedback.BatchFeedbackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid request format",
