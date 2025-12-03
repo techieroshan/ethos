@@ -13,6 +13,9 @@ import (
 	accountHandler "ethos/internal/account/handler"
 	accountRepository "ethos/internal/account/repository"
 	accountService "ethos/internal/account/service"
+	appealHandler "ethos/internal/appeal/handler"
+	appealRepository "ethos/internal/appeal/repository"
+	appealService "ethos/internal/appeal/service"
 	"ethos/internal/auth/handler"
 	"ethos/internal/auth/repository"
 	"ethos/internal/auth/service"
@@ -164,6 +167,11 @@ func main() {
 	moderationSvc := moderationService.NewModerationService(moderationRepo)
 	moderationHandler := moderationHandler.NewModerationHandler(moderationSvc)
 
+	// Initialize appeal dependencies
+	appealRepo := appealRepository.NewPostgresRepository(db)
+	appealSvc := appealService.NewAppealService(appealRepo)
+	appealHandler := appealHandler.NewAppealHandler(appealSvc)
+
 	// Initialize organization dependencies
 	orgRepo := organizationRepository.NewPostgresRepository(db)
 	orgSvc := organizationService.NewOrganizationService(orgRepo)
@@ -172,7 +180,7 @@ func main() {
 	// Setup router
 	router := gin.New()
 	api.SetupMiddleware(router)
-	api.SetupRoutes(router, authHandler, profileHandler, feedbackHandler, notificationHandler, dashboardHandler, orgHandler, peopleHandler, communityHandler, accountHandler, moderationHandler, tokenGen)
+	api.SetupRoutes(router, authHandler, profileHandler, feedbackHandler, notificationHandler, dashboardHandler, orgHandler, peopleHandler, communityHandler, accountHandler, moderationHandler, appealHandler, tokenGen)
 
 	// Create HTTP server
 	srv := &http.Server{

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	authModel "ethos/internal/auth/model"
+	"ethos/internal/people"
 	"ethos/internal/people/service"
 	"ethos/pkg/errors"
 )
@@ -39,7 +40,7 @@ func (h *PeopleHandler) SearchPeople(c *gin.Context) {
 	}
 
 	// Parse filtering parameters
-	filters := &service.PeopleSearchFilters{}
+	filters := &people.PeopleSearchFilters{}
 
 	if reviewerType := c.Query("reviewer_type"); reviewerType != "" {
 		filters.ReviewerType = &reviewerType

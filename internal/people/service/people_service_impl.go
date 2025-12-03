@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ethos/internal/auth/model"
+	"ethos/internal/people"
 	"ethos/internal/people/repository"
 )
 
@@ -32,7 +33,7 @@ func (s *PeopleService) SearchPeople(ctx context.Context, query string, limit, o
 }
 
 // SearchPeopleWithFilters searches for people with enhanced filtering
-func (s *PeopleService) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *PeopleSearchFilters) ([]*model.UserProfile, int, error) {
+func (s *PeopleService) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *people.PeopleSearchFilters) ([]*model.UserProfile, int, error) {
 	return s.client.SearchPeopleWithFilters(ctx, query, limit, offset, filters)
 }
 

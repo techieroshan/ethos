@@ -2,6 +2,7 @@ package api
 
 import (
 	accountHandler "ethos/internal/account/handler"
+	appealHandler "ethos/internal/appeal/handler"
 	"ethos/internal/auth/handler"
 	communityHandler "ethos/internal/community/handler"
 	dashboardHandler "ethos/internal/dashboard/handler"
@@ -14,11 +15,12 @@ import (
 	profileHandler "ethos/internal/profile/handler"
 	"ethos/pkg/jwt"
 
-github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 // SetupRoutes configures all API routes
-func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHandler *profileHandler.ProfileHandler, feedbackHandler *feedbackHandler.FeedbackHandler, notificationHandler *notificationHandler.NotificationHandler, dashboardHandler *dashboardHandler.DashboardHandler, organizationHandler *organizationHandler.OrganizationHandler, peopleHandler *peopleHandler.PeopleHandler, communityHandler *communityHandler.CommunityHandler, accountHandler *accountHandler.AccountHandler, moderationHandler *moderationHandler.ModerationHandler, tokenGen *jwt.TokenGenerator) {
+func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHandler *profileHandler.ProfileHandler, feedbackHandler *feedbackHandler.FeedbackHandler, notificationHandler *notificationHandler.NotificationHandler, dashboardHandler *dashboardHandler.DashboardHandler, organizationHandler *organizationHandler.OrganizationHandler, peopleHandler *peopleHandler.PeopleHandler, communityHandler *communityHandler.CommunityHandler, accountHandler *accountHandler.AccountHandler, moderationHandler *moderationHandler.ModerationHandler, appealHandler *appealHandler.AppealHandler, tokenGen *jwt.TokenGenerator) {
 	// Global OPTIONS handler for all API routes
 	router.OPTIONS("/api/*path", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
@@ -148,6 +150,15 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 		{
 			account.GET("/security-events", accountHandler.GetSecurityEvents)
 			account.GET("/export-data/:export_id/status", accountHandler.GetExportStatus)
+		}
+
+		// User Appeals
+		appeals := v1.Group("/appeals")
+		appeals.Use(middleware.AuthMiddleware(tokenGen))
+		{
+			appeals.POST("", appealHandler.SubmitAppeal)
+			appeals.GET("", appealHandler.GetUserAppeals)
+			appeals.GET("/:appeal_id", appealHandler.GetAppealByID)
 		}
 	}
 }

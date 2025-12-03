@@ -4,6 +4,7 @@ import (
 	"context"
 
 	authModel "ethos/internal/auth/model"
+	"ethos/internal/people"
 	"ethos/internal/people/repository"
 	peoplepb "ethos/api/proto/people"
 	"ethos/pkg/grpc/converter"
@@ -15,7 +16,7 @@ type PeopleClient interface {
 	SearchPeople(ctx context.Context, query string, limit, offset int) ([]*authModel.UserProfile, int, error)
 
 	// SearchPeopleWithFilters searches for people with enhanced filtering
-	SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *PeopleSearchFilters) ([]*authModel.UserProfile, int, error)
+	SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *people.PeopleSearchFilters) ([]*authModel.UserProfile, int, error)
 
 	// GetRecommendations gets people recommendations
 	GetRecommendations(ctx context.Context, userID string) ([]*authModel.UserProfile, error)
@@ -37,7 +38,7 @@ func (c *RESTPeopleClient) SearchPeople(ctx context.Context, query string, limit
 }
 
 // SearchPeopleWithFilters implements PeopleClient interface using REST
-func (c *RESTPeopleClient) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *PeopleSearchFilters) ([]*authModel.UserProfile, int, error) {
+func (c *RESTPeopleClient) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *people.PeopleSearchFilters) ([]*authModel.UserProfile, int, error) {
 	return c.repo.SearchPeopleWithFilters(ctx, query, limit, offset, filters)
 }
 
@@ -81,7 +82,7 @@ func (c *GRPCPeopleClient) SearchPeople(ctx context.Context, query string, limit
 }
 
 // SearchPeopleWithFilters implements PeopleClient interface using gRPC
-func (c *GRPCPeopleClient) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *PeopleSearchFilters) ([]*authModel.UserProfile, int, error) {
+func (c *GRPCPeopleClient) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *people.PeopleSearchFilters) ([]*authModel.UserProfile, int, error) {
 	// For now, implement as basic search - gRPC proto would need to be updated for full filtering
 	return c.SearchPeople(ctx, query, limit, offset)
 }
