@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 )
@@ -100,14 +101,14 @@ func (db *OptimizedDB) HealthCheck(ctx context.Context) error {
 }
 
 // ExecuteInTransaction executes a function within a database transaction
-func (db *OptimizedDB) ExecuteInTransaction(ctx context.Context, fn func(tx *pgxpool.Tx) error) error {
+func (db *OptimizedDB) ExecuteInTransaction(ctx context.Context, fn func(tx pgx.Tx) error) error {
 	tx, err := db.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback(ctx)
 
-	if err := fn(&tx); err != nil {
+	if err := fn(tx); err != nil {
 		return err
 	}
 
@@ -115,7 +116,7 @@ func (db *OptimizedDB) ExecuteInTransaction(ctx context.Context, fn func(tx *pgx
 }
 
 // QueryWithTimeout executes a query with a timeout
-func (db *OptimizedDB) QueryWithTimeout(ctx context.Context, timeout time.Duration, query string, args ...interface{}) (*pgxpool.Rows, error) {
+func (db *OptimizedDB) QueryWithTimeout(ctx context.Context, timeout time.Duration, query string, args ...interface{}) (pgx.Rows, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -123,7 +124,7 @@ func (db *OptimizedDB) QueryWithTimeout(ctx context.Context, timeout time.Durati
 }
 
 // QueryRowWithTimeout executes a row query with a timeout
-func (db *OptimizedDB) QueryRowWithTimeout(ctx context.Context, timeout time.Duration, query string, args ...interface{}) *pgxpool.Row {
+func (db *OptimizedDB) QueryRowWithTimeout(ctx context.Context, timeout time.Duration, query string, args ...interface{}) pgx.Row {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
@@ -154,7 +155,7 @@ func (db *OptimizedDB) PrepareStatements(ctx context.Context, statements []Prepa
 	defer conn.Release()
 
 	for _, stmt := range statements {
-		if _, err := conn.Prepare(ctx, stmt.Name, stmt.SQL); err != nil {
+		if _, err := conn.Conn().Prepare(ctx, stmt.Name, stmt.SQL); err != nil {
 			return fmt.Errorf("failed to prepare statement %s: %w", stmt.Name, err)
 		}
 	}

@@ -22,7 +22,8 @@ type LoginResponse struct {
 type RegisterRequest struct {
 	Email       string `json:"email" binding:"required,email"`
 	Password    string `json:"password" binding:"required,min=8"`
-	Name        string `json:"name" binding:"required"`
+	FirstName   string `json:"first_name" binding:"required,min=1"`
+	LastName    string `json:"last_name" binding:"required,min=1"`
 	AcceptTerms bool   `json:"accept_terms" binding:"required"`
 }
 
@@ -35,6 +36,11 @@ type RefreshRequest struct {
 type ChangePasswordRequest struct {
 	CurrentPassword string `json:"current_password" binding:"required,min=8"`
 	NewPassword     string `json:"new_password" binding:"required,min=8"`
+}
+
+// RequestPasswordResetRequest represents a password reset request
+type RequestPasswordResetRequest struct {
+	Email string `json:"email" binding:"required,email"`
 }
 
 // Setup2FARequest represents a 2FA setup request
@@ -65,6 +71,9 @@ type Service interface {
 
 	// VerifyEmail marks a user's email as verified
 	VerifyEmail(ctx context.Context, token string) error
+
+	// RequestPasswordReset initiates a password reset process
+	RequestPasswordReset(ctx context.Context, req *RequestPasswordResetRequest) error
 
 	// ChangePassword changes user's password
 	ChangePassword(ctx context.Context, userID string, req *ChangePasswordRequest) error

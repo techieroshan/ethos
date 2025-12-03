@@ -7,12 +7,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"ethos/internal/auth/model"
 	"ethos/internal/auth/service"
 	"ethos/pkg/errors"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func setupRegisterRouter(handler *AuthHandler) *gin.Engine {
@@ -27,9 +28,11 @@ func TestRegister_ValidRegistration(t *testing.T) {
 	handler := NewAuthHandler(mockService)
 
 	registerReq := service.RegisterRequest{
-		Email:    "newuser@example.com",
-		Password: "ValidPassword123!",
-		Name:     "New User",
+		Email:       "newuser@example.com",
+		Password:    "ValidPassword123!",
+		FirstName:   "New",
+		LastName:    "User",
+		AcceptTerms: true,
 	}
 
 	expectedProfile := &model.UserProfile{
@@ -63,9 +66,11 @@ func TestRegister_DuplicateEmail(t *testing.T) {
 	handler := NewAuthHandler(mockService)
 
 	registerReq := service.RegisterRequest{
-		Email:    "existing@example.com",
-		Password: "ValidPassword123!",
-		Name:     "Existing User",
+		Email:       "existing@example.com",
+		Password:    "ValidPassword123!",
+		FirstName:   "Existing",
+		LastName:    "User",
+		AcceptTerms: true,
 	}
 
 	mockService.On("Register", mock.Anything, &registerReq).Return(nil, errors.ErrEmailAlreadyExists)
@@ -91,9 +96,11 @@ func TestRegister_InvalidEmailFormat(t *testing.T) {
 	handler := NewAuthHandler(mockService)
 
 	registerReq := service.RegisterRequest{
-		Email:    "invalid-email",
-		Password: "ValidPassword123!",
-		Name:     "User",
+		Email:       "invalid-email",
+		Password:    "ValidPassword123!",
+		FirstName:   "User",
+		LastName:    "Test",
+		AcceptTerms: true,
 	}
 
 	router := setupRegisterRouter(handler)
@@ -117,9 +124,11 @@ func TestRegister_WeakPassword(t *testing.T) {
 	handler := NewAuthHandler(mockService)
 
 	registerReq := service.RegisterRequest{
-		Email:    "user@example.com",
-		Password: "short",
-		Name:     "User",
+		Email:       "user@example.com",
+		Password:    "short",
+		FirstName:   "User",
+		LastName:    "Test",
+		AcceptTerms: true,
 	}
 
 	router := setupRegisterRouter(handler)
@@ -152,4 +161,3 @@ func TestRegister_MissingBody(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	mockService.AssertNotCalled(t, "Register")
 }
-

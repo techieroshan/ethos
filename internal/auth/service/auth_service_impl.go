@@ -37,7 +37,7 @@ type AuthService struct {
 	emailChecker   EmailChecker
 	emailSender    EmailSender
 	// Simple in-memory rate limiting (in production, use Redis)
-	loginAttempts map[string]int
+	loginAttempts  map[string]int
 	lockedAccounts map[string]time.Time
 }
 
@@ -123,11 +123,17 @@ func (s *AuthService) Login(ctx context.Context, req *LoginRequest) (*LoginRespo
 
 // Register creates a new user account
 func (s *AuthService) Register(ctx context.Context, req *RegisterRequest) (*model.UserProfile, error) {
+	// DEBUG: Log received email at service layer
+	fmt.Printf("[DEBUG] Service Register - Received email: '%s' (length: %d, bytes: %v)\n", req.Email, len(req.Email), []byte(req.Email))
+
+	// Combine FirstName and LastName
+	fullName := strings.TrimSpace(req.FirstName + " " + req.LastName)
+
 	// Comprehensive input validation
-	if req.Name == "" || len(strings.TrimSpace(req.Name)) == 0 {
+	if fullName == "" {
 		return nil, errors.NewValidationError("name is required")
 	}
-	if len(req.Name) < 2 || len(req.Name) > 100 {
+	if len(fullName) < 2 || len(fullName) > 100 {
 		return nil, errors.NewValidationError("name must be between 2 and 100 characters")
 	}
 
@@ -176,7 +182,8 @@ func (s *AuthService) Register(ctx context.Context, req *RegisterRequest) (*mode
 	user := &model.User{
 		Email:         req.Email,
 		PasswordHash:  string(hashedPassword),
-		Name:          req.Name,
+		FirstName:     req.FirstName,
+		LastName:      req.LastName,
 		EmailVerified: false,
 	}
 
@@ -192,9 +199,10 @@ func (s *AuthService) Register(ctx context.Context, req *RegisterRequest) (*mode
 			Subject:    template["subject"].(string),
 			TemplateID: template["template_id"].(string),
 			TemplateData: map[string]interface{}{
-				"name":    req.Name,
-				"email":   req.Email,
-				"user_id": user.ID,
+				"FirstName": req.FirstName,
+				"Name":      user.FirstName + " " + user.LastName,
+				"email":     req.Email,
+				"user_id":   user.ID,
 			},
 		}
 		// Send email asynchronously (don't fail registration if email fails)
@@ -280,6 +288,73 @@ func (s *AuthService) VerifyEmail(ctx context.Context, token string) error {
 	// Save updated user to repository
 	if err := s.repo.UpdateUser(ctx, user); err != nil {
 		return err
+	}
+
+	// Send welcome email after successful verification
+	if s.emailSender != nil {
+		template := emailTemplates.GetTemplate(emailTemplates.TemplateWelcomeStandardUser)
+		emailReq := email.SendEmailRequest{
+			To:         user.Email,
+			Subject:    template["subject"].(string),
+			TemplateID: template["template_id"].(string),
+			TemplateData: map[string]interface{}{
+				"name":           user.FirstName + " " + user.LastName,
+				"email":          user.Email,
+				"role":           "Standard User",
+				"dashboardURL":   "http://localhost:5173/dashboard",              // TODO: Make configurable
+				"unsubscribeURL": "http://localhost:5173/settings/notifications", // TODO: Make configurable
+			},
+		}
+
+		// Send email asynchronously (don't fail verification if email fails)
+		go func() {
+			if err := s.emailSender.SendEmail(context.Background(), emailReq); err != nil {
+				// Log error but don't fail verification
+				fmt.Printf("Failed to send welcome email: %v\n", err)
+			}
+		}()
+	}
+
+	return nil
+}
+
+// RequestPasswordReset initiates a password reset process by sending a reset email
+func (s *AuthService) RequestPasswordReset(ctx context.Context, req *RequestPasswordResetRequest) error {
+	// Get user by email
+	user, err := s.repo.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		if err == errors.ErrUserNotFound {
+			// Don't reveal if email exists or not for security
+			return nil
+		}
+		return errors.WrapError(err, "failed to get user")
+	}
+
+	// Generate reset token (simplified - in production, use secure token generation)
+	resetToken := fmt.Sprintf("reset_%s_%d", user.ID, time.Now().Unix())
+
+	// Send password reset email if sender is configured
+	if s.emailSender != nil {
+		template := emailTemplates.GetTemplate(emailTemplates.TemplatePasswordReset)
+		emailReq := email.SendEmailRequest{
+			To:         user.Email,
+			Subject:    template["subject"].(string),
+			TemplateID: template["template_id"].(string),
+			TemplateData: map[string]interface{}{
+				"name":           user.FirstName + " " + user.LastName,
+				"email":          user.Email,
+				"resetURL":       fmt.Sprintf("http://localhost:5173/reset-password?token=%s", resetToken), // TODO: Make configurable
+				"unsubscribeURL": "http://localhost:5173/settings/notifications",                           // TODO: Make configurable
+			},
+		}
+
+		// Send email asynchronously
+		go func() {
+			if err := s.emailSender.SendEmail(context.Background(), emailReq); err != nil {
+				// Log error but don't fail the request
+				fmt.Printf("Failed to send password reset email: %v\n", err)
+			}
+		}()
 	}
 
 	return nil

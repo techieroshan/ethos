@@ -13,6 +13,7 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	Cache    CacheConfig
 	JWT      JWTConfig
 	OTEL     OTELConfig
 	Checker  CheckerConfig
@@ -34,6 +35,14 @@ type DatabaseConfig struct {
 	MaxConnections  int
 	MaxIdleTime     time.Duration
 	ConnMaxLifetime time.Duration
+}
+
+// CacheConfig holds Redis cache configuration
+type CacheConfig struct {
+	URL      string
+	Password string
+	DB       int
+	Enabled  bool
 }
 
 // JWTConfig holds JWT token configuration
@@ -107,6 +116,12 @@ func Load() (*Config, error) {
 			MaxConnections:  getIntEnv("DB_MAX_CONNECTIONS", 25),
 			MaxIdleTime:     getDurationEnv("DB_MAX_IDLE_TIME", 5*time.Minute),
 			ConnMaxLifetime: getDurationEnv("DB_CONN_MAX_LIFETIME", 1*time.Hour),
+		},
+		Cache: CacheConfig{
+			URL:      getEnv("REDIS_URL", "redis://localhost:6379"),
+			Password: getEnv("REDIS_PASSWORD", ""),
+			DB:       getIntEnv("REDIS_DB", 0),
+			Enabled:  getBoolEnv("REDIS_ENABLED", true),
 		},
 		JWT: JWTConfig{
 			AccessTokenSecret:  getEnv("JWT_ACCESS_SECRET", "your-access-secret-key-change-in-production"),

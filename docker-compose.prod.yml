@@ -80,6 +80,7 @@ services:
     container_name: ethos-frontend-prod
     environment:
       - REACT_APP_API_URL=${API_URL}
+      - VITE_SHOW_NAVIGATION_PANEL=false
     depends_on:
       - api
     healthcheck:

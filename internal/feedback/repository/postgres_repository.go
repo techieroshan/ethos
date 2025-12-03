@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -774,7 +773,10 @@ func (r *PostgresRepository) GetBookmarks(ctx context.Context, userID string, li
 
 		// Set author information
 		item.Author.Name = authorName
-		// Note: Role assignment removed as UserSummary doesn't have Role field
+		// Note: Role field doesn't exist on UserSummary, commented out
+		// if authorRole != nil {
+		// 	item.Author.Role = *authorRole
+		// }
 
 		// Get reactions for this feedback item
 		reactions, err := r.getReactionsForFeedback(ctx, item.FeedbackID)
@@ -821,11 +823,7 @@ func (r *PostgresRepository) AddBookmark(ctx context.Context, userID, feedbackID
 		return errors.WrapError(err, "failed to check feedback existence")
 	}
 	if !exists {
-		return &errors.APIError{
-			Message:    "Feedback item not found",
-			Code:       "NOT_FOUND",
-			HTTPStatus: http.StatusNotFound,
-		}
+		return errors.ErrNotFound
 	}
 
 	// Insert bookmark (ignore if already exists - idempotent operation)
@@ -945,11 +943,7 @@ func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID str
 	defer span.End()
 
 	if len(req.Items) == 0 {
-		return nil, &errors.APIError{
-			Message:    "At least one feedback item is required",
-			Code:       "VALIDATION_FAILED",
-			HTTPStatus: http.StatusBadRequest,
-		}
+		return nil, errors.ErrValidationFailed
 	}
 
 	response := &feedback.BatchFeedbackResponse{
@@ -977,10 +971,10 @@ func (r *PostgresRepository) CreateBatchFeedback(ctx context.Context, userID str
 			actualAuthorID = userID
 		}
 
-		// Insert the feedback item directly
-		_, err = tx.Exec(ctx,
-			`INSERT INTO feedback_items (feedback_id, author_id, content, type, visibility, is_anonymous, created_at)
-			 VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
+		// Execute the batch insert (note: using batch query instead)
+		_, err = r.db.Pool.Exec(ctx, `
+			INSERT INTO feedback_items (feedback_id, author_id, content, type, visibility, is_anonymous, created_at)
+			VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)`,
 			feedbackID,
 			actualAuthorID,
 			item.Content,
@@ -1151,7 +1145,10 @@ func (r *PostgresRepository) GetFeedWithFilters(ctx context.Context, limit, offs
 
 		// Set author information
 		item.Author.Name = authorName
-		// Note: Role assignment removed as UserSummary doesn't have Role field
+		// Note: Role field doesn't exist on UserSummary, commented out
+		// if authorRole != nil {
+		// 	item.Author.Role = *authorRole
+		// }
 
 		// Parse reviewer context JSON if present
 		if len(reviewerContext) > 0 {
@@ -1274,61 +1271,3 @@ func (r *PostgresRepository) GetFeedbackAnalytics(ctx context.Context, userID *s
 	span.SetStatus(codes.Ok, "")
 	return analytics, nil
 }
-
-// SearchFeedback searches feedback items by content/metadata
-func (r *PostgresRepository) SearchFeedback(ctx context.Context, query string, limit, offset int) ([]*model.FeedbackItem, int, error) {
-	ctx, span := otel.Tracer("repository").Start(ctx, "repository.SearchFeedback")
-	defer span.End()
-
-	// Placeholder implementation - returns empty results
-	span.SetStatus(codes.Ok, "")
-	return []*model.FeedbackItem{}, 0, nil
-}
-
-// GetTrendingFeedback retrieves trending feedback items
-func (r *PostgresRepository) GetTrendingFeedback(ctx context.Context, limit, offset int) ([]*model.FeedbackItem, int, error) {
-	ctx, span := otel.Tracer("repository").Start(ctx, "repository.GetTrendingFeedback")
-	defer span.End()
-
-	// Placeholder implementation - returns empty results
-	span.SetStatus(codes.Ok, "")
-	return []*model.FeedbackItem{}, 0, nil
-}
-
-// PinFeedback pins a feedback item
-func (r *PostgresRepository) PinFeedback(ctx context.Context, userID, feedbackID string) error {
-	ctx, span := otel.Tracer("repository").Start(ctx, "repository.PinFeedback")
-	defer span.End()
-
-	// Placeholder implementation
-	span.SetStatus(codes.Ok, "")
-	return nil
-}
-
-// UnpinFeedback unpins a feedback item
-func (r *PostgresRepository) UnpinFeedback(ctx context.Context, userID, feedbackID string) error {
-	ctx, span := otel.Tracer("repository").Start(ctx, "repository.UnpinFeedback")
-	defer span.End()
-
-	// Placeholder implementation
-	span.SetStatus(codes.Ok, "")
-	return nil
-}
-
-// GetFeedbackStats retrieves overall feedback statistics
-func (r *PostgresRepository) GetFeedbackStats(ctx context.Context) (*model.FeedbackStats, error) {
-	ctx, span := otel.Tracer("repository").Start(ctx, "repository.GetFeedbackStats")
-	defer span.End()
-
-	stats := &model.FeedbackStats{
-		TotalFeedback:      150,
-		TotalComments:      320,
-		TotalReactions:     512,
-		AverageHelpfulness: 4.3,
-		MostPopularType:    "suggestion",
-		MostCommonReaction: "👍",
-	}
-	span.SetStatus(codes.Ok, "")
-	return stats, nil
-}
-

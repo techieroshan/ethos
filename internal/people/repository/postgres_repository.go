@@ -4,12 +4,13 @@ import (
 	"context"
 	"strconv"
 
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 	"ethos/internal/auth/model"
 	"ethos/internal/database"
 	"ethos/internal/people"
 	"ethos/pkg/errors"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 )
 
 // PostgresRepository implements the Repository interface using PostgreSQL
@@ -28,12 +29,12 @@ func (r *PostgresRepository) SearchPeople(ctx context.Context, query string, lim
 	defer span.End()
 
 	searchPattern := "%" + query + "%"
-	
+
 	// Get total count
 	var totalCount int
 	countQuery := `
 		SELECT COUNT(*) FROM users
-		WHERE (name ILIKE $1 OR email ILIKE $1)
+		WHERE (CONCAT(first_name, ' ', last_name) ILIKE $1 OR email ILIKE $1)
 	`
 	err := r.db.Pool.QueryRow(ctx, countQuery, searchPattern).Scan(&totalCount)
 	if err != nil {
@@ -44,10 +45,10 @@ func (r *PostgresRepository) SearchPeople(ctx context.Context, query string, lim
 
 	// Get profiles
 	profilesQuery := `
-		SELECT id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+		SELECT id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at
 		FROM users
-		WHERE (name ILIKE $1 OR email ILIKE $1)
-		ORDER BY name ASC
+		WHERE (CONCAT(first_name, ' ', last_name) ILIKE $1 OR email ILIKE $1)
+		ORDER BY CONCAT(first_name, ' ', last_name) ASC
 		LIMIT $2 OFFSET $3
 	`
 
@@ -66,7 +67,8 @@ func (r *PostgresRepository) SearchPeople(ctx context.Context, query string, lim
 			&user.ID,
 			&user.Email,
 			&user.PasswordHash,
-			&user.Name,
+			&user.FirstName,
+			&user.LastName,
 			&user.EmailVerified,
 			&user.PublicBio,
 			&user.CreatedAt,
@@ -96,11 +98,11 @@ func (r *PostgresRepository) GetRecommendations(ctx context.Context, userID stri
 
 	// Simple recommendation: get users who have given feedback (excluding current user)
 	query := `
-		SELECT DISTINCT u.id, u.email, u.password_hash, u.name, u.email_verified, u.public_bio, u.created_at, u.updated_at
+		SELECT DISTINCT u.id, u.email, u.password_hash, u.first_name, u.last_name, u.email_verified, u.public_bio, u.created_at, u.updated_at
 		FROM users u
 		JOIN feedback_items f ON u.id = f.author_id
 		WHERE u.id != $1
-		ORDER BY u.name ASC
+		ORDER BY CONCAT(u.first_name, ' ', u.last_name) ASC
 		LIMIT 10
 	`
 
@@ -119,7 +121,8 @@ func (r *PostgresRepository) GetRecommendations(ctx context.Context, userID stri
 			&user.ID,
 			&user.Email,
 			&user.PasswordHash,
-			&user.Name,
+			&user.FirstName,
+			&user.LastName,
 			&user.EmailVerified,
 			&user.PublicBio,
 			&user.CreatedAt,
@@ -151,15 +154,15 @@ func (r *PostgresRepository) SearchPeopleWithFilters(ctx context.Context, query 
 
 	// Build base query
 	querySQL := `
-		SELECT id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+		SELECT id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at
 		FROM users
-		WHERE (name ILIKE $1 OR email ILIKE $1)
+		WHERE (CONCAT(first_name, ' ', last_name) ILIKE $1 OR email ILIKE $1)
 	`
 
 	countQuery := `
 		SELECT COUNT(*)
 		FROM users
-		WHERE (name ILIKE $1 OR email ILIKE $1)
+		WHERE (CONCAT(first_name, ' ', last_name) ILIKE $1 OR email ILIKE $1)
 	`
 
 	args := []interface{}{searchPattern}
@@ -204,7 +207,7 @@ func (r *PostgresRepository) SearchPeopleWithFilters(ctx context.Context, query 
 	}
 
 	// Add ordering and pagination
-	querySQL += ` ORDER BY name ASC LIMIT $` + strconv.Itoa(argCount+1) + ` OFFSET $` + strconv.Itoa(argCount+2)
+	querySQL += ` ORDER BY CONCAT(first_name, ' ', last_name) ASC LIMIT $` + strconv.Itoa(argCount+1) + ` OFFSET $` + strconv.Itoa(argCount+2)
 	args = append(args, limit, offset)
 
 	// Get total count
@@ -232,7 +235,8 @@ func (r *PostgresRepository) SearchPeopleWithFilters(ctx context.Context, query 
 			&user.ID,
 			&user.Email,
 			&user.PasswordHash,
-			&user.Name,
+			&user.FirstName,
+			&user.LastName,
 			&user.EmailVerified,
 			&user.PublicBio,
 			&user.CreatedAt,
@@ -255,4 +259,3 @@ func (r *PostgresRepository) SearchPeopleWithFilters(ctx context.Context, query 
 	span.SetStatus(codes.Ok, "")
 	return profiles, totalCount, nil
 }
-

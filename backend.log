@@ -1,0 +1,514 @@
+2025/12/03 08:27:02 Warning: No email sender configured, using no-op
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] OPTIONS /api/*path                --> ethos/api.SetupRoutes.func1 (7 handlers)
+[GIN-debug] POST   /api/v1/auth/login        --> ethos/internal/auth/handler.(*AuthHandler).Login-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/register     --> ethos/internal/auth/handler.(*AuthHandler).Register-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/refresh      --> ethos/internal/auth/handler.(*AuthHandler).Refresh-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/request-password-reset --> ethos/internal/auth/handler.(*AuthHandler).RequestPasswordReset-fm (7 handlers)
+[GIN-debug] GET    /api/v1/auth/me           --> ethos/internal/auth/handler.(*AuthHandler).Me-fm (8 handlers)
+[GIN-debug] GET    /api/v1/auth/verify-email/:token --> ethos/internal/auth/handler.(*AuthHandler).VerifyEmail-fm (7 handlers)
+[GIN-debug] POST   /api/v1/auth/change-password --> ethos/internal/auth/handler.(*AuthHandler).ChangePassword-fm (8 handlers)
+[GIN-debug] POST   /api/v1/auth/setup-2fa    --> ethos/internal/auth/handler.(*AuthHandler).Setup2FA-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/auth/setup-2fa    --> ethos/internal/account/handler.(*AccountHandler).Disable2FA-fm (8 handlers)
+[GIN-debug] GET    /api/v1/auth/tenants      --> ethos/internal/auth/handler.(*AuthHandler).ListUserTenants-fm (8 handlers)
+[GIN-debug] POST   /api/v1/auth/tenants/:tenant_id/switch --> ethos/internal/auth/handler.(*AuthHandler).SwitchTenant-fm (8 handlers)
+[GIN-debug] GET    /api/v1/auth/tenants/current --> ethos/internal/auth/handler.(*AuthHandler).GetCurrentTenant-fm (8 handlers)
+[GIN-debug] GET    /api/v1/profile/me        --> ethos/internal/profile/handler.(*ProfileHandler).GetProfile-fm (8 handlers)
+[GIN-debug] PUT    /api/v1/profile/me        --> ethos/internal/profile/handler.(*ProfileHandler).UpdateProfile-fm (8 handlers)
+[GIN-debug] PATCH  /api/v1/profile/me/preferences --> ethos/internal/profile/handler.(*ProfileHandler).UpdatePreferences-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/profile/me        --> ethos/internal/profile/handler.(*ProfileHandler).DeleteProfile-fm (8 handlers)
+[GIN-debug] POST   /api/v1/profile/opt-out   --> ethos/internal/profile/handler.(*ProfileHandler).OptOut-fm (8 handlers)
+[GIN-debug] POST   /api/v1/profile/anonymize --> ethos/internal/profile/handler.(*ProfileHandler).Anonymize-fm (8 handlers)
+[GIN-debug] POST   /api/v1/profile/delete_request --> ethos/internal/profile/handler.(*ProfileHandler).RequestDeletion-fm (8 handlers)
+[GIN-debug] GET    /api/v1/profile/user-profile --> ethos/internal/profile/handler.(*ProfileHandler).SearchProfiles-fm (7 handlers)
+[GIN-debug] GET    /api/v1/profile/:user_id  --> ethos/internal/profile/handler.(*ProfileHandler).GetUserProfileByID-fm (7 handlers)
+[GIN-debug] GET    /api/v1/organizations     --> ethos/internal/organization/handler.(*OrganizationHandler).ListOrganizations-fm (8 handlers)
+[GIN-debug] POST   /api/v1/organizations     --> ethos/internal/organization/handler.(*OrganizationHandler).CreateOrganization-fm (8 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id --> ethos/internal/organization/handler.(*OrganizationHandler).GetOrganization-fm (8 handlers)
+[GIN-debug] PUT    /api/v1/organizations/:org_id --> ethos/internal/organization/handler.(*OrganizationHandler).UpdateOrganization-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/organizations/:org_id --> ethos/internal/organization/handler.(*OrganizationHandler).DeleteOrganization-fm (8 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/members --> ethos/internal/organization/handler.(*OrganizationHandler).ListOrganizationMembers-fm (8 handlers)
+[GIN-debug] POST   /api/v1/organizations/:org_id/members --> ethos/internal/organization/handler.(*OrganizationHandler).AddOrganizationMember-fm (8 handlers)
+[GIN-debug] PUT    /api/v1/organizations/:org_id/members/:user_id --> ethos/internal/organization/handler.(*OrganizationHandler).UpdateOrganizationMemberRole-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/organizations/:org_id/members/:user_id --> ethos/internal/organization/handler.(*OrganizationHandler).RemoveOrganizationMember-fm (8 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/settings --> ethos/internal/organization/handler.(*OrganizationHandler).GetOrganizationSettings-fm (8 handlers)
+[GIN-debug] PUT    /api/v1/organizations/:org_id/settings --> ethos/internal/organization/handler.(*OrganizationHandler).UpdateOrganizationSettings-fm (8 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/admin/analytics/overview --> ethos/internal/organization/handler.(*OrganizationHandler).GetOrganizationAnalytics-fm (9 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/admin/analytics/users --> ethos/internal/organization/handler.(*OrganizationHandler).GetOrganizationUserAnalytics-fm (9 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/admin/analytics/content --> ethos/internal/organization/handler.(*OrganizationHandler).GetOrganizationContentAnalytics-fm (9 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/admin/users --> ethos/internal/organization/handler.(*OrganizationHandler).ListOrganizationUsers-fm (9 handlers)
+[GIN-debug] POST   /api/v1/organizations/:org_id/admin/users/:user_id/suspend --> ethos/internal/organization/handler.(*OrganizationHandler).SuspendOrganizationUser-fm (9 handlers)
+[GIN-debug] POST   /api/v1/organizations/:org_id/admin/users/:user_id/unsuspend --> ethos/internal/organization/handler.(*OrganizationHandler).UnsuspendOrganizationUser-fm (9 handlers)
+[GIN-debug] DELETE /api/v1/organizations/:org_id/admin/users/:user_id --> ethos/internal/organization/handler.(*OrganizationHandler).RemoveOrganizationUser-fm (9 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/admin/moderation/pending --> ethos/internal/moderation/handler.(*ModerationHandler).ListOrganizationPendingContent-fm (9 handlers)
+[GIN-debug] POST   /api/v1/organizations/:org_id/admin/moderation/:content_id/review --> ethos/internal/moderation/handler.(*ModerationHandler).ReviewOrganizationContent-fm (9 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/admin/moderation/stats --> ethos/internal/moderation/handler.(*ModerationHandler).GetOrganizationModerationStats-fm (9 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/admin/audit --> ethos/internal/organization/handler.(*OrganizationHandler).GetOrganizationAuditLogs-fm (9 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/admin/audit/export --> ethos/internal/organization/handler.(*OrganizationHandler).ExportOrganizationAuditLogs-fm (9 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/admin/incidents --> ethos/internal/organization/handler.(*OrganizationHandler).ListOrganizationIncidents-fm (9 handlers)
+[GIN-debug] POST   /api/v1/organizations/:org_id/admin/incidents --> ethos/internal/organization/handler.(*OrganizationHandler).CreateOrganizationIncident-fm (9 handlers)
+[GIN-debug] PUT    /api/v1/organizations/:org_id/admin/incidents/:incident_id --> ethos/internal/organization/handler.(*OrganizationHandler).UpdateOrganizationIncident-fm (9 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/moderation/appeals --> ethos/internal/moderation/handler.(*ModerationHandler).ListAppeals-fm (8 handlers)
+[GIN-debug] POST   /api/v1/organizations/:org_id/moderation/appeals --> ethos/internal/moderation/handler.(*ModerationHandler).SubmitAppeal-fm (8 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/moderation/appeals/:appeal_id/context --> ethos/internal/moderation/handler.(*ModerationHandler).GetAppealContext-fm (8 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/moderation/actions --> ethos/internal/moderation/handler.(*ModerationHandler).ListModerationActions-fm (8 handlers)
+[GIN-debug] GET    /api/v1/organizations/:org_id/moderation/history/:user_id --> ethos/internal/moderation/handler.(*ModerationHandler).GetModerationHistory-fm (8 handlers)
+[GIN-debug] GET    /api/v1/feedback/feed     --> ethos/internal/feedback/handler.(*FeedbackHandler).GetFeed-fm (8 handlers)
+[GIN-debug] GET    /api/v1/feedback/:feedback_id --> ethos/internal/feedback/handler.(*FeedbackHandler).GetFeedbackByID-fm (8 handlers)
+[GIN-debug] GET    /api/v1/feedback/:feedback_id/comments --> ethos/internal/feedback/handler.(*FeedbackHandler).GetComments-fm (8 handlers)
+[GIN-debug] POST   /api/v1/feedback          --> ethos/internal/feedback/handler.(*FeedbackHandler).CreateFeedback-fm (8 handlers)
+[GIN-debug] POST   /api/v1/feedback/:feedback_id/comments --> ethos/internal/feedback/handler.(*FeedbackHandler).CreateComment-fm (8 handlers)
+[GIN-debug] POST   /api/v1/feedback/:feedback_id/react --> ethos/internal/feedback/handler.(*FeedbackHandler).AddReaction-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/feedback/:feedback_id/react --> ethos/internal/feedback/handler.(*FeedbackHandler).RemoveReaction-fm (8 handlers)
+[GIN-debug] GET    /api/v1/feedback/templates --> ethos/internal/feedback/handler.(*FeedbackHandler).GetTemplates-fm (7 handlers)
+[GIN-debug] POST   /api/v1/feedback/template_suggestions --> ethos/internal/feedback/handler.(*FeedbackHandler).PostTemplateSuggestions-fm (7 handlers)
+[GIN-debug] GET    /api/v1/feedback/impact   --> ethos/internal/feedback/handler.(*FeedbackHandler).GetImpact-fm (7 handlers)
+[GIN-debug] POST   /api/v1/feedback/batch    --> ethos/internal/feedback/handler.(*FeedbackHandler).CreateBatchFeedback-fm (7 handlers)
+[GIN-debug] GET    /api/v1/feedback/bookmarks --> ethos/internal/feedback/handler.(*FeedbackHandler).GetBookmarks-fm (7 handlers)
+[GIN-debug] POST   /api/v1/feedback/bookmarks/:feedback_id --> ethos/internal/feedback/handler.(*FeedbackHandler).AddBookmark-fm (7 handlers)
+[GIN-debug] DELETE /api/v1/feedback/bookmarks/:feedback_id --> ethos/internal/feedback/handler.(*FeedbackHandler).RemoveBookmark-fm (7 handlers)
+[GIN-debug] GET    /api/v1/feedback/export   --> ethos/internal/feedback/handler.(*FeedbackHandler).ExportFeedback-fm (7 handlers)
+[GIN-debug] GET    /api/v1/feedback/analytics --> ethos/internal/feedback/handler.(*FeedbackHandler).GetFeedbackAnalytics-fm (8 handlers)
+[GIN-debug] PUT    /api/v1/feedback/:feedback_id --> ethos/internal/feedback/handler.(*FeedbackHandler).UpdateFeedback-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/feedback/:feedback_id --> ethos/internal/feedback/handler.(*FeedbackHandler).DeleteFeedback-fm (8 handlers)
+[GIN-debug] PUT    /api/v1/feedback/:feedback_id/comments/:comment_id --> ethos/internal/feedback/handler.(*FeedbackHandler).UpdateComment-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/feedback/:feedback_id/comments/:comment_id --> ethos/internal/feedback/handler.(*FeedbackHandler).DeleteComment-fm (8 handlers)
+[GIN-debug] GET    /api/v1/feedback/search   --> ethos/internal/feedback/handler.(*FeedbackHandler).SearchFeedback-fm (8 handlers)
+[GIN-debug] GET    /api/v1/feedback/trending --> ethos/internal/feedback/handler.(*FeedbackHandler).GetTrendingFeedback-fm (8 handlers)
+[GIN-debug] POST   /api/v1/feedback/:feedback_id/pin --> ethos/internal/feedback/handler.(*FeedbackHandler).PinFeedback-fm (8 handlers)
+[GIN-debug] DELETE /api/v1/feedback/:feedback_id/pin --> ethos/internal/feedback/handler.(*FeedbackHandler).UnpinFeedback-fm (8 handlers)
+[GIN-debug] GET    /api/v1/feedback/stats    --> ethos/internal/feedback/handler.(*FeedbackHandler).GetFeedbackStats-fm (8 handlers)
+[GIN-debug] GET    /api/v1/notifications     --> ethos/internal/notifications/handler.(*NotificationHandler).GetNotifications-fm (8 handlers)
+[GIN-debug] PUT    /api/v1/notifications/:id/read --> ethos/internal/notifications/handler.(*NotificationHandler).MarkAsRead-fm (8 handlers)
+[GIN-debug] PUT    /api/v1/notifications/mark-all-read --> ethos/internal/notifications/handler.(*NotificationHandler).MarkAllAsRead-fm (8 handlers)
+[GIN-debug] GET    /api/v1/notifications/preferences --> ethos/internal/notifications/handler.(*NotificationHandler).GetPreferences-fm (8 handlers)
+[GIN-debug] PUT    /api/v1/notifications/preferences --> ethos/internal/notifications/handler.(*NotificationHandler).UpdatePreferences-fm (8 handlers)
+[GIN-debug] GET    /api/v1/dashboard         --> ethos/internal/dashboard/handler.(*DashboardHandler).GetDashboard-fm (8 handlers)
+[GIN-debug] GET    /api/v1/people/search     --> ethos/internal/people/handler.(*PeopleHandler).SearchPeople-fm (8 handlers)
+[GIN-debug] GET    /api/v1/people/recommendations --> ethos/internal/people/handler.(*PeopleHandler).GetRecommendations-fm (8 handlers)
+[GIN-debug] GET    /api/v1/community/rules   --> ethos/internal/community/handler.(*CommunityHandler).GetRules-fm (7 handlers)
+[GIN-debug] GET    /api/v1/account/security-events --> ethos/internal/account/handler.(*AccountHandler).GetSecurityEvents-fm (8 handlers)
+[GIN-debug] GET    /api/v1/account/export-data/:export_id/status --> ethos/internal/account/handler.(*AccountHandler).GetExportStatus-fm (8 handlers)
+[GIN-debug] POST   /api/v1/appeals           --> ethos/internal/appeal/handler.(*AppealHandler).SubmitAppeal-fm (8 handlers)
+[GIN-debug] GET    /api/v1/appeals           --> ethos/internal/appeal/handler.(*AppealHandler).GetUserAppeals-fm (8 handlers)
+[GIN-debug] GET    /api/v1/appeals/:appeal_id --> ethos/internal/appeal/handler.(*AppealHandler).GetAppealByID-fm (8 handlers)
+[GIN-debug] GET    /api/v1/health            --> ethos/api.SetupRoutes.func2 (7 handlers)
+[GIN-debug] GET    /api/v1/ready             --> ethos/api.SetupRoutes.func3 (7 handlers)
+[GIN-debug] GET    /api/v1/admin/users       --> ethos/internal/organization/handler.(*OrganizationHandler).ListAllUsers-fm (9 handlers)
+[GIN-debug] GET    /api/v1/admin/users/:user_id --> ethos/internal/organization/handler.(*OrganizationHandler).GetUserDetails-fm (9 handlers)
+[GIN-debug] POST   /api/v1/admin/users/:user_id/suspend --> ethos/internal/organization/handler.(*OrganizationHandler).SuspendUser-fm (9 handlers)
+[GIN-debug] POST   /api/v1/admin/users/:user_id/ban --> ethos/internal/organization/handler.(*OrganizationHandler).BanUser-fm (9 handlers)
+[GIN-debug] POST   /api/v1/admin/users/:user_id/unban --> ethos/internal/organization/handler.(*OrganizationHandler).UnbanUser-fm (9 handlers)
+[GIN-debug] DELETE /api/v1/admin/users/:user_id --> ethos/internal/organization/handler.(*OrganizationHandler).DeleteUser-fm (9 handlers)
+[GIN-debug] GET    /api/v1/admin/content/pending --> ethos/internal/moderation/handler.(*ModerationHandler).ListPendingContent-fm (9 handlers)
+[GIN-debug] POST   /api/v1/admin/content/:content_id/moderate --> ethos/internal/moderation/handler.(*ModerationHandler).ModerateContent-fm (9 handlers)
+[GIN-debug] POST   /api/v1/admin/content/:content_id/escalate --> ethos/internal/moderation/handler.(*ModerationHandler).EscalateContent-fm (9 handlers)
+[GIN-debug] DELETE /api/v1/admin/content/:content_id --> ethos/internal/moderation/handler.(*ModerationHandler).DeleteContent-fm (9 handlers)
+[GIN-debug] GET    /api/v1/admin/analytics/overview --> ethos/internal/organization/handler.(*OrganizationHandler).GetSystemAnalytics-fm (9 handlers)
+[GIN-debug] GET    /api/v1/admin/analytics/users --> ethos/internal/organization/handler.(*OrganizationHandler).GetUserAnalytics-fm (9 handlers)
+[GIN-debug] GET    /api/v1/admin/analytics/content --> ethos/internal/organization/handler.(*OrganizationHandler).GetContentAnalytics-fm (9 handlers)
+[GIN-debug] GET    /api/v1/admin/analytics/moderation --> ethos/internal/moderation/handler.(*ModerationHandler).GetModerationAnalytics-fm (9 handlers)
+[GIN-debug] GET    /api/v1/admin/audit       --> ethos/internal/organization/handler.(*OrganizationHandler).GetAuditLogs-fm (9 handlers)
+[GIN-debug] GET    /api/v1/admin/audit/:entry_id --> ethos/internal/organization/handler.(*OrganizationHandler).GetAuditEntry-fm (9 handlers)
+[GIN-debug] GET    /api/v1/admin/settings    --> ethos/internal/organization/handler.(*OrganizationHandler).GetSystemSettings-fm (9 handlers)
+[GIN-debug] PUT    /api/v1/admin/settings    --> ethos/internal/organization/handler.(*OrganizationHandler).UpdateSystemSettings-fm (9 handlers)
+[GIN-debug] POST   /api/v1/admin/bulk/suspend-users --> ethos/internal/organization/handler.(*OrganizationHandler).BulkSuspendUsers-fm (9 handlers)
+[GIN-debug] POST   /api/v1/admin/bulk/delete-content --> ethos/internal/moderation/handler.(*ModerationHandler).BulkDeleteContent-fm (9 handlers)
+2025/12/03 08:27:02 Server starting on port 8000
+[GIN] 2025/12/03 - 08:27:29 | 401 |     245.541µs |             ::1 | GET      "/health"
+[GIN] 2025/12/03 - 08:27:49 | 401 |    1.531959ms |             ::1 | POST     "/api/v1/auth/register"
+[GIN] 2025/12/03 - 08:27:50 | 401 |      34.583µs |             ::1 | POST     "/api/v1/auth/request-password-reset"
+[GIN] 2025/12/03 - 08:27:50 | 401 |       32.25µs |             ::1 | POST     "/api/v1/organizations"
+[GIN] 2025/12/03 - 08:27:51 | 401 |       18.75µs |             ::1 | POST     "/api/v1/feedback"
+[GIN] 2025/12/03 - 08:27:51 | 401 |      25.459µs |             ::1 | POST     "/api/v1/appeals"
+[GIN] 2025/12/03 - 08:27:52 | 401 |        18.5µs |             ::1 | POST     "/api/v1/moderation/report"
+[GIN] 2025/12/03 - 08:27:52 | 401 |      22.959µs |             ::1 | POST     "/api/v1/escalations"
+[GIN] 2025/12/03 - 08:27:53 | 401 |      21.083µs |             ::1 | POST     "/api/v1/audit/reports"
+[GIN] 2025/12/03 - 08:27:53 | 401 |      21.042µs |             ::1 | POST     "/api/v1/security/events"
+[GIN] 2025/12/03 - 08:27:54 | 401 |      22.833µs |             ::1 | POST     "/api/v1/system/alerts"
+[GIN] 2025/12/03 - 08:27:54 | 401 |      19.375µs |             ::1 | POST     "/api/v1/account/delete"
+[GIN] 2025/12/03 - 08:30:00 | 401 |     1.91125ms |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:00 | 401 |      25.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:00 | 401 |       44.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:01 | 401 |          34µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:01 | 401 |      84.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:01 | 401 |      45.959µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:01 | 401 |      20.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:01 | 401 |      30.709µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:01 | 401 |      43.334µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:02 | 401 |      19.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:02 | 401 |      24.709µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:02 | 401 |       21.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:02 | 401 |      293.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:02 | 401 |      23.041µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:02 | 401 |      27.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:03 | 401 |          36µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:03 | 401 |          22µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:03 | 401 |       83.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:03 | 401 |      36.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:03 | 401 |      29.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:04 | 401 |     125.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:04 | 401 |      21.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:04 | 401 |      47.042µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:04 | 401 |      34.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:04 | 401 |      45.959µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:05 | 401 |      20.417µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:05 | 401 |     139.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:05 | 401 |      52.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:05 | 401 |      43.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:05 | 401 |      83.584µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:06 | 401 |      80.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:06 | 401 |      34.417µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:06 | 401 |      68.459µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:06 | 401 |      35.041µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:07 | 401 |      51.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:07 | 401 |      35.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:07 | 401 |      36.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:07 | 401 |     203.583µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:08 | 401 |        33.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:08 | 401 |      35.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:08 | 401 |      53.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:08 | 401 |     155.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:09 | 401 |      35.917µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:09 | 401 |      22.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:09 | 401 |      35.959µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:09 | 401 |      41.166µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:10 | 401 |      22.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:10 | 401 |      64.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:10 | 401 |     110.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:11 | 401 |      75.709µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:11 | 401 |       37.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:11 | 401 |          34µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:11 | 401 |      48.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:12 | 401 |      36.416µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:12 | 401 |      31.458µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:12 | 401 |       36.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:13 | 401 |        74.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:13 | 401 |      50.209µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:13 | 401 |       37.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:14 | 401 |      29.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:14 | 401 |      53.209µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:14 | 401 |      25.208µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:15 | 401 |      21.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:15 | 401 |      24.208µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:16 | 401 |      21.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:16 | 401 |      76.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:16 | 401 |      20.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:17 | 401 |      43.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:17 | 401 |      32.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:17 | 401 |      20.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:18 | 401 |        25.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:18 | 401 |      68.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:19 | 401 |      21.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:19 | 401 |       46.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:20 | 401 |      25.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:20 | 401 |          38µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:20 | 401 |      21.041µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:21 | 401 |     171.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:21 | 401 |      24.166µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:22 | 401 |         818µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:22 | 401 |     106.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:23 | 401 |       32.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:23 | 401 |        43.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:23 | 401 |      27.291µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:23 | 401 |      20.041µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:26 | 401 |      43.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:26 | 401 |      20.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:26 | 401 |        22.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:26 | 401 |       115.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:26 | 401 |      31.166µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:26 | 401 |      43.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:27 | 401 |      21.834µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:27 | 401 |      29.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:27 | 401 |      35.291µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:27 | 401 |      36.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:28 | 401 |      20.583µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:28 | 401 |      21.666µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:28 | 401 |      20.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:28 | 401 |       68.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:28 | 401 |        36.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:29 | 401 |      56.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:29 | 401 |      37.166µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:29 | 401 |      64.416µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:29 | 401 |     143.459µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:29 | 401 |      37.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:30 | 401 |          34µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:30 | 401 |      5.5495ms |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:30 | 401 |      50.208µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:30 | 401 |      25.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:31 | 401 |      21.583µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:31 | 401 |      34.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:31 | 401 |      34.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:32 | 401 |      47.417µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:32 | 401 |      36.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:32 | 401 |      24.709µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:32 | 401 |        29.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:33 | 401 |       22.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:33 | 401 |     830.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:34 | 401 |     483.417µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:34 | 401 |          62µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:35 | 401 |          24µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:35 | 401 |      22.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:36 | 401 |      30.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:37 | 401 |      36.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:38 | 401 |          27µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:40 | 401 |      68.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:40 | 401 |      22.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:40 | 401 |      20.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:41 | 401 |      28.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:41 | 401 |      93.416µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:42 | 401 |      20.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:43 | 401 |      21.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:43 | 401 |         109µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:44 | 401 |    1.385625ms |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:44 | 401 |      26.959µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:45 | 401 |     934.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:45 | 401 |      19.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:46 | 401 |      38.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:47 | 401 |      26.834µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:47 | 401 |      20.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:48 | 401 |      19.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:48 | 401 |      22.417µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:49 | 401 |       61.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:50 | 401 |      77.917µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:50 | 401 |      22.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:51 | 401 |     139.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:51 | 401 |      48.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:52 | 401 |      47.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:52 | 401 |      19.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:53 | 401 |       38.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:53 | 401 |      37.416µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:54 | 401 |      38.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:54 | 401 |      45.709µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:55 | 401 |      23.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:55 | 401 |      59.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:56 | 401 |      86.042µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:56 | 401 |      37.917µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:57 | 401 |      27.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:57 | 401 |       73.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:58 | 401 |      23.709µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:58 | 401 |      21.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:59 | 401 |      42.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:30:59 | 401 |      20.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:00 | 401 |      19.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:00 | 401 |      23.042µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:01 | 401 |       232.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:01 | 401 |      33.459µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:02 | 401 |      20.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:02 | 401 |      49.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:03 | 401 |      79.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:04 | 401 |      36.791µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:04 | 401 |      23.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:05 | 401 |      38.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:05 | 401 |      22.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:06 | 401 |      91.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:06 | 401 |        49.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:07 | 401 |      33.584µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:08 | 401 |      28.709µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:08 | 401 |      21.916µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:09 | 401 |      20.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:10 | 401 |       26.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:11 | 401 |       28.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:11 | 401 |      32.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:12 | 401 |     102.084µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:13 | 401 |      20.334µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:14 | 401 |      20.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:14 | 401 |      22.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:15 | 401 |      38.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:16 | 401 |      23.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:16 | 401 |      63.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:17 | 401 |     952.334µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:18 | 401 |      25.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:19 | 401 |      27.666µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:19 | 401 |      46.416µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:20 | 401 |      36.458µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:21 | 401 |      5.1625ms |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:21 | 401 |        69.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:22 | 401 |      34.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:23 | 401 |      52.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:23 | 401 |      20.916µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:24 | 401 |      47.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:24 | 401 |      26.208µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:25 | 401 |      21.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:25 | 401 |          60µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:26 | 401 |     1.30225ms |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:26 | 401 |      28.334µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:27 | 401 |      46.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:28 | 401 |     128.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:28 | 401 |      39.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:29 | 401 |      23.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:29 | 401 |      21.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:30 | 401 |      19.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:31 | 401 |       52.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:31 | 401 |      29.666µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:32 | 401 |      40.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:32 | 401 |       57.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:33 | 401 |      21.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:34 | 401 |      20.917µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:34 | 401 |      20.458µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:35 | 401 |      21.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:36 | 401 |      71.666µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:36 | 401 |      21.041µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:37 | 401 |          72µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:38 | 401 |      21.917µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:39 | 401 |     136.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:39 | 401 |      22.209µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:40 | 401 |          25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:41 | 401 |      56.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:42 | 401 |      98.459µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:42 | 401 |     275.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:43 | 401 |      74.917µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:44 | 401 |      32.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:44 | 401 |      48.208µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:45 | 401 |      36.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:45 | 401 |      56.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:46 | 401 |      24.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:47 | 401 |     396.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:47 | 401 |      47.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:48 | 401 |      39.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:49 | 401 |      20.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:49 | 401 |      27.208µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:50 | 401 |      26.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:51 | 401 |      53.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:52 | 401 |      26.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:52 | 401 |      25.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:53 | 401 |      23.209µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:54 | 401 |      20.666µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:54 | 401 |      57.666µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:55 | 401 |      20.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:56 | 401 |      19.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:56 | 401 |      45.584µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:57 | 401 |          74µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:58 | 401 |       23.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:31:58 | 401 |      61.583µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:00 | 401 |      72.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:00 | 401 |      47.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:01 | 401 |     114.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:02 | 401 |      48.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:03 | 401 |       20.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:03 | 401 |      23.834µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:04 | 401 |      52.459µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:06 | 401 |     205.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:07 | 401 |     165.791µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:07 | 401 |      40.459µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:08 | 401 |      24.417µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:09 | 401 |          48µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:10 | 401 |      95.916µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:11 | 401 |      27.208µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:12 | 401 |      29.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:13 | 401 |          25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:13 | 401 |          53µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:14 | 401 |      58.792µs |             ::1 | POST     "/api/v1/auth/register"
+[GIN] 2025/12/03 - 08:32:14 | 401 |     163.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:15 | 401 |       46.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:15 | 401 |      22.792µs |             ::1 | POST     "/api/v1/auth/request-password-reset"
+[GIN] 2025/12/03 - 08:32:16 | 401 |      23.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:16 | 401 |          84µs |             ::1 | GET      "/api/v1/auth/verify-email/verify_user_1"
+[GIN] 2025/12/03 - 08:32:17 | 401 |        46.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:17 | 401 |      34.584µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:18 | 401 |      26.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:19 | 401 |      27.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:20 | 401 |     221.959µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:21 | 401 |        72.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:21 | 401 |       43.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:22 | 401 |       95.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:23 | 401 |     130.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:24 | 401 |      21.916µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:25 | 401 |     129.791µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:26 | 401 |      48.417µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:27 | 401 |       54.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:28 | 401 |      30.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:29 | 401 |     158.209µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:30 | 401 |      49.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:31 | 401 |      38.333µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:32 | 401 |      94.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:34 | 401 |    4.021833ms |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:35 | 401 |      836.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:37 | 401 |     198.334µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:38 | 401 |      25.834µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:39 | 401 |      71.541µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:40 | 401 |       25.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:41 | 401 |      22.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:42 | 401 |       40.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:43 | 401 |      20.167µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:44 | 401 |      32.041µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:45 | 401 |        57.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:46 | 401 |      22.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:46 | 401 |      51.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:47 | 401 |      24.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:49 | 401 |     761.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:51 | 401 |        41.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:52 | 401 |      93.166µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:53 | 401 |          30µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:54 | 401 |      22.583µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:55 | 401 |      19.916µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:56 | 401 |      35.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:57 | 401 |      27.917µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:58 | 401 |      23.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:59 | 401 |     123.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:32:59 | 401 |      22.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:00 | 401 |      34.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:02 | 401 |     226.291µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:02 | 401 |      50.417µs |             ::1 | GET      "/health"
+[GIN] 2025/12/03 - 08:33:04 | 401 |     321.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:05 | 401 |      49.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:06 | 401 |      59.042µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:07 | 401 |      30.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:08 | 401 |      22.042µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:09 | 401 |       82.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:10 | 401 |      23.084µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:11 | 401 |      22.458µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:12 | 401 |      35.583µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:13 | 401 |     118.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:15 | 401 |      22.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:15 | 401 |      61.417µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:16 | 401 |      22.584µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:17 | 401 |      27.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:18 | 401 |      23.208µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:19 | 401 |      20.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:20 | 401 |      66.708µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:21 | 401 |       46.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:23 | 401 |       70.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:24 | 401 |      74.916µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:25 | 401 |      36.917µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:26 | 401 |      23.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:27 | 401 |      50.583µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:28 | 401 |      200.75µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:29 | 401 |      22.458µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:29 | 401 |      31.833µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:30 | 401 |       22.25µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:31 | 401 |      32.667µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:32 | 401 |      23.083µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:33 | 401 |       238.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:35 | 401 |     141.542µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:36 | 401 |      77.291µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:38 | 401 |     202.834µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:39 | 401 |      52.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:40 | 401 |      40.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:41 | 401 |     112.792µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:43 | 401 |      33.834µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:44 | 401 |      21.625µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:45 | 401 |     213.334µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:46 | 401 |      43.416µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:48 | 401 |         958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:49 | 401 |      37.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:51 | 401 |      67.958µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:52 | 401 |      50.666µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:53 | 401 |      41.041µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:54 | 401 |       120.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:55 | 401 |      39.375µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:56 | 401 |          24µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:58 | 401 |     387.917µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:33:59 | 401 |      68.292µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:34:00 | 401 |      91.417µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:34:01 | 401 |     168.666µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:34:02 | 401 |     113.208µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:34:04 | 401 |     100.125µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:34:06 | 401 |        62.5µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:34:07 | 401 |      29.916µs |             ::1 | GET      "/api/v1/auth/tenants"
+[GIN] 2025/12/03 - 08:34:08 | 401 |     362.875µs |             ::1 | GET      "/api/v1/auth/tenants"
+2025/12/03 08:34:09 Shutting down server...
+2025/12/03 08:34:09 Server exited

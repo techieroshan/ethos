@@ -13,9 +13,6 @@ import (
 	accountHandler "ethos/internal/account/handler"
 	accountRepository "ethos/internal/account/repository"
 	accountService "ethos/internal/account/service"
-	appealHandler "ethos/internal/appeal/handler"
-	appealRepository "ethos/internal/appeal/repository"
-	appealService "ethos/internal/appeal/service"
 	"ethos/internal/auth/handler"
 	"ethos/internal/auth/repository"
 	"ethos/internal/auth/service"
@@ -25,12 +22,11 @@ import (
 	dashboardHandler "ethos/internal/dashboard/handler"
 	"ethos/internal/database"
 	feedbackHandler "ethos/internal/feedback/handler"
-	"ethos/internal/monitoring"
 	moderationHandler "ethos/internal/moderation/handler"
 	moderationRepository "ethos/internal/moderation/repository"
 	moderationService "ethos/internal/moderation/service"
+	"ethos/internal/monitoring"
 	notificationHandler "ethos/internal/notifications/handler"
-	"ethos/internal/ratelimit"
 	organizationHandler "ethos/internal/organization/handler"
 	organizationRepository "ethos/internal/organization/repository"
 	organizationService "ethos/internal/organization/service"
@@ -38,6 +34,7 @@ import (
 	profileHandler "ethos/internal/profile/handler"
 	profileRepository "ethos/internal/profile/repository"
 	profileService "ethos/internal/profile/service"
+	"ethos/internal/ratelimit"
 	"ethos/pkg/email"
 	checkerClient "ethos/pkg/email/checker"
 	emailitClient "ethos/pkg/email/emailit"
@@ -76,18 +73,16 @@ func main() {
 	}
 	defer db.Close()
 
-	// Initialize performance monitoring
-	perfMonitor := monitoring.NewPerformanceMonitor()
-
 	// Initialize caching
 	cacheService := cache.NewCacheService(
-		cache.NewRedisCache(cfg.Redis.URL, cfg.Redis.Password, cfg.Redis.DB),
+		cache.NewRedisCache(cfg.Cache.URL, cfg.Cache.Password, cfg.Cache.DB),
 	)
 
 	// Initialize rate limiting
 	rateLimiter := ratelimit.NewRedisRateLimiter(
-		cache.NewRedisCache(cfg.Redis.URL, cfg.Redis.Password, cfg.Redis.DB),
+		cache.NewRedisCache(cfg.Cache.URL, cfg.Cache.Password, cfg.Cache.DB),
 	)
+	_ = rateLimiter // TODO: Use rateLimiter in middleware
 
 	// Initialize health monitor
 	healthMonitor := monitoring.NewHealthMonitor()
@@ -95,7 +90,7 @@ func main() {
 	// Add health checkers
 	healthMonitor.AddChecker(&databaseHealthChecker{db: db})
 	healthMonitor.AddChecker(&cacheHealthChecker{cache: cacheService})
-	healthMonitor.AddChecker(&redisHealthChecker{url: cfg.Redis.URL})
+	healthMonitor.AddChecker(&redisHealthChecker{url: cfg.Cache.URL})
 
 	// Initialize dependencies
 	authRepo := repository.NewPostgresRepository(db)
@@ -187,11 +182,6 @@ func main() {
 	moderationSvc := moderationService.NewModerationService(moderationRepo)
 	moderationHandler := moderationHandler.NewModerationHandler(moderationSvc)
 
-	// Initialize appeal dependencies
-	appealRepo := appealRepository.NewPostgresRepository(db)
-	appealSvc := appealService.NewAppealService(appealRepo)
-	appealHandler := appealHandler.NewAppealHandler(appealSvc)
-
 	// Initialize organization dependencies
 	orgRepo := organizationRepository.NewPostgresRepository(db)
 	orgSvc := organizationService.NewOrganizationService(orgRepo)
@@ -200,7 +190,7 @@ func main() {
 	// Setup router
 	router := gin.New()
 	api.SetupMiddleware(router)
-	api.SetupRoutes(router, authHandler, profileHandler, feedbackHandler, notificationHandler, dashboardHandler, orgHandler, peopleHandler, communityHandler, accountHandler, moderationHandler, appealHandler, tokenGen)
+	api.SetupRoutes(router, authHandler, profileHandler, feedbackHandler, notificationHandler, dashboardHandler, orgHandler, peopleHandler, communityHandler, accountHandler, moderationHandler, tokenGen)
 
 	// Create HTTP server
 	srv := &http.Server{
@@ -235,13 +225,14 @@ func main() {
 
 	log.Println("Server exited")
 }
+
 // Health checkers for system components
 type databaseHealthChecker struct {
 	db *database.DB
 }
 
 func (h *databaseHealthChecker) HealthCheck(ctx context.Context) error {
-	return h.db.Ping(ctx)
+	return h.db.Pool.Ping(ctx)
 }
 
 func (h *databaseHealthChecker) Name() string {

@@ -18,6 +18,7 @@ type Cache interface {
 	Expire(ctx context.Context, key string, expiration time.Duration) error
 	Incr(ctx context.Context, key string) (int64, error)
 	FlushAll(ctx context.Context) error
+	HealthCheck(ctx context.Context) error
 	Close() error
 }
 
@@ -131,4 +132,9 @@ func (c *RedisCache) GetOrSet(ctx context.Context, key string, getter func() (in
 	}
 
 	return value, nil
+}
+
+// HealthCheck verifies Redis connectivity
+func (c *RedisCache) HealthCheck(ctx context.Context) error {
+	return c.client.Ping(ctx).Err()
 }

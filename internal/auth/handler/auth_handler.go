@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"time"
 
 	"ethos/internal/auth/service"
 	"ethos/pkg/errors"
@@ -55,11 +58,25 @@ func (h *AuthHandler) Login(c *gin.Context) {
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req service.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		// DEBUG: Log binding error
+		debugFile, _ := os.OpenFile("/tmp/ethos_debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if debugFile != nil {
+			fmt.Fprintf(debugFile, "[%s] Binding Error: %v\n", time.Now().Format(time.RFC3339), err)
+			debugFile.Close()
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Validation failed",
-			"code":  "VALIDATION_FAILED",
+			"error":   "Validation failed",
+			"code":    "VALIDATION_FAILED",
+			"details": err.Error(),
 		})
 		return
+	}
+
+	// DEBUG: Log received email to file
+	debugFile, _ := os.OpenFile("/tmp/ethos_debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if debugFile != nil {
+		fmt.Fprintf(debugFile, "[%s] Register Handler - Email: '%s' (len:%d)\n", time.Now().Format(time.RFC3339), req.Email, len(req.Email))
+		debugFile.Close()
 	}
 
 	profile, err := h.service.Register(c.Request.Context(), &req)
@@ -79,6 +96,39 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, profile)
+}
+
+// RequestPasswordReset handles POST /api/v1/auth/request-password-reset
+func (h *AuthHandler) RequestPasswordReset(c *gin.Context) {
+	var req service.RequestPasswordResetRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Validation failed",
+			"code":  "VALIDATION_FAILED",
+		})
+		return
+	}
+
+	err := h.service.RequestPasswordReset(c.Request.Context(), &req)
+	if err != nil {
+		if apiErr, ok := err.(*errors.APIError); ok {
+			c.JSON(apiErr.HTTPStatus, gin.H{
+				"error": apiErr.Message,
+				"code":  apiErr.Code,
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal server error",
+			"code":  "SERVER_ERROR",
+		})
+		return
+	}
+
+	// Always return success for security (don't reveal if email exists)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "If an account with this email exists, a password reset link has been sent.",
+	})
 }
 
 // Refresh handles POST /api/v1/auth/refresh
@@ -285,7 +335,7 @@ func (h *AuthHandler) ListUserTenants(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"tenants": user.TenantMemberships,
+		"tenants":           user.TenantMemberships,
 		"current_tenant_id": user.CurrentTenantID,
 	})
 }
@@ -327,7 +377,7 @@ func (h *AuthHandler) SwitchTenant(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Successfully switched tenant",
+		"message":   "Successfully switched tenant",
 		"tenant_id": tenantID,
 	})
 }
@@ -363,7 +413,7 @@ func (h *AuthHandler) GetCurrentTenant(c *gin.Context) {
 	if currentMembership == nil {
 		c.JSON(http.StatusOK, gin.H{
 			"current_tenant": nil,
-			"message": "No current tenant set",
+			"message":        "No current tenant set",
 		})
 		return
 	}

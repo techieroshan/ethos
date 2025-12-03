@@ -2,7 +2,6 @@ package api
 
 import (
 	accountHandler "ethos/internal/account/handler"
-	appealHandler "ethos/internal/appeal/handler"
 	"ethos/internal/auth/handler"
 	communityHandler "ethos/internal/community/handler"
 	dashboardHandler "ethos/internal/dashboard/handler"
@@ -19,7 +18,7 @@ import (
 )
 
 // SetupRoutes configures all API routes
-func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHandler *profileHandler.ProfileHandler, feedbackHandler *feedbackHandler.FeedbackHandler, notificationHandler *notificationHandler.NotificationHandler, dashboardHandler *dashboardHandler.DashboardHandler, organizationHandler *organizationHandler.OrganizationHandler, peopleHandler *peopleHandler.PeopleHandler, communityHandler *communityHandler.CommunityHandler, accountHandler *accountHandler.AccountHandler, moderationHandler *moderationHandler.ModerationHandler, appealHandler *appealHandler.AppealHandler, tokenGen *jwt.TokenGenerator) {
+func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHandler *profileHandler.ProfileHandler, feedbackHandler *feedbackHandler.FeedbackHandler, notificationHandler *notificationHandler.NotificationHandler, dashboardHandler *dashboardHandler.DashboardHandler, organizationHandler *organizationHandler.OrganizationHandler, peopleHandler *peopleHandler.PeopleHandler, communityHandler *communityHandler.CommunityHandler, accountHandler *accountHandler.AccountHandler, moderationHandler *moderationHandler.ModerationHandler, tokenGen *jwt.TokenGenerator) {
 	// Global OPTIONS handler for all API routes
 	router.OPTIONS("/api/*path", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
@@ -42,11 +41,6 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 			auth.POST("/change-password", middleware.AuthMiddleware(tokenGen), authHandler.ChangePassword)
 			auth.POST("/setup-2fa", middleware.AuthMiddleware(tokenGen), authHandler.Setup2FA)
 			auth.DELETE("/setup-2fa", middleware.AuthMiddleware(tokenGen), accountHandler.Disable2FA)
-
-			// Multi-tenant functionality
-			auth.GET("/tenants", middleware.AuthMiddleware(tokenGen), authHandler.ListUserTenants)
-			auth.POST("/tenants/:tenant_id/switch", middleware.AuthMiddleware(tokenGen), authHandler.SwitchTenant)
-			auth.GET("/tenants/current", middleware.AuthMiddleware(tokenGen), authHandler.GetCurrentTenant)
 		}
 
 		profile := v1.Group("/profile")
@@ -81,36 +75,6 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 			organizations.GET("/:org_id/settings", organizationHandler.GetOrganizationSettings)
 			organizations.PUT("/:org_id/settings", organizationHandler.UpdateOrganizationSettings)
 
-			// Organization Admin Routes (require org_admin role)
-			orgAdmin := organizations.Group("/:org_id/admin")
-			orgAdmin.Use(middleware.OrgAdminMiddleware(tokenGen)) // Organization admin only
-			{
-				// Organization Analytics
-				orgAdmin.GET("/analytics/overview", organizationHandler.GetOrganizationAnalytics)
-				orgAdmin.GET("/analytics/users", organizationHandler.GetOrganizationUserAnalytics)
-				orgAdmin.GET("/analytics/content", organizationHandler.GetOrganizationContentAnalytics)
-
-				// Organization User Management
-				orgAdmin.GET("/users", organizationHandler.ListOrganizationUsers)
-				orgAdmin.POST("/users/:user_id/suspend", organizationHandler.SuspendOrganizationUser)
-				orgAdmin.POST("/users/:user_id/unsuspend", organizationHandler.UnsuspendOrganizationUser)
-				orgAdmin.DELETE("/users/:user_id", organizationHandler.RemoveOrganizationUser)
-
-				// Organization Content Moderation
-				orgAdmin.GET("/moderation/pending", moderationHandler.ListOrganizationPendingContent)
-				orgAdmin.POST("/moderation/:content_id/review", moderationHandler.ReviewOrganizationContent)
-				orgAdmin.GET("/moderation/stats", moderationHandler.GetOrganizationModerationStats)
-
-				// Organization Audit & Compliance
-				orgAdmin.GET("/audit", organizationHandler.GetOrganizationAuditLogs)
-				orgAdmin.GET("/audit/export", organizationHandler.ExportOrganizationAuditLogs)
-
-				// Organization Incident Management
-				orgAdmin.GET("/incidents", organizationHandler.ListOrganizationIncidents)
-				orgAdmin.POST("/incidents", organizationHandler.CreateOrganizationIncident)
-				orgAdmin.PUT("/incidents/:incident_id", organizationHandler.UpdateOrganizationIncident)
-			}
-
 			// Moderation routes nested under organizations
 			moderation := organizations.Group("/:org_id/moderation")
 			{
@@ -144,11 +108,6 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 			feedback.DELETE("/:feedback_id", middleware.AuthMiddleware(tokenGen), feedbackHandler.DeleteFeedback)
 			feedback.PUT("/:feedback_id/comments/:comment_id", middleware.AuthMiddleware(tokenGen), feedbackHandler.UpdateComment)
 			feedback.DELETE("/:feedback_id/comments/:comment_id", middleware.AuthMiddleware(tokenGen), feedbackHandler.DeleteComment)
-			feedback.GET("/search", middleware.AuthMiddleware(tokenGen), feedbackHandler.SearchFeedback)
-			feedback.GET("/trending", middleware.AuthMiddleware(tokenGen), feedbackHandler.GetTrendingFeedback)
-			feedback.POST("/:feedback_id/pin", middleware.AuthMiddleware(tokenGen), feedbackHandler.PinFeedback)
-			feedback.DELETE("/:feedback_id/pin", middleware.AuthMiddleware(tokenGen), feedbackHandler.UnpinFeedback)
-			feedback.GET("/stats", middleware.AuthMiddleware(tokenGen), feedbackHandler.GetFeedbackStats)
 		}
 
 		notifications := v1.Group("/notifications")
@@ -185,78 +144,8 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 			account.GET("/security-events", accountHandler.GetSecurityEvents)
 			account.GET("/export-data/:export_id/status", accountHandler.GetExportStatus)
 		}
-
-				// User Appeals
-				appeals := v1.Group("/appeals")
-				appeals.Use(middleware.AuthMiddleware(tokenGen))
-				{
-					appeals.POST("", appealHandler.SubmitAppeal)
-					appeals.GET("", appealHandler.GetUserAppeals)
-					appeals.GET("/:appeal_id", appealHandler.GetAppealByID)
-				}
-
-				// Health Check (no auth required)
-				v1.GET("/health", func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{
-						"status": "healthy",
-						"timestamp": time.Now().Unix(),
-						"version": "1.0.0",
-					})
-				})
-
-				// Readiness Check
-				v1.GET("/ready", func(c *gin.Context) {
-					// Add database connectivity check here
-					c.JSON(http.StatusOK, gin.H{
-						"status": "ready",
-						"timestamp": time.Now().Unix(),
-						"checks": gin.H{
-							"database": "ok",
-							"redis": "ok",
-						},
-					})
-				})
-
-		// Platform Admin Routes (Global admin operations)
-		admin := v1.Group("/admin")
-		admin.Use(middleware.AuthMiddleware(tokenGen))
-		admin.Use(middleware.AdminMiddleware()) // Platform admin only
-		{
-			// User Management
-			admin.GET("/users", organizationHandler.ListAllUsers)
-			admin.GET("/users/:user_id", organizationHandler.GetUserDetails)
-			admin.POST("/users/:user_id/suspend", organizationHandler.SuspendUser)
-			admin.POST("/users/:user_id/ban", organizationHandler.BanUser)
-			admin.POST("/users/:user_id/unban", organizationHandler.UnbanUser)
-			admin.DELETE("/users/:user_id", organizationHandler.DeleteUser)
-
-			// Content Moderation
-			admin.GET("/content/pending", moderationHandler.ListPendingContent)
-			admin.POST("/content/:content_id/moderate", moderationHandler.ModerateContent)
-			admin.POST("/content/:content_id/escalate", moderationHandler.EscalateContent)
-			admin.DELETE("/content/:content_id", moderationHandler.DeleteContent)
-
-			// System Analytics
-			admin.GET("/analytics/overview", organizationHandler.GetSystemAnalytics)
-			admin.GET("/analytics/users", organizationHandler.GetUserAnalytics)
-			admin.GET("/analytics/content", organizationHandler.GetContentAnalytics)
-			admin.GET("/analytics/moderation", moderationHandler.GetModerationAnalytics)
-
-			// Audit Logs
-			admin.GET("/audit", organizationHandler.GetAuditLogs)
-			admin.GET("/audit/:entry_id", organizationHandler.GetAuditEntry)
-
-			// System Settings
-			admin.GET("/settings", organizationHandler.GetSystemSettings)
-			admin.PUT("/settings", organizationHandler.UpdateSystemSettings)
-
-			// Bulk Operations
-			admin.POST("/bulk/suspend-users", organizationHandler.BulkSuspendUsers)
-			admin.POST("/bulk/delete-content", moderationHandler.BulkDeleteContent)
-		}
 	}
 }
-
 
 // corsHandler handles CORS for all requests
 func corsHandler() gin.HandlerFunc {
@@ -283,7 +172,5 @@ func SetupMiddleware(router *gin.Engine) {
 	router.Use(corsHandler())
 	router.Use(gin.Logger())
 	router.Use(middleware.TracingMiddleware())
-	router.Use(middleware.TenantContextMiddleware(nil)) // Initialize with nil tokenGen for now
-	router.Use(middleware.CrossTenantAuditMiddleware())
 	router.Use(gin.Recovery())
 }
