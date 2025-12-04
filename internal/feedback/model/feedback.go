@@ -101,6 +101,16 @@ type FeedbackTrend struct {
 	FeedbackSubmitted int       `json:"feedback_submitted"`
 }
 
+// FeedbackStats represents statistics for feedback
+type FeedbackStats struct {
+	TotalFeedback      int     `json:"total_feedback"`
+	TotalComments      int     `json:"total_comments"`
+	TotalReactions     int     `json:"total_reactions"`
+	AverageHelpfulness float64 `json:"average_helpfulness"`
+	MostPopularType    string  `json:"most_popular_type"`
+	MostCommonReaction string  `json:"most_common_reaction"`
+}
+
 // FeedbackAnalytics represents detailed feedback analytics
 type FeedbackAnalytics struct {
 	TotalCount             int                 `json:"total_count"`
@@ -116,31 +126,4 @@ type FeedbackTrendData struct {
 	Date               string  `json:"date"`
 	Count              int     `json:"count"`
 	AverageHelpfulness float64 `json:"average_helpfulness"`
-}
-
-// PinnedFeedback represents a pinned feedback item
-type PinnedFeedback struct {
-	FeedbackID string    `json:"feedback_id"`
-	UserID     string    `json:"user_id"`
-	PinnedAt   time.Time `json:"pinned_at"`
-}
-
-// FeedbackStats represents statistics for feedback
-type FeedbackStats struct {
-	TotalFeedback     int     `json:"total_feedback"`
-	TotalComments     int     `json:"total_comments"`
-	TotalReactions    int     `json:"total_reactions"`
-	AverageHelpfulness float64 `json:"average_helpfulness"`
-	MostPopularType    string  `json:"most_popular_type"`
-	MostCommonReaction string  `json:"most_common_reaction"`
-}
-
-// SearchFeedbackRequest represents a request to search feedback
-type SearchFeedbackRequest struct {
-	Query string `json:"query" binding:"required"`
-}
-
-// TrendingFeedbackResponse represents the response for trending feedback
-type TrendingFeedbackResponse struct {
-	Items []*FeedbackItem `json:"items"`
 }

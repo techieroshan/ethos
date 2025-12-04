@@ -1,0 +1,1523 @@
+package templates
+
+// Email Verification Template
+const emailVerificationTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #667eea; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 14px; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Verify Your Email</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Welcome to Ethos, {{.Name}}!</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Thank you for joining Ethos Platform. To complete your registration and ensure the security of your account, please verify your email address.
+            </p>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                Click the button below to verify your email address and activate your account:
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.VerifyURL}}" class="button">Verify Email Address</a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
+                If the button doesn't work, you can copy and paste this link into your browser:
+            </p>
+
+            <p style="color: #6b7280; font-size: 14px; word-break: break-all; background-color: #f3f4f6; padding: 10px; border-radius: 4px;">
+                {{.VerifyURL}}
+            </p>
+
+            <p style="color: #4b5563; line-height: 1.6;">
+                This verification link will expire in 24 hours for security reasons. If you didn't create an account with Ethos, please ignore this email.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Password Reset Template
+const passwordResetTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Your Password - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #f59e0b; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .warning { background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Reset Your Password</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Password Reset Request</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Hi {{.Name}}, we received a request to reset your password for your Ethos Platform account.
+            </p>
+
+            <div class="warning">
+                <p style="margin: 0; color: #92400e; font-weight: 600;">Security Notice</p>
+                <p style="margin: 5px 0 0 0; color: #92400e;">
+                    If you didn't request this password reset, please ignore this email. Your password will remain unchanged.
+                </p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                Click the button below to reset your password. This link will expire in 1 hour for your security.
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.ResetURL}}" class="button">Reset Password</a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
+                If the button doesn't work, copy and paste this link into your browser:
+            </p>
+
+            <p style="color: #6b7280; font-size: 14px; word-break: break-all; background-color: #f3f4f6; padding: 10px; border-radius: 4px;">
+                {{.ResetURL}}
+            </p>
+
+            <p style="color: #4b5563; line-height: 1.6;">
+                For your security, this password reset link can only be used once and will expire in 1 hour.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Welcome Standard User Template
+const welcomeStandardUserTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Ethos - Your Account is Ready</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #10b981; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .feature { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin: 15px 0; }
+        .feature h3 { margin: 0 0 10px 0; color: #065f46; }
+        .feature p { margin: 0; color: #047857; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Welcome to Ethos!</h1>
+            <p style="color: #ecfdf5; margin: 10px 0 0 0; opacity: 0.9;">Your journey to better feedback starts here</p>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Hello {{.Name}}, Welcome Aboard! 🎉</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                Your Ethos account has been successfully created and verified. You're now part of a community dedicated to meaningful feedback and continuous improvement.
+            </p>
+
+            <div class="feature">
+                <h3>✨ Share Your Voice</h3>
+                <p>Submit feedback, share ideas, and contribute to discussions that matter to you.</p>
+            </div>
+
+            <div class="feature">
+                <h3>🔍 Discover Insights</h3>
+                <p>Explore feedback from others, learn from different perspectives, and stay informed.</p>
+            </div>
+
+            <div class="feature">
+                <h3>🔔 Stay Connected</h3>
+                <p>Receive notifications about topics that interest you and engage with the community.</p>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{.DashboardURL}}" class="button">Get Started →</a>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6;">
+                Need help getting started? Check out our <a href="#" style="color: #10b981;">help center</a> or reach out to our support team.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Welcome Organization Admin Template
+const welcomeOrgAdminTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Ethos - Organization Admin Access</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #8b5cf6; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .admin-feature { background-color: #faf5ff; border: 1px solid #d8b4fe; border-radius: 8px; padding: 20px; margin: 15px 0; }
+        .admin-feature h3 { margin: 0 0 10px 0; color: #6b21a8; }
+        .admin-feature p { margin: 0; color: #7c3aed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Organization Admin Access</h1>
+            <p style="color: #f3e8ff; margin: 10px 0 0 0; opacity: 0.9;">Manage your team's Ethos experience</p>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Welcome, {{.Name}}! 🏢</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                You've been granted Organization Administrator privileges on the Ethos Platform. This role gives you the tools to manage your organization's settings, team members, and feedback workflows.
+            </p>
+
+            <div class="admin-feature">
+                <h3>👥 Team Management</h3>
+                <p>Invite team members, manage roles, and oversee user permissions within your organization.</p>
+            </div>
+
+            <div class="admin-feature">
+                <h3>⚙️ Organization Settings</h3>
+                <p>Configure notification preferences, branding, and workflow settings for your team.</p>
+            </div>
+
+            <div class="admin-feature">
+                <h3>📊 Analytics & Reporting</h3>
+                <p>Access detailed analytics about your organization's engagement and feedback trends.</p>
+            </div>
+
+            <div class="admin-feature">
+                <h3>🛡️ Compliance & Security</h3>
+                <p>Monitor compliance requirements and maintain security standards for your organization.</p>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{.DashboardURL}}" class="button">Access Admin Dashboard →</a>
+            </div>
+
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h3 style="margin: 0 0 10px 0; color: #92400e;">Important Security Notice</h3>
+                <p style="margin: 0; color: #92400e;">
+                    As an organization administrator, you have access to sensitive information. Please ensure your account remains secure and report any suspicious activity immediately.
+                </p>
+            </div>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Welcome Platform Admin Template
+const welcomePlatformAdminTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Ethos - Platform Admin Access</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #ef4444; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .critical-feature { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 15px 0; }
+        .critical-feature h3 { margin: 0 0 10px 0; color: #991b1b; }
+        .critical-feature p { margin: 0; color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Platform Administrator</h1>
+            <p style="color: #fee2e2; margin: 10px 0 0 0; opacity: 0.9;">Global platform oversight and management</p>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Welcome, {{.Name}}! 🌐</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                You have been granted Platform Administrator privileges. This is the highest level of access on the Ethos Platform, giving you comprehensive control over all system operations, user management, and platform-wide settings.
+            </p>
+
+            <div class="critical-feature">
+                <h3>🔴 Critical System Access</h3>
+                <p>Monitor system health, manage infrastructure, and respond to platform-wide incidents.</p>
+            </div>
+
+            <div class="critical-feature">
+                <h3>👥 Global User Management</h3>
+                <p>Oversee all users, organizations, and roles across the entire platform ecosystem.</p>
+            </div>
+
+            <div class="critical-feature">
+                <h3>📊 Platform Analytics</h3>
+                <p>Access comprehensive metrics, audit logs, and compliance reporting for the entire platform.</p>
+            </div>
+
+            <div class="critical-feature">
+                <h3>🛡️ Security & Compliance</h3>
+                <p>Manage security policies, conduct audits, and ensure regulatory compliance across all operations.</p>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{.DashboardURL}}" class="button">Access Platform Admin →</a>
+            </div>
+
+            <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h3 style="margin: 0 0 10px 0; color: #991b1b;">⚠️ Critical Security Responsibilities</h3>
+                <p style="margin: 0 0 10px 0; color: #dc2626;">
+                    As a Platform Administrator, you have access to sensitive system information and user data. Your actions directly impact the security and stability of the entire Ethos Platform.
+                </p>
+                <ul style="margin: 10px 0 0 20px; color: #dc2626;">
+                    <li>Never share your admin credentials</li>
+                    <li>Report suspicious activity immediately</li>
+                    <li>Follow the principle of least privilege</li>
+                    <li>Maintain detailed audit logs of all actions</li>
+                </ul>
+            </div>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Welcome Moderator Template
+const welcomeModeratorTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Ethos - Community Moderator Access</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #f97316; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .moderator-feature { background-color: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 20px; margin: 15px 0; }
+        .moderator-feature h3 { margin: 0 0 10px 0; color: #9a3412; }
+        .moderator-feature p { margin: 0; color: #c2410c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Community Moderator</h1>
+            <p style="color: #fed7aa; margin: 10px 0 0 0; opacity: 0.9;">Help maintain a healthy community</p>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Welcome, {{.Name}}! 🛡️</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                You've been selected as a Community Moderator for the Ethos Platform. Your role is crucial in maintaining a respectful, inclusive, and productive environment for all users.
+            </p>
+
+            <div class="moderator-feature">
+                <h3>👁️ Content Review</h3>
+                <p>Review flagged content, assess violations, and take appropriate moderation actions.</p>
+            </div>
+
+            <div class="moderator-feature">
+                <h3>⚖️ Fair Enforcement</h3>
+                <p>Apply community guidelines consistently and fairly to all users and content.</p>
+            </div>
+
+            <div class="moderator-feature">
+                <h3>💬 Community Support</h3>
+                <p>Help resolve conflicts, answer user questions, and foster positive interactions.</p>
+            </div>
+
+            <div class="moderator-feature">
+                <h3>📈 Impact Tracking</h3>
+                <p>Monitor moderation effectiveness and contribute to community health improvements.</p>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{.DashboardURL}}" class="button">Access Moderation Tools →</a>
+            </div>
+
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h3 style="margin: 0 0 10px 0; color: #92400e;">Community Guidelines</h3>
+                <p style="margin: 0 0 10px 0; color: #92400e;">
+                    As a moderator, you're expected to uphold our community standards. Familiarize yourself with the guidelines and use them as your decision-making framework.
+                </p>
+                <p style="margin: 0; color: #92400e;">
+                    <a href="#" style="color: #92400e; text-decoration: underline;">View Community Guidelines →</a>
+                </p>
+            </div>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Welcome Support Engineer Template
+const welcomeSupportEngineerTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Ethos - Support Engineer Access</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #06b6d4; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .support-feature { background-color: #ecfeff; border: 1px solid #a5f3fc; border-radius: 8px; padding: 20px; margin: 15px 0; }
+        .support-feature h3 { margin: 0 0 10px 0; color: #0e7490; }
+        .support-feature p { margin: 0; color: #0891b2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Support Engineer</h1>
+            <p style="color: #a5f3fc; margin: 10px 0 0 0; opacity: 0.9;">Technical support and incident resolution</p>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Welcome, {{.Name}}! 🔧</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                You've been granted Support Engineer access to the Ethos Platform. Your expertise will help maintain system reliability and resolve technical issues for our users.
+            </p>
+
+            <div class="support-feature">
+                <h3>🚨 Incident Response</h3>
+                <p>Respond to system alerts, troubleshoot issues, and coordinate incident resolution.</p>
+            </div>
+
+            <div class="support-feature">
+                <h3>🔍 Diagnostic Tools</h3>
+                <p>Access advanced monitoring tools, logs, and diagnostic utilities to identify root causes.</p>
+            </div>
+
+            <div class="support-feature">
+                <h3>👤 User Support</h3>
+                <p>Assist users with technical issues and provide guidance on platform functionality.</p>
+            </div>
+
+            <div class="support-feature">
+                <h3>📊 Performance Monitoring</h3>
+                <p>Monitor system performance, identify bottlenecks, and optimize platform reliability.</p>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{.DashboardURL}}" class="button">Access Support Dashboard →</a>
+            </div>
+
+            <div style="background-color: #ecfdf5; border: 1px solid #6ee7b7; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h3 style="margin: 0 0 10px 0; color: #065f46;">Support Best Practices</h3>
+                <ul style="margin: 0; color: #047857; padding-left: 20px;">
+                    <li>Document all troubleshooting steps and resolutions</li>
+                    <li>Escalate complex issues promptly</li>
+                    <li>Maintain clear communication with stakeholders</li>
+                    <li>Follow incident response protocols</li>
+                </ul>
+            </div>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Welcome Compliance Auditor Template
+const welcomeComplianceAuditorTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Ethos - Compliance Auditor Access</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #6366f1; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .audit-feature { background-color: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 20px; margin: 15px 0; }
+        .audit-feature h3 { margin: 0 0 10px 0; color: #312e81; }
+        .audit-feature p { margin: 0; color: #4338ca; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Compliance Auditor</h1>
+            <p style="color: #c7d2fe; margin: 10px 0 0 0; opacity: 0.9;">Regulatory compliance and audit oversight</p>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Welcome, {{.Name}}! 📋</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                You've been granted Compliance Auditor access to the Ethos Platform. Your role ensures our platform maintains the highest standards of regulatory compliance and data protection.
+            </p>
+
+            <div class="audit-feature">
+                <h3>📊 Audit Trail Review</h3>
+                <p>Access comprehensive audit logs and review system activities for compliance verification.</p>
+            </div>
+
+            <div class="audit-feature">
+                <h3>⚖️ Regulatory Compliance</h3>
+                <p>Monitor adherence to GDPR, SOC2, ISO27001, and other regulatory requirements.</p>
+            </div>
+
+            <div class="audit-feature">
+                <h3>🔒 Data Protection</h3>
+                <p>Verify data handling practices, privacy controls, and security measures.</p>
+            </div>
+
+            <div class="audit-feature">
+                <h3>📈 Compliance Reporting</h3>
+                <p>Generate detailed compliance reports and track remediation of identified issues.</p>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="{{.DashboardURL}}" class="button">Access Audit Dashboard →</a>
+            </div>
+
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h3 style="margin: 0 0 10px 0; color: #92400e;">Audit Independence</h3>
+                <p style="margin: 0; color: #92400e;">
+                    As a Compliance Auditor, maintain independence and objectivity in all audit activities. Report findings directly to appropriate oversight bodies.
+                </p>
+            </div>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Feedback Submitted Template
+const feedbackSubmittedTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Submitted Successfully - Ethos</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #10b981; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .success { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Feedback Received</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Thank you, {{.Name}}! ✅</h2>
+
+            <div class="success">
+                <h3 style="margin: 0 0 10px 0; color: #065f46;">Your feedback has been successfully submitted</h3>
+                <p style="margin: 0; color: #047857;">We appreciate you taking the time to share your thoughts with us.</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Your feedback titled "<strong>{{.Title}}</strong>" has been received and will be reviewed by our team.
+            </p>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                You can track the status of your feedback and engage with the community discussion using the link below:
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.FeedbackURL}}" class="button">View Your Feedback →</a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
+                Feedback ID: <code style="background-color: #f3f4f6; padding: 2px 6px; border-radius: 4px;">{{.FeedbackID}}</code>
+            </p>
+
+            <p style="color: #4b5563; line-height: 1.6;">
+                We'll notify you of any updates or responses to your feedback. Thank you for helping us improve the Ethos Platform!
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Appeal Submitted Template
+const appealSubmittedTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appeal Submitted - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #f59e0b; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .status { background-color: #fffbeb; border: 1px solid #fed7aa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Appeal Submitted</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Appeal Received, {{.Name}}</h2>
+
+            <div class="status">
+                <h3 style="margin: 0 0 10px 0; color: #92400e;">Status: Under Review</h3>
+                <p style="margin: 0; color: #92400e;">Your appeal has been successfully submitted and is now being reviewed by our team.</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                We've received your appeal regarding the recent platform decision. Our moderation team will carefully review your submission and respond within 3-5 business days.
+            </p>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                You can check the status of your appeal and receive updates through your dashboard:
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.AppealURL}}" class="button">Track Appeal Status →</a>
+            </div>
+
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #374151;">What happens next?</h4>
+                <ol style="margin: 0; color: #4b5563; padding-left: 20px;">
+                    <li>Our team reviews your appeal within 24-48 hours</li>
+                    <li>You'll receive an email notification when a decision is made</li>
+                    <li>If approved, changes take effect immediately</li>
+                    <li>If additional information is needed, we'll contact you directly</li>
+                </ol>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px;">
+                If you have any questions about your appeal, please don't hesitate to contact our support team.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Appeal Status Update Template
+const appealStatusUpdateTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appeal Status Update - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #3b82f6; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .status { background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .approved { background-color: #f0fdf4; border: 1px solid #bbf7d0; }
+        .rejected { background-color: #fef2f2; border: 1px solid #fecaca; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Appeal Decision</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Appeal Status Update</h2>
+
+            <div class="status {{if eq .Status "approved"}}approved{{else if eq .Status "rejected"}}rejected{{end}}">
+                <h3 style="margin: 0 0 10px 0; color: #1e40af;">Status: {{.Status}}</h3>
+                <p style="margin: 0; color: #1e40af;">{{.Reason}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Hi {{.Name}}, our moderation team has reviewed your appeal and made a final decision.
+            </p>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                For more details about this decision and next steps, please visit your appeal dashboard:
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.AppealURL}}" class="button">View Appeal Details →</a>
+            </div>
+
+            {{if eq .Status "approved"}}
+            <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #065f46;">What happens next?</h4>
+                <p style="margin: 0; color: #047857;">
+                    The appealed action has been reversed. You should see the changes reflected in your account within the next few minutes.
+                </p>
+            </div>
+            {{end}}
+
+            {{if eq .Status "rejected"}}
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #92400e;">Appeal Process</h4>
+                <p style="margin: 0; color: #92400e;">
+                    If you disagree with this decision, you can contact our support team for further assistance.
+                </p>
+            </div>
+            {{end}}
+
+            <p style="color: #6b7280; font-size: 14px;">
+                Thank you for your patience during the appeal review process.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Organization Invitation Template
+const orgInvitationTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization Invitation - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #8b5cf6; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 10px 0; }
+        .secondary-button { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
+        .invitation-card { background-color: #faf5ff; border: 1px solid #d8b4fe; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Organization Invitation</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">You're Invited to Join {{.OrgName}}</h2>
+
+            <div class="invitation-card">
+                <h3 style="margin: 0 0 10px 0; color: #6b21a8;">Invitation Details</h3>
+                <p style="margin: 0 0 10px 0; color: #7c3aed;"><strong>Organization:</strong> {{.OrgName}}</p>
+                <p style="margin: 0 0 10px 0; color: #7c3aed;"><strong>Role:</strong> {{.Role}}</p>
+                <p style="margin: 0; color: #7c3aed;"><strong>Invited by:</strong> {{.InvitedBy}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Hi {{.Name}}, you've been invited to join the <strong>{{.OrgName}}</strong> organization on the Ethos Platform.
+            </p>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                As a <strong>{{.Role}}</strong>, you'll have access to organization-specific features, team collaboration tools, and shared resources.
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.AcceptURL}}" class="button">Accept Invitation →</a>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="{{.DeclineURL}}" class="secondary-button" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);">Decline Invitation</a>
+            </div>
+
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #374151;">What you'll get:</h4>
+                <ul style="margin: 0; color: #4b5563; padding-left: 20px;">
+                    <li>Access to organization-specific content and discussions</li>
+                    <li>Team collaboration and project management tools</li>
+                    <li>Organization-wide analytics and insights</li>
+                    <li>Customized notifications and preferences</li>
+                </ul>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px;">
+                This invitation will expire in 7 days. If you have any questions, please contact the person who invited you.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Escalation Received Template
+const escalationReceivedTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Escalation Requires Attention - Ethos</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #dc2626; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .urgent { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Urgent Escalation</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Escalation Requires Immediate Attention</h2>
+
+            <div class="urgent">
+                <h3 style="margin: 0 0 10px 0; color: #991b1b;">Priority: {{.Priority}}</h3>
+                <p style="margin: 0; color: #dc2626;">{{.Description}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Hi {{.Name}}, a critical issue has been escalated and requires your immediate attention.
+            </p>
+
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #374151;">Escalation Details:</h4>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>Escalation ID:</strong> {{.EscalationID}}</p>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>Affected User:</strong> {{.UserAffected}}</p>
+                <p style="margin: 0; color: #4b5563;"><strong>Priority:</strong> {{.Priority}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                Please review and respond to this escalation as soon as possible to minimize impact on the platform and users.
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.EscalationURL}}" class="button">Review Escalation →</a>
+            </div>
+
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #92400e;">Response Guidelines:</h4>
+                <ul style="margin: 0; color: #92400e; padding-left: 20px;">
+                    <li>Acknowledge receipt within 30 minutes</li>
+                    <li>Provide initial assessment within 2 hours</li>
+                    <li>Escalate further if needed following protocol</li>
+                    <li>Document all actions and communications</li>
+                </ul>
+            </div>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Moderation Alert Template
+const moderationAlertTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Requires Moderation Review - Ethos</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #f97316; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .alert { background-color: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Moderation Review</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Content Requires Your Review</h2>
+
+            <div class="alert">
+                <h3 style="margin: 0 0 10px 0; color: #9a3412;">Content Flagged for Review</h3>
+                <p style="margin: 0; color: #c2410c;">{{.ContentType}} content has been flagged and requires moderation attention.</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Hi {{.Name}}, content on the platform has been flagged for potential policy violations and needs your review.
+            </p>
+
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #374151;">Content Details:</h4>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>Content ID:</strong> {{.ContentID}}</p>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>Type:</strong> {{.ContentType}}</p>
+                <p style="margin: 0; color: #4b5563;"><strong>Reason:</strong> {{.Reason}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                {{.ActionRequired}}
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.ContentURL}}" class="button">Review Content →</a>
+            </div>
+
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #92400e;">Moderation Guidelines:</h4>
+                <ul style="margin: 0; color: #92400e; padding-left: 20px;">
+                    <li>Review content against community guidelines</li>
+                    <li>Document your reasoning for any actions taken</li>
+                    <li>Consider context and intent when making decisions</li>
+                    <li>Escalate complex cases to senior moderators</li>
+                </ul>
+            </div>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Audit Report Available Template
+const auditReportAvailableTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Report Available - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #6366f1; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .report-card { background-color: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Audit Report Ready</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Audit Report Available for Review</h2>
+
+            <div class="report-card">
+                <h3 style="margin: 0 0 10px 0; color: #312e81;">{{.ReportType}} Report</h3>
+                <p style="margin: 0 0 5px 0; color: #4338ca;"><strong>Report ID:</strong> {{.ReportID}}</p>
+                <p style="margin: 0 0 5px 0; color: #4338ca;"><strong>Date Range:</strong> {{.DateRange}}</p>
+                <p style="margin: 0; color: #4338ca;"><strong>Findings:</strong> {{.FindingsCount}} items identified</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Hi {{.Name}}, your requested audit report has been generated and is now available for review.
+            </p>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                This report contains {{.FindingsCount}} findings from the audit period. Please review the details and take any necessary follow-up actions.
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.ReportURL}}" class="button">View Audit Report →</a>
+            </div>
+
+            <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #065f46;">Report Contents:</h4>
+                <ul style="margin: 0; color: #047857; padding-left: 20px;">
+                    <li>Executive summary of audit findings</li>
+                    <li>Detailed analysis of compliance issues</li>
+                    <li>Recommended remediation actions</li>
+                    <li>Supporting evidence and documentation</li>
+                </ul>
+            </div>
+
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #92400e;">Important Notes:</h4>
+                <p style="margin: 0; color: #92400e;">
+                    This report contains sensitive compliance information. Please ensure it is stored securely and shared only with authorized personnel.
+                </p>
+            </div>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// System Health Alert Template
+const systemHealthAlertTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Health Alert - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #dc2626; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .critical { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .warning { background-color: #fffbeb; border: 1px solid #fed7aa; }
+        .info { background-color: #eff6ff; border: 1px solid #bfdbfe; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">System Alert</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">System Health Alert</h2>
+
+            <div class="critical {{if eq .Severity "warning"}}warning{{else if eq .Severity "info"}}info{{end}}">
+                <h3 style="margin: 0 0 10px 0; color: #991b1b;">{{.Severity}} Alert</h3>
+                <p style="margin: 0; color: #dc2626;">{{.AlertType}} - {{.Service}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Hi {{.Name}}, our monitoring systems have detected a {{.Severity}} condition affecting the Ethos Platform.
+            </p>
+
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #374151;">Alert Details:</h4>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>Service:</strong> {{.Service}}</p>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>Incident ID:</strong> {{.IncidentID}}</p>
+                <p style="margin: 0; color: #4b5563;"><strong>Description:</strong> {{.Description}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                Our engineering team has been notified and is actively investigating this issue. We'll provide updates as more information becomes available.
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.StatusURL}}" class="button">View System Status →</a>
+            </div>
+
+            {{if eq .Severity "critical"}}
+            <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #991b1b;">Impact & Response:</h4>
+                <p style="margin: 0; color: #dc2626;">
+                    This is a critical system issue that may affect platform availability. Our team is working urgently to resolve this matter.
+                </p>
+            </div>
+            {{end}}
+
+            <p style="color: #6b7280; font-size: 14px;">
+                For real-time updates, please monitor our status page or subscribe to platform notifications.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Account Deletion Template
+const accountDeletionTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Deletion Confirmation - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #6b7280; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .warning { background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .info { background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Account Deletion</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Account Deletion Confirmation</h2>
+
+            <div class="warning">
+                <h3 style="margin: 0 0 10px 0; color: #92400e;">⚠️ Important Notice</h3>
+                <p style="margin: 0; color: #92400e;">
+                    Your Ethos Platform account deletion request has been processed successfully.
+                </p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Hi {{.Name}}, we're writing to confirm that your Ethos Platform account has been permanently deleted.
+            </p>
+
+            <div class="info">
+                <h4 style="margin: 0 0 10px 0; color: #1e40af;">What has been deleted:</h4>
+                <ul style="margin: 0; color: #1e40af; padding-left: 20px;">
+                    <li>Your account profile and personal information</li>
+                    <li>All feedback and content you created</li>
+                    <li>Your notification preferences and settings</li>
+                    <li>Access to any organizations you were a member of</li>
+                </ul>
+            </div>
+
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #374151;">Data Retention Notice:</h4>
+                <p style="margin: 0 0 10px 0; color: #4b5563;">
+                    As required by law, some anonymized data may be retained for regulatory compliance purposes. This data cannot be used to identify you personally.
+                </p>
+                <p style="margin: 0; color: #4b5563;">
+                    For more information about our data retention policies, please refer to our Privacy Policy.
+                </p>
+            </div>
+
+            <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #991b1b;">Account Recovery:</h4>
+                <p style="margin: 0; color: #dc2626;">
+                    Account deletion is permanent and cannot be undone. If you wish to use Ethos Platform again in the future, you will need to create a new account.
+                </p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6;">
+                Thank you for being part of the Ethos community. We hope our paths cross again in the future.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Security Alert Template
+const securityAlertTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Alert - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #dc2626; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .security-alert { background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Security Alert</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Security Event Detected</h2>
+
+            <div class="security-alert">
+                <h3 style="margin: 0 0 10px 0; color: #991b1b;">⚠️ Security Event: {{.EventType}}</h3>
+                <p style="margin: 0; color: #dc2626;">
+                    We detected unusual activity on your account that requires your attention.
+                </p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Hi {{.Name}}, our security systems have detected a potential security event related to your Ethos Platform account.
+            </p>
+
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #374151;">Event Details:</h4>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>Event:</strong> {{.EventType}}</p>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>Time:</strong> {{.EventTime}}</p>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>IP Address:</strong> {{.IPAddress}}</p>
+                <p style="margin: 0 0 5px 0; color: #4b5563;"><strong>Location:</strong> {{.Location}}</p>
+                <p style="margin: 0; color: #4b5563;"><strong>User Agent:</strong> {{.UserAgent}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                If this activity was not performed by you, please take immediate action to secure your account.
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.ActionURL}}" class="button">Review Account Security →</a>
+            </div>
+
+            <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #92400e;">Security Recommendations:</h4>
+                <ul style="margin: 0; color: #92400e; padding-left: 20px;">
+                    <li>Change your password immediately</li>
+                    <li>Enable two-factor authentication if not already enabled</li>
+                    <li>Review your recent account activity</li>
+                    <li>Contact support if you suspect unauthorized access</li>
+                </ul>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px;">
+                This alert was generated automatically by our security monitoring systems. If you have any questions, please contact our support team.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+
+// Feedback Moderated Template
+const feedbackModeratedTemplate = `
+
+// Feedback Moderated Template
+const feedbackModeratedTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Moderated - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #667eea; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .status { background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 14px; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Feedback Moderated</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Feedback Review Complete</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Dear {{.Name}}, our moderation team has reviewed your feedback submission and taken appropriate action.
+            </p>
+
+            <div class="status">
+                <h3 style="margin: 0 0 10px 0; color: #0ea5e9;">Feedback Details:</h3>
+                <p style="margin: 0 0 5px 0; color: #374151;"><strong>Title:</strong> {{.FeedbackTitle}}</p>
+                <p style="margin: 0 0 5px 0; color: #374151;"><strong>ID:</strong> {{.FeedbackID}}</p>
+                <p style="margin: 0 0 5px 0; color: #374151;"><strong>Decision:</strong> {{.ModerationReason}}</p>
+                <p style="margin: 0; color: #374151;"><strong>Reviewed by:</strong> {{.ModeratorName}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 30px;">
+                Thank you for contributing to the Ethos Platform community. Your feedback helps us improve our services and maintain a positive environment for all users.
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.DashboardURL}}" class="button">View Feedback Status →</a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px;">
+                If you have any questions about this moderation decision or would like to submit additional feedback, please don't hesitate to contact our support team.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Appeal Resolved Template
+const appealResolvedTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appeal Resolution - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #667eea; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .decision { background-color: #f0fdf4; border: 1px solid #22c55e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 14px; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Appeal Resolution</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Appeal Decision Finalized</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Dear {{.Name}}, we have completed our review of your appeal and reached a final decision.
+            </p>
+
+            <div class="decision">
+                <h3 style="margin: 0 0 10px 0; color: #15803d;">Final Decision: {{.FinalDecision}}</h3>
+                <p style="margin: 0 0 10px 0; color: #374151;"><strong>Appeal ID:</strong> {{.AppealID}}</p>
+                <p style="margin: 0 0 10px 0; color: #374151;"><strong>Resolution Date:</strong> {{.ResolutionDate}}</p>
+                <p style="margin: 0; color: #374151;"><strong>Decision Summary:</strong></p>
+                <p style="margin: 10px 0 0 0; color: #374151;">{{.ResolutionDetails}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                This decision was made after careful consideration of your appeal, relevant platform policies, and community guidelines. Our goal is to maintain a fair and positive environment for all users.
+            </p>
+
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #374151;">Appeal Timeline:</h4>
+                <p style="margin: 0 0 5px 0; color: #6b7280;"><strong>Submitted:</strong> {{.AppealDate}}</p>
+                <p style="margin: 0 0 5px 0; color: #6b7280;"><strong>Reviewed by:</strong> {{.ModeratorName}}</p>
+                <p style="margin: 0; color: #6b7280;"><strong>Resolution:</strong> {{.ResolutionDate}}</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.DashboardURL}}" class="button">View Appeal Details →</a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px;">
+                If you have any questions about this decision or need further clarification, please contact our support team. For urgent matters, you may also submit a new appeal if circumstances have changed.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`
+
+// Organization Member Added Template
+const orgMemberAddedTemplate = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to {{.Organization}} - Ethos Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f9fafb; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center; }
+        .logo { width: 60px; height: 60px; background-color: #ffffff; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; }
+        .logo div { width: 40px; height: 25px; border-bottom: 3px solid #667eea; border-radius: 2px; }
+        .content { padding: 40px 30px; }
+        .button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .org-info { background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .footer { background-color: #f9fafb; padding: 20px 30px; text-align: center; font-size: 14px; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div></div>
+            </div>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Welcome to {{.Organization}}</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Organization Membership Confirmed</h2>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                Congratulations, {{.Name}}! You have been successfully added to {{.Organization}} on the Ethos Platform.
+            </p>
+
+            <div class="org-info">
+                <h3 style="margin: 0 0 10px 0; color: #0ea5e9;">Membership Details:</h3>
+                <p style="margin: 0 0 5px 0; color: #374151;"><strong>Organization:</strong> {{.Organization}}</p>
+                <p style="margin: 0 0 5px 0; color: #374151;"><strong>Role:</strong> {{.MemberRole}}</p>
+                <p style="margin: 0 0 5px 0; color: #374151;"><strong>Added by:</strong> {{.AdminName}} ({{.AdminEmail}})</p>
+                <p style="margin: 0; color: #374151;"><strong>Join Date:</strong> {{.JoinDate}}</p>
+            </div>
+
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+                As a member of {{.Organization}}, you now have access to organization-specific features, resources, and collaboration tools on the Ethos Platform. Your role as {{.MemberRole}} provides you with appropriate permissions and access levels.
+            </p>
+
+            <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #374151;">Getting Started:</h4>
+                <ul style="margin: 0; color: #6b7280; padding-left: 20px;">
+                    <li>Explore your organization's dashboard and resources</li>
+                    <li>Connect with other team members</li>
+                    <li>Access organization-specific tools and documentation</li>
+                    <li>Review your role permissions and responsibilities</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{{.DashboardURL}}" class="button">Access {{.Organization}} Dashboard →</a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 14px;">
+                If you have any questions about your membership or need assistance getting started, please contact {{.AdminName}} or reach out to our support team.
+            </p>
+        </div>
+
+        ` + canSpamFooter + `
+    </div>
+</body>
+</html>`

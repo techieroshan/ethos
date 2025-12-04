@@ -8,12 +8,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"ethos/internal/auth/model"
 	"ethos/internal/auth/service"
 	"ethos/pkg/errors"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // MockAuthService is a mock implementation of the auth service
@@ -51,6 +52,42 @@ func (m *MockAuthService) GetUserProfile(ctx context.Context, userID string) (*m
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.UserProfile), args.Error(1)
+}
+
+func (m *MockAuthService) ChangePassword(ctx context.Context, userID string, req *service.ChangePasswordRequest) error {
+	args := m.Called(ctx, userID, req)
+	return args.Error(0)
+}
+
+func (m *MockAuthService) VerifyEmail(ctx context.Context, token string) error {
+	args := m.Called(ctx, token)
+	return args.Error(0)
+}
+
+func (m *MockAuthService) RequestPasswordReset(ctx context.Context, req *service.RequestPasswordResetRequest) error {
+	args := m.Called(ctx, req)
+	return args.Error(0)
+}
+
+func (m *MockAuthService) Setup2FA(ctx context.Context, userID string, req *service.Setup2FARequest) (*service.Setup2FAResponse, error) {
+	args := m.Called(ctx, userID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*service.Setup2FAResponse), args.Error(1)
+}
+
+func (m *MockAuthService) GetUserByID(ctx context.Context, userID string) (*model.User, error) {
+	args := m.Called(ctx, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.User), args.Error(1)
+}
+
+func (m *MockAuthService) SwitchUserTenant(ctx context.Context, userID, tenantID string) error {
+	args := m.Called(ctx, userID, tenantID)
+	return args.Error(0)
 }
 
 func setupRouter(handler *AuthHandler) *gin.Engine {
@@ -188,4 +225,3 @@ func TestLogin_MissingBody(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	mockService.AssertNotCalled(t, "Login")
 }
-

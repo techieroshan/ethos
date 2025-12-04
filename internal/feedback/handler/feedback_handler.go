@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"ethos/internal/feedback"
+	feedbackPkg "ethos/internal/feedback"
 	"ethos/internal/feedback/model"
 	"ethos/internal/feedback/service"
 	"ethos/pkg/errors"
@@ -41,7 +41,7 @@ func (h *FeedbackHandler) GetFeed(c *gin.Context) {
 	}
 
 	// Parse filtering parameters
-	filters := &feedback.FeedFilters{}
+	filters := &feedbackPkg.FeedFilters{}
 
 	if reviewerType := c.Query("reviewer_type"); reviewerType != "" {
 		filters.ReviewerType = &reviewerType
@@ -351,7 +351,7 @@ func (h *FeedbackHandler) GetTemplates(c *gin.Context) {
 
 // PostTemplateSuggestions handles POST /api/feedback/template_suggestions
 func (h *FeedbackHandler) PostTemplateSuggestions(c *gin.Context) {
-	var req feedback.TemplateSuggestionRequest
+	var req feedbackPkg.TemplateSuggestionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid request format",
@@ -578,7 +578,7 @@ func (h *FeedbackHandler) ExportFeedback(c *gin.Context) {
 	}
 
 	// Parse filtering parameters (same as feed filtering)
-	filters := &feedback.FeedFilters{}
+	filters := &feedbackPkg.FeedFilters{}
 
 	if reviewerType := c.Query("reviewer_type"); reviewerType != "" {
 		filters.ReviewerType = &reviewerType
@@ -635,7 +635,7 @@ func (h *FeedbackHandler) CreateBatchFeedback(c *gin.Context) {
 		return
 	}
 
-	var req feedback.BatchFeedbackRequest
+	var req feedbackPkg.BatchFeedbackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid request format",
@@ -860,186 +860,3 @@ func (h *FeedbackHandler) GetFeedbackAnalytics(c *gin.Context) {
 
 	c.JSON(http.StatusOK, analytics)
 }
-
-// SearchFeedback handles GET /api/v1/feedback/search
-func (h *FeedbackHandler) SearchFeedback(c *gin.Context) {
-	query := c.Query("q")
-	if query == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Search query required",
-			"code":  "VALIDATION_FAILED",
-		})
-		return
-	}
-
-	limit := c.DefaultQuery("limit", "20")
-	offset := c.DefaultQuery("offset", "0")
-
-	limitInt := 20
-	offsetInt := 0
-	if l, err := strconv.Atoi(limit); err == nil && l > 0 {
-		limitInt = l
-	}
-	if o, err := strconv.Atoi(offset); err == nil && o >= 0 {
-		offsetInt = o
-	}
-
-	items, total, err := h.service.SearchFeedback(c.Request.Context(), query, limitInt, offsetInt)
-	if err != nil {
-		if apiErr, ok := err.(*errors.APIError); ok {
-			c.JSON(apiErr.HTTPStatus, gin.H{
-				"error": apiErr.Message,
-				"code":  apiErr.Code,
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal server error",
-			"code":  "SERVER_ERROR",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"items": items,
-		"total": total,
-	})
-}
-
-// GetTrendingFeedback handles GET /api/v1/feedback/trending
-func (h *FeedbackHandler) GetTrendingFeedback(c *gin.Context) {
-	limit := c.DefaultQuery("limit", "20")
-	offset := c.DefaultQuery("offset", "0")
-
-	limitInt := 20
-	offsetInt := 0
-	if l, err := strconv.Atoi(limit); err == nil && l > 0 {
-		limitInt = l
-	}
-	if o, err := strconv.Atoi(offset); err == nil && o >= 0 {
-		offsetInt = o
-	}
-
-	items, total, err := h.service.GetTrendingFeedback(c.Request.Context(), limitInt, offsetInt)
-	if err != nil {
-		if apiErr, ok := err.(*errors.APIError); ok {
-			c.JSON(apiErr.HTTPStatus, gin.H{
-				"error": apiErr.Message,
-				"code":  apiErr.Code,
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal server error",
-			"code":  "SERVER_ERROR",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"items": items,
-		"total": total,
-	})
-}
-
-// PinFeedback handles POST /api/v1/feedback/:feedback_id/pin
-func (h *FeedbackHandler) PinFeedback(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid token",
-			"code":  "AUTH_TOKEN_INVALID",
-		})
-		return
-	}
-
-	feedbackID := c.Param("feedback_id")
-	if feedbackID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Feedback ID required",
-			"code":  "VALIDATION_FAILED",
-		})
-		return
-	}
-
-	err := h.service.PinFeedback(c.Request.Context(), userID.(string), feedbackID)
-	if err != nil {
-		if apiErr, ok := err.(*errors.APIError); ok {
-			c.JSON(apiErr.HTTPStatus, gin.H{
-				"error": apiErr.Message,
-				"code":  apiErr.Code,
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal server error",
-			"code":  "SERVER_ERROR",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Feedback pinned successfully",
-	})
-}
-
-// UnpinFeedback handles DELETE /api/v1/feedback/:feedback_id/pin
-func (h *FeedbackHandler) UnpinFeedback(c *gin.Context) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "Invalid token",
-			"code":  "AUTH_TOKEN_INVALID",
-		})
-		return
-	}
-
-	feedbackID := c.Param("feedback_id")
-	if feedbackID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Feedback ID required",
-			"code":  "VALIDATION_FAILED",
-		})
-		return
-	}
-
-	err := h.service.UnpinFeedback(c.Request.Context(), userID.(string), feedbackID)
-	if err != nil {
-		if apiErr, ok := err.(*errors.APIError); ok {
-			c.JSON(apiErr.HTTPStatus, gin.H{
-				"error": apiErr.Message,
-				"code":  apiErr.Code,
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal server error",
-			"code":  "SERVER_ERROR",
-		})
-		return
-	}
-
-	c.JSON(http.StatusNoContent, nil)
-}
-
-// GetFeedbackStats handles GET /api/v1/feedback/stats
-func (h *FeedbackHandler) GetFeedbackStats(c *gin.Context) {
-	stats, err := h.service.GetFeedbackStats(c.Request.Context())
-	if err != nil {
-		if apiErr, ok := err.(*errors.APIError); ok {
-			c.JSON(apiErr.HTTPStatus, gin.H{
-				"error": apiErr.Message,
-				"code":  apiErr.Code,
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal server error",
-			"code":  "SERVER_ERROR",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, stats)
-}
-

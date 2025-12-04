@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"ethos/pkg/email"
+	"ethos/pkg/email/templates"
 )
 
 // Config holds Mailpit SMTP configuration
@@ -94,12 +95,17 @@ func isValidEmail(email string) bool {
 
 // buildEmailBody builds email body from template data
 func buildEmailBody(templateID string, data map[string]interface{}) string {
-	// Simple template rendering for local testing
-	body := fmt.Sprintf("Template: %s\n\n", templateID)
-	for key, value := range data {
-		body += fmt.Sprintf("%s: %v\n", key, value)
+	// Use HTML templates for rich email content
+	htmlBody, err := templates.RenderTemplate(templateID, data)
+	if err != nil {
+		// Fallback to simple text format if template rendering fails
+		body := fmt.Sprintf("Template: %s\n\n", templateID)
+		for key, value := range data {
+			body += fmt.Sprintf("%s: %v\n", key, value)
+		}
+		return body
 	}
-	return body
+	return htmlBody
 }
 
 // buildEmailMessage builds a complete email message
@@ -108,7 +114,7 @@ func buildEmailMessage(from, to, subject, body string) string {
 	message += fmt.Sprintf("To: %s\r\n", to)
 	message += fmt.Sprintf("Subject: %s\r\n", subject)
 	message += "MIME-Version: 1.0\r\n"
-	message += "Content-Type: text/plain; charset=UTF-8\r\n"
+	message += "Content-Type: text/html; charset=UTF-8\r\n"
 	message += "\r\n"
 	message += body
 	return message

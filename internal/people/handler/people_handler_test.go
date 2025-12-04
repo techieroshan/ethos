@@ -7,11 +7,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	authModel "ethos/internal/auth/model"
+	"ethos/internal/people"
+	"ethos/pkg/jwt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	authModel "ethos/internal/auth/model"
-	"ethos/pkg/jwt"
 )
 
 // MockPeopleService is a mock implementation of the people service
@@ -35,7 +37,15 @@ func (m *MockPeopleService) GetRecommendations(ctx context.Context, userID strin
 	return args.Get(0).([]*authModel.UserProfile), args.Error(1)
 }
 
-func setupPeopleRouter(handler *PeopleHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
+func (m *MockPeopleService) SearchPeopleWithFilters(ctx context.Context, query string, limit, offset int, filters *people.PeopleSearchFilters) ([]*authModel.UserProfile, int, error) {
+	args := m.Called(ctx, query, limit, offset, filters)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*authModel.UserProfile), args.Int(1), args.Error(2)
+}
+
+func setupPeopleRouter(handler *PeopleHandler, _ *jwt.TokenGenerator) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	v1 := router.Group("/api/v1")
@@ -171,4 +181,3 @@ func TestGetRecommendations_EmptyList(t *testing.T) {
 	assert.Equal(t, 0, len(recommendations))
 	mockService.AssertExpectations(t)
 }
-

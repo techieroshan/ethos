@@ -8,14 +8,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"ethos/internal/auth/model"
+	"ethos/internal/feedback"
 	fbModel "ethos/internal/feedback/model"
 	"ethos/internal/feedback/service"
 	"ethos/internal/middleware"
 	"ethos/pkg/jwt"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // MockFeedbackService is a mock implementation of the feedback service
@@ -81,7 +83,7 @@ func (m *MockFeedbackService) GetTemplates(ctx context.Context, contextFilter, t
 	return args.Get(0).([]*fbModel.FeedbackTemplate), args.Error(1)
 }
 
-func (m *MockFeedbackService) SubmitTemplateSuggestion(ctx context.Context, req *service.TemplateSuggestionRequest) error {
+func (m *MockFeedbackService) SubmitTemplateSuggestion(ctx context.Context, req *feedback.TemplateSuggestionRequest) error {
 	args := m.Called(ctx, req)
 	return args.Error(0)
 }
@@ -94,15 +96,15 @@ func (m *MockFeedbackService) GetImpact(ctx context.Context, userID *string, fro
 	return args.Get(0).(*fbModel.FeedbackImpact), args.Error(1)
 }
 
-func (m *MockFeedbackService) CreateBatchFeedback(ctx context.Context, userID string, req *service.BatchFeedbackRequest) (*service.BatchFeedbackResponse, error) {
+func (m *MockFeedbackService) CreateBatchFeedback(ctx context.Context, userID string, req *feedback.BatchFeedbackRequest) (*feedback.BatchFeedbackResponse, error) {
 	args := m.Called(ctx, userID, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*service.BatchFeedbackResponse), args.Error(1)
+	return args.Get(0).(*feedback.BatchFeedbackResponse), args.Error(1)
 }
 
-func (m *MockFeedbackService) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *service.FeedFilters) ([]*fbModel.FeedbackItem, int, error) {
+func (m *MockFeedbackService) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *feedback.FeedFilters) ([]*fbModel.FeedbackItem, int, error) {
 	args := m.Called(ctx, limit, offset, filters)
 	if args.Get(0) == nil {
 		return nil, 0, args.Error(2)
@@ -128,12 +130,46 @@ func (m *MockFeedbackService) RemoveBookmark(ctx context.Context, userID, feedba
 	return args.Error(0)
 }
 
-func (m *MockFeedbackService) ExportFeedback(ctx context.Context, filters *service.FeedFilters, format string) (*service.ExportResponse, error) {
+func (m *MockFeedbackService) ExportFeedback(ctx context.Context, filters *feedback.FeedFilters, format string) (*feedback.ExportResponse, error) {
 	args := m.Called(ctx, filters, format)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*service.ExportResponse), args.Error(1)
+	return args.Get(0).(*feedback.ExportResponse), args.Error(1)
+}
+
+func (m *MockFeedbackService) UpdateFeedback(ctx context.Context, userID, feedbackID string, req *service.UpdateFeedbackRequest) (*fbModel.FeedbackItem, error) {
+	args := m.Called(ctx, userID, feedbackID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackItem), args.Error(1)
+}
+
+func (m *MockFeedbackService) DeleteFeedback(ctx context.Context, userID, feedbackID string) error {
+	args := m.Called(ctx, userID, feedbackID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackService) UpdateComment(ctx context.Context, userID, feedbackID, commentID string, req *service.UpdateCommentRequest) (*fbModel.FeedbackComment, error) {
+	args := m.Called(ctx, userID, feedbackID, commentID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackComment), args.Error(1)
+}
+
+func (m *MockFeedbackService) DeleteComment(ctx context.Context, userID, feedbackID, commentID string) error {
+	args := m.Called(ctx, userID, feedbackID, commentID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackService) GetFeedbackAnalytics(ctx context.Context, userID *string, from, to *time.Time) (*fbModel.FeedbackAnalytics, error) {
+	args := m.Called(ctx, userID, from, to)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackAnalytics), args.Error(1)
 }
 
 func setupFeedbackRouter(handler *FeedbackHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
@@ -167,12 +203,12 @@ func TestGetFeed_ValidRequest(t *testing.T) {
 
 	expectedItems := []*fbModel.FeedbackItem{
 		{
-			FeedbackID: "f-001",
-			Author: &model.UserSummary{ID: "user-234", Name: "Lisa K."},
-			Content: "Really enjoying the new feature!",
-			Reactions: map[string]int{"like": 5, "helpful": 2},
+			FeedbackID:    "f-001",
+			Author:        &model.UserSummary{ID: "user-234", Name: "Lisa K."},
+			Content:       "Really enjoying the new feature!",
+			Reactions:     map[string]int{"like": 5, "helpful": 2},
 			CommentsCount: 3,
-			CreatedAt: time.Now(),
+			CreatedAt:     time.Now(),
 		},
 	}
 
@@ -192,4 +228,3 @@ func TestGetFeed_ValidRequest(t *testing.T) {
 	assert.NotNil(t, response["results"])
 	mockService.AssertExpectations(t)
 }
-

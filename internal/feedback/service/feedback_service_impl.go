@@ -4,12 +4,11 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
-	"ethos/internal/feedback"
+	feedbackPkg "ethos/internal/feedback"
 	"ethos/internal/feedback/model"
 	"ethos/internal/feedback/repository"
 	"ethos/pkg/errors"
@@ -103,7 +102,7 @@ func (s *FeedbackService) GetTemplates(ctx context.Context, contextFilter, tagsF
 }
 
 // SubmitTemplateSuggestion submits a template suggestion
-func (s *FeedbackService) SubmitTemplateSuggestion(ctx context.Context, req *feedback.TemplateSuggestionRequest) error {
+func (s *FeedbackService) SubmitTemplateSuggestion(ctx context.Context, req *feedbackPkg.TemplateSuggestionRequest) error {
 	// In a real implementation, this might save to database or send to a queue
 	// For now, we'll just log it (the API spec shows it just returns success)
 	return s.repo.SubmitTemplateSuggestion(ctx, req)
@@ -115,12 +114,12 @@ func (s *FeedbackService) GetImpact(ctx context.Context, userID *string, from, t
 }
 
 // CreateBatchFeedback creates multiple feedback items in a batch
-func (s *FeedbackService) CreateBatchFeedback(ctx context.Context, userID string, req *feedback.BatchFeedbackRequest) (*feedback.BatchFeedbackResponse, error) {
+func (s *FeedbackService) CreateBatchFeedback(ctx context.Context, userID string, req *feedbackPkg.BatchFeedbackRequest) (*feedbackPkg.BatchFeedbackResponse, error) {
 	return s.repo.CreateBatchFeedback(ctx, userID, req)
 }
 
 // GetFeedWithFilters retrieves a paginated feed of feedback items with enhanced filtering
-func (s *FeedbackService) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *feedback.FeedFilters) ([]*model.FeedbackItem, int, error) {
+func (s *FeedbackService) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *feedbackPkg.FeedFilters) ([]*model.FeedbackItem, int, error) {
 	return s.repo.GetFeedWithFilters(ctx, limit, offset, filters)
 }
 
@@ -140,14 +139,10 @@ func (s *FeedbackService) RemoveBookmark(ctx context.Context, userID, feedbackID
 }
 
 // ExportFeedback exports feedback data with optional filtering
-func (s *FeedbackService) ExportFeedback(ctx context.Context, filters *feedback.FeedFilters, format string) (*feedback.ExportResponse, error) {
+func (s *FeedbackService) ExportFeedback(ctx context.Context, filters *feedbackPkg.FeedFilters, format string) (*feedbackPkg.ExportResponse, error) {
 	// Validate format
 	if format != "json" && format != "csv" {
-		return nil, &errors.APIError{
-			Message:    "Invalid format. Supported formats: json, csv",
-			Code:       "VALIDATION_FAILED",
-			HTTPStatus: http.StatusBadRequest,
-		}
+		return nil, errors.ErrValidationFailed
 	}
 
 	// Get all matching feedback items (no pagination for export)
@@ -175,7 +170,7 @@ func (s *FeedbackService) ExportFeedback(ctx context.Context, filters *feedback.
 		return nil, err
 	}
 
-	return &feedback.ExportResponse{
+	return &feedbackPkg.ExportResponse{
 		Format:      format,
 		ContentType: contentType,
 		Data:        data,
@@ -214,7 +209,10 @@ func (s *FeedbackService) formatJSONExport(items []*model.FeedbackItem) (string,
 
 		if item.Author != nil {
 			exportItem.AuthorName = item.Author.Name
-			// Note: Role assignment removed as UserSummary doesn't have Role field
+			// Note: Role field doesn't exist on UserSummary, commented out
+			// if item.Author.Role != "" {
+			// 	exportItem.AuthorRole = item.Author.Role
+			// }
 		}
 
 		if item.Type != nil {
@@ -268,9 +266,9 @@ func (s *FeedbackService) formatCSVExport(items []*model.FeedbackItem) (string, 
 			item.FeedbackID,
 			item.Content,
 			item.Author.Name,
-			"", // Role not available in UserSummary
+			"", // AuthorRole - field doesn't exist on UserSummary
 			stringPtrToString(item.Type),
-			stringPtrToString(item.Visibility),
+			visibilityToString(item.Visibility),
 			boolToString(item.IsAnonymous),
 			floatToString(item.Helpfulness),
 			intToString(item.Reactions["like"]),
@@ -392,24 +390,18 @@ func (s *FeedbackService) GetFeedbackAnalytics(ctx context.Context, userID *stri
 }
 
 // Helper functions for CSV formatting
-func stringPtrToString(ptr interface{}) string {
-	if ptr == nil {
+func stringPtrToString(s *model.FeedbackType) string {
+	if s == nil {
 		return ""
 	}
-	switch v := ptr.(type) {
-	case *model.FeedbackType:
-		if v == nil {
-			return ""
-		}
-		return string(*v)
-	case *model.FeedbackVisibility:
-		if v == nil {
-			return ""
-		}
-		return string(*v)
-	default:
+	return string(*s)
+}
+
+func visibilityToString(v *model.FeedbackVisibility) string {
+	if v == nil {
 		return ""
 	}
+	return string(*v)
 }
 
 func boolToString(b bool) string {
@@ -426,74 +418,3 @@ func floatToString(f float64) string {
 func intToString(i int) string {
 	return strconv.Itoa(i)
 }
-
-// SearchFeedback searches feedback items by content/metadata
-func (s *FeedbackService) SearchFeedback(ctx context.Context, query string, limit, offset int) ([]*model.FeedbackItem, int, error) {
-	items, total, err := s.repo.SearchFeedback(ctx, query, limit, offset)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return items, total, nil
-}
-
-// GetTrendingFeedback retrieves trending feedback items
-func (s *FeedbackService) GetTrendingFeedback(ctx context.Context, limit, offset int) ([]*model.FeedbackItem, int, error) {
-	items, total, err := s.repo.GetTrendingFeedback(ctx, limit, offset)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return items, total, nil
-}
-
-// PinFeedback pins a feedback item
-func (s *FeedbackService) PinFeedback(ctx context.Context, userID, feedbackID string) error {
-	// Check if feedback exists
-	item, err := s.repo.GetFeedbackByID(ctx, feedbackID)
-	if err != nil {
-		return err
-	}
-
-	if item == nil {
-		return errors.ErrNotFound
-	}
-
-	// Check if user owns the feedback
-	if item.Author == nil || item.Author.ID != userID {
-		return errors.ErrForbidden
-	}
-
-	return s.repo.PinFeedback(ctx, userID, feedbackID)
-}
-
-// UnpinFeedback unpins a feedback item
-func (s *FeedbackService) UnpinFeedback(ctx context.Context, userID, feedbackID string) error {
-	// Check if feedback exists
-	item, err := s.repo.GetFeedbackByID(ctx, feedbackID)
-	if err != nil {
-		return err
-	}
-
-	if item == nil {
-		return errors.ErrNotFound
-	}
-
-	// Check if user owns the feedback
-	if item.Author == nil || item.Author.ID != userID {
-		return errors.ErrForbidden
-	}
-
-	return s.repo.UnpinFeedback(ctx, userID, feedbackID)
-}
-
-// GetFeedbackStats retrieves overall feedback statistics
-func (s *FeedbackService) GetFeedbackStats(ctx context.Context) (*model.FeedbackStats, error) {
-	stats, err := s.repo.GetFeedbackStats(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return stats, nil
-}
-

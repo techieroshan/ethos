@@ -35,47 +35,10 @@ func NewRedisRateLimiter(cache cache.Cache) RateLimiter {
 
 // Allow checks if a request should be allowed based on rate limits
 func (rl *RedisRateLimiter) Allow(ctx context.Context, key string, config RateLimitConfig) (bool, time.Duration, error) {
-	// Use Redis sorted sets for sliding window rate limiting
-	now := time.Now().UnixMilli()
-	windowStart := now - config.Window.Milliseconds()
+	// Simplified implementation using Redis increment with expiration
+	// TODO: Implement proper sliding window rate limiting with Lua scripts for production
 
-	// Remove old requests outside the window
-	rl.cache.Delete(ctx, fmt.Sprintf("%s:cleanup", key))
-
-	// Add current request timestamp
-	score := float64(now)
-	member := fmt.Sprintf("%d", now)
-
-	// Use a Lua script for atomic operations
-	luaScript := `
-		local key = KEYS[1]
-		local window_start = tonumber(ARGV[1])
-		local score = tonumber(ARGV[2])
-		local member = ARGV[3]
-		local max_requests = tonumber(ARGV[4])
-
-		-- Remove old entries
-		redis.call('ZREMRANGEBYSCORE', key, '-inf', window_start)
-
-		-- Add new entry
-		redis.call('ZADD', key, score, member)
-
-		-- Set expiration on the key
-		redis.call('EXPIRE', key, math.ceil(window_start / 1000) + 60)
-
-		-- Count current requests in window
-		local count = redis.call('ZCARD', key)
-
-		if count > max_requests then
-			-- Remove the current request since limit exceeded
-			redis.call('ZREM', key, member)
-			return {0, 0}  -- Not allowed, no retry after
-		end
-
-		return {1, 0}  -- Allowed
-	`
-
-	// For now, implement a simpler version using Redis operations
+	// For now, implement a basic version using Redis operations
 	// Add current timestamp to sorted set
 	redisKey := fmt.Sprintf("ratelimit:%s", key)
 
@@ -88,16 +51,14 @@ func (rl *RedisRateLimiter) Allow(ctx context.Context, key string, config RateLi
 		return false, 0, err
 	}
 
-	// If this is the first request, set expiration
+	// If this is the first request in the window, set expiration
 	if count == 1 {
 		rl.cache.Expire(ctx, cleanupKey, config.Window)
 	}
 
 	// Check if limit exceeded
-	if int(count) > config.Requests {
-		// Calculate retry after time
-		retryAfter := config.Window
-		return false, retryAfter, nil
+	if count > int64(config.Requests) {
+		return false, config.Window, nil
 	}
 
 	return true, 0, nil

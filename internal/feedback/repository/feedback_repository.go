@@ -78,19 +78,4 @@ type Repository interface {
 
 	// GetFeedbackAnalytics retrieves detailed feedback analytics
 	GetFeedbackAnalytics(ctx context.Context, userID *string, from, to *time.Time) (*model.FeedbackAnalytics, error)
-
-	// SearchFeedback searches feedback items by content/metadata
-	SearchFeedback(ctx context.Context, query string, limit, offset int) ([]*model.FeedbackItem, int, error)
-
-	// GetTrendingFeedback retrieves trending feedback items
-	GetTrendingFeedback(ctx context.Context, limit, offset int) ([]*model.FeedbackItem, int, error)
-
-	// PinFeedback pins a feedback item
-	PinFeedback(ctx context.Context, userID, feedbackID string) error
-
-	// UnpinFeedback unpins a feedback item
-	UnpinFeedback(ctx context.Context, userID, feedbackID string) error
-
-	// GetFeedbackStats retrieves overall feedback statistics
-	GetFeedbackStats(ctx context.Context) (*model.FeedbackStats, error)
 }

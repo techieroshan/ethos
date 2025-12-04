@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"strings"
 	"time"
 
@@ -34,7 +32,7 @@ func (r *PostgresRepository) GetUserByEmail(ctx context.Context, email string) (
 
 	var user model.User
 	query := `
-		SELECT id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+		SELECT id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at
 		FROM users
 		WHERE email = $1
 	`
@@ -43,7 +41,8 @@ func (r *PostgresRepository) GetUserByEmail(ctx context.Context, email string) (
 		&user.ID,
 		&user.Email,
 		&user.PasswordHash,
-		&user.Name,
+		&user.FirstName,
+		&user.LastName,
 		&user.EmailVerified,
 		&user.PublicBio,
 		&user.CreatedAt,
@@ -70,7 +69,7 @@ func (r *PostgresRepository) GetUserByID(ctx context.Context, userID string) (*m
 
 	var user model.User
 	query := `
-		SELECT id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+		SELECT id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`
@@ -79,7 +78,8 @@ func (r *PostgresRepository) GetUserByID(ctx context.Context, userID string) (*m
 		&user.ID,
 		&user.Email,
 		&user.PasswordHash,
-		&user.Name,
+		&user.FirstName,
+		&user.LastName,
 		&user.EmailVerified,
 		&user.PublicBio,
 		&user.CreatedAt,
@@ -109,8 +109,8 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) e
 	}
 
 	query := `
-		INSERT INTO users (id, email, password_hash, name, email_verified, public_bio, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO users (id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 
 	now := time.Now()
@@ -118,7 +118,8 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) e
 		user.ID,
 		user.Email,
 		user.PasswordHash,
-		user.Name,
+		user.FirstName,
+		user.LastName,
 		user.EmailVerified,
 		user.PublicBio,
 		now,
@@ -148,15 +149,16 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, user *model.User) e
 
 	query := `
 		UPDATE users
-		SET email = $1, password_hash = $2, name = $3, email_verified = $4, public_bio = $5, updated_at = $6
-		WHERE id = $7
+		SET email = $1, password_hash = $2, first_name = $3, last_name = $4, email_verified = $5, public_bio = $6, updated_at = $7
+		WHERE id = $8
 	`
 
 	now := time.Now()
 	result, err := r.db.Pool.Exec(ctx, query,
 		user.Email,
 		user.PasswordHash,
-		user.Name,
+		user.FirstName,
+		user.LastName,
 		user.EmailVerified,
 		user.PublicBio,
 		now,
@@ -253,10 +255,4 @@ func (r *PostgresRepository) DeleteRefreshToken(ctx context.Context, tokenHash s
 
 	span.SetStatus(codes.Ok, "")
 	return nil
-}
-
-// hashToken creates a SHA256 hash of a token for storage
-func hashToken(token string) string {
-	hash := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(hash[:])
 }

@@ -5,15 +5,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 	"ethos/internal/auth/model"
 	"ethos/internal/database"
 	"ethos/internal/profile"
 	prefModel "ethos/internal/profile/model"
 	"ethos/pkg/errors"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 )
 
 // PostgresRepository implements the Repository interface using PostgreSQL
@@ -33,7 +34,7 @@ func (r *PostgresRepository) GetUserProfile(ctx context.Context, userID string) 
 
 	var user model.User
 	query := `
-		SELECT id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+		SELECT id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`
@@ -42,7 +43,8 @@ func (r *PostgresRepository) GetUserProfile(ctx context.Context, userID string) 
 		&user.ID,
 		&user.Email,
 		&user.PasswordHash,
-		&user.Name,
+		&user.FirstName,
+		&user.LastName,
 		&user.EmailVerified,
 		&user.PublicBio,
 		&user.CreatedAt,
@@ -75,15 +77,16 @@ func (r *PostgresRepository) UpdateUserProfile(ctx context.Context, userID strin
 	if name != "" && publicBio != "" {
 		query := `
 			UPDATE users
-			SET name = $1, public_bio = $2, updated_at = $3
+			SET first_name = $1, public_bio = $2, updated_at = $3
 			WHERE id = $4
-			RETURNING id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+			RETURNING id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at
 		`
 		err = r.db.Pool.QueryRow(ctx, query, name, publicBio, now, userID).Scan(
 			&user.ID,
 			&user.Email,
 			&user.PasswordHash,
-			&user.Name,
+			&user.FirstName,
+			&user.LastName,
 			&user.EmailVerified,
 			&user.PublicBio,
 			&user.CreatedAt,
@@ -92,15 +95,16 @@ func (r *PostgresRepository) UpdateUserProfile(ctx context.Context, userID strin
 	} else if name != "" {
 		query := `
 			UPDATE users
-			SET name = $1, updated_at = $2
+			SET first_name = $1, updated_at = $2
 			WHERE id = $3
-			RETURNING id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+			RETURNING id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at
 		`
 		err = r.db.Pool.QueryRow(ctx, query, name, now, userID).Scan(
 			&user.ID,
 			&user.Email,
 			&user.PasswordHash,
-			&user.Name,
+			&user.FirstName,
+			&user.LastName,
 			&user.EmailVerified,
 			&user.PublicBio,
 			&user.CreatedAt,
@@ -111,13 +115,14 @@ func (r *PostgresRepository) UpdateUserProfile(ctx context.Context, userID strin
 			UPDATE users
 			SET public_bio = $1, updated_at = $2
 			WHERE id = $3
-			RETURNING id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+			RETURNING id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at
 		`
 		err = r.db.Pool.QueryRow(ctx, query, publicBio, now, userID).Scan(
 			&user.ID,
 			&user.Email,
 			&user.PasswordHash,
-			&user.Name,
+			&user.FirstName,
+			&user.LastName,
 			&user.EmailVerified,
 			&user.PublicBio,
 			&user.CreatedAt,
@@ -147,7 +152,7 @@ func (r *PostgresRepository) UpdateUserPreferences(ctx context.Context, userID s
 	defer span.End()
 
 	now := time.Now()
-	
+
 	// Check if preferences exist
 	var exists bool
 	err := r.db.Pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM user_preferences WHERE user_id = $1)", userID).Scan(&exists)
@@ -235,12 +240,12 @@ func (r *PostgresRepository) SearchUserProfiles(ctx context.Context, query strin
 	defer span.End()
 
 	searchPattern := "%" + query + "%"
-	
+
 	// Get total count
 	var totalCount int
 	countQuery := `
 		SELECT COUNT(*) FROM users
-		WHERE (name ILIKE $1 OR email ILIKE $1 OR public_bio ILIKE $1)
+		WHERE (CONCAT(first_name, ' ', last_name) ILIKE $1 OR email ILIKE $1 OR public_bio ILIKE $1)
 	`
 	err := r.db.Pool.QueryRow(ctx, countQuery, searchPattern).Scan(&totalCount)
 	if err != nil {
@@ -251,10 +256,10 @@ func (r *PostgresRepository) SearchUserProfiles(ctx context.Context, query strin
 
 	// Get profiles
 	profilesQuery := `
-		SELECT id, email, password_hash, name, email_verified, public_bio, created_at, updated_at
+		SELECT id, email, password_hash, first_name, last_name, email_verified, public_bio, created_at, updated_at
 		FROM users
-		WHERE (name ILIKE $1 OR email ILIKE $1 OR public_bio ILIKE $1)
-		ORDER BY name ASC
+		WHERE (CONCAT(first_name, ' ', last_name) ILIKE $1 OR email ILIKE $1 OR public_bio ILIKE $1)
+		ORDER BY CONCAT(first_name, ' ', last_name) ASC
 		LIMIT $2 OFFSET $3
 	`
 
@@ -273,7 +278,8 @@ func (r *PostgresRepository) SearchUserProfiles(ctx context.Context, query strin
 			&user.ID,
 			&user.Email,
 			&user.PasswordHash,
-			&user.Name,
+			&user.FirstName,
+			&user.LastName,
 			&user.EmailVerified,
 			&user.PublicBio,
 			&user.CreatedAt,
@@ -335,7 +341,8 @@ func (r *PostgresRepository) Anonymize(ctx context.Context, userID string) (*pro
 	_, err := r.db.Pool.Exec(ctx, `
 		UPDATE users
 		SET anonymized_at = $1,
-		    name = 'Anonymous User',
+		    first_name = 'Anonymous',
+		    last_name = 'User',
 		    public_bio = NULL,
 		    email = CONCAT('anonymous_', id, '@ethos.local')
 		WHERE id = $2

@@ -341,7 +341,12 @@ func (pc *PrometheusClient) QueryRange(ctx context.Context, query string, start,
 	// Extract matrix data
 	if result.Type().String() == "matrix" {
 		if matrix, ok := result.(v1model.Matrix); ok && len(matrix) > 0 {
-			return matrix[0].Values, nil
+			// Convert []model.SamplePair to []*model.SamplePair
+			values := make([]*v1model.SamplePair, len(matrix[0].Values))
+			for i, v := range matrix[0].Values {
+				values[i] = &v
+			}
+			return values, nil
 		}
 	}
 

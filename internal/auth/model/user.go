@@ -11,26 +11,27 @@ type User struct {
 	ID            string
 	Email         string
 	PasswordHash  string
-	Name          string
+	FirstName     string
+	LastName      string
 	EmailVerified bool
 	PublicBio     string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	Roles         []UserRole `json:"-"` // Loaded separately
 	// Multi-tenant context
-	CurrentTenantID *string    `json:"current_tenant_id,omitempty"`
+	CurrentTenantID   *string            `json:"current_tenant_id,omitempty"`
 	TenantMemberships []TenantMembership `json:"-"` // Loaded separately
 }
 
 // UserRole represents a role assigned to a user
 type UserRole struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
+	ID          string                 `json:"id"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
 	Permissions map[string]interface{} `json:"permissions"`
-	AssignedAt  time.Time `json:"assigned_at"`
-	ExpiresAt   *time.Time `json:"expires_at,omitempty"`
-	IsActive    bool      `json:"is_active"`
+	AssignedAt  time.Time              `json:"assigned_at"`
+	ExpiresAt   *time.Time             `json:"expires_at,omitempty"`
+	IsActive    bool                   `json:"is_active"`
 }
 
 // HasRole checks if user has a specific role
@@ -122,12 +123,12 @@ type UserSummary struct {
 
 // UserProfile represents a user profile for API responses
 type UserProfile struct {
-	ID            string    `json:"id"`
-	Email         string    `json:"email"`
-	Name          string    `json:"name"`
-	EmailVerified bool      `json:"email_verified"`
-	PublicBio     string    `json:"public_bio,omitempty"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID            string     `json:"id"`
+	Email         string     `json:"email"`
+	Name          string     `json:"name"`
+	EmailVerified bool       `json:"email_verified"`
+	PublicBio     string     `json:"public_bio,omitempty"`
+	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
 }
 
@@ -135,7 +136,7 @@ type UserProfile struct {
 func (u *User) ToSummary() *UserSummary {
 	return &UserSummary{
 		ID:   u.ID,
-		Name: u.Name,
+		Name: u.FirstName + " " + u.LastName,
 	}
 }
 
@@ -149,11 +150,10 @@ func (u *User) ToProfile() *UserProfile {
 	return &UserProfile{
 		ID:            u.ID,
 		Email:         u.Email,
-		Name:          u.Name,
+		Name:          u.FirstName + " " + u.LastName,
 		EmailVerified: u.EmailVerified,
 		PublicBio:     u.PublicBio,
 		CreatedAt:     u.CreatedAt,
 		UpdatedAt:     updatedAt,
 	}
 }
-
