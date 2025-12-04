@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"ethos/internal/auth/model"
 	"ethos/pkg/errors"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // MockChecker is a mock email checker
@@ -97,16 +98,15 @@ func TestAuthService_Register_WithEmailValidation(t *testing.T) {
 
 			// Create service with checker
 			service := &AuthService{
-				repo:          mockRepo,
+				repo:           mockRepo,
 				tokenGenerator: nil, // Not needed for registration test
-				emailChecker:  mockChecker,
+				emailChecker:   mockChecker,
 			}
 
 			// Test registration
 			req := &RegisterRequest{
 				Email:    tt.email,
 				Password: "SecurePassword123!",
-				Name:     "Test User",
 			}
 
 			profile, err := service.Register(context.Background(), req)
@@ -175,6 +175,11 @@ func (m *MockRepository) DeleteRefreshToken(ctx context.Context, tokenHash strin
 	return args.Error(0)
 }
 
+func (m *MockRepository) UpdateUser(ctx context.Context, user *model.User) error {
+	args := m.Called(ctx, user)
+	return args.Error(0)
+}
+
 // MockTokenGenerator is a mock token generator for testing
 type MockTokenGenerator struct {
 	mock.Mock
@@ -199,4 +204,3 @@ func (m *MockTokenGenerator) ValidateRefreshToken(token string) (string, error) 
 	args := m.Called(token)
 	return args.String(0), args.Error(1)
 }
-

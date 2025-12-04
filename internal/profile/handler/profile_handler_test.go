@@ -8,15 +8,16 @@ import (
 	"testing"
 	"time"
 
+	"ethos/internal/auth/model"
+	"ethos/internal/middleware"
+	"ethos/internal/profile"
+	prefModel "ethos/internal/profile/model"
+	"ethos/pkg/errors"
+	"ethos/pkg/jwt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"ethos/internal/auth/model"
-	"ethos/internal/middleware"
-	prefModel "ethos/internal/profile/model"
-	"ethos/internal/profile/service"
-	"ethos/pkg/errors"
-	"ethos/pkg/jwt"
 )
 
 // MockProfileService is a mock implementation of the profile service
@@ -32,7 +33,7 @@ func (m *MockProfileService) GetProfile(ctx context.Context, userID string) (*mo
 	return args.Get(0).(*model.UserProfile), args.Error(1)
 }
 
-func (m *MockProfileService) UpdateProfile(ctx context.Context, userID string, req *service.UpdateProfileRequest) (*model.UserProfile, error) {
+func (m *MockProfileService) UpdateProfile(ctx context.Context, userID string, req *profile.UpdateProfileRequest) (*model.UserProfile, error) {
 	args := m.Called(ctx, userID, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -40,7 +41,7 @@ func (m *MockProfileService) UpdateProfile(ctx context.Context, userID string, r
 	return args.Get(0).(*model.UserProfile), args.Error(1)
 }
 
-func (m *MockProfileService) UpdatePreferences(ctx context.Context, userID string, req *service.UpdatePreferencesRequest) (*prefModel.UserPreferences, error) {
+func (m *MockProfileService) UpdatePreferences(ctx context.Context, userID string, req *profile.UpdatePreferencesRequest) (*prefModel.UserPreferences, error) {
 	args := m.Called(ctx, userID, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -69,25 +70,25 @@ func (m *MockProfileService) GetUserProfile(ctx context.Context, userID string) 
 	return args.Get(0).(*model.UserProfile), args.Error(1)
 }
 
-func (m *MockProfileService) OptOut(ctx context.Context, userID string, req *service.OptOutRequest) error {
+func (m *MockProfileService) OptOut(ctx context.Context, userID string, req *profile.OptOutRequest) error {
 	args := m.Called(ctx, userID, req)
 	return args.Error(0)
 }
 
-func (m *MockProfileService) Anonymize(ctx context.Context, userID string) (*service.AnonymizeResponse, error) {
+func (m *MockProfileService) Anonymize(ctx context.Context, userID string) (*profile.AnonymizeResponse, error) {
 	args := m.Called(ctx, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*service.AnonymizeResponse), args.Error(1)
+	return args.Get(0).(*profile.AnonymizeResponse), args.Error(1)
 }
 
-func (m *MockProfileService) RequestDeletion(ctx context.Context, userID string, req *service.DeleteRequest) (*service.DeleteResponse, error) {
+func (m *MockProfileService) RequestDeletion(ctx context.Context, userID string, req *profile.DeleteRequest) (*profile.DeleteResponse, error) {
 	args := m.Called(ctx, userID, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*service.DeleteResponse), args.Error(1)
+	return args.Get(0).(*profile.DeleteResponse), args.Error(1)
 }
 
 func setupProfileRouter(handler *ProfileHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
@@ -204,4 +205,3 @@ func TestGetProfile_ProfileNotFound(t *testing.T) {
 	assert.Equal(t, "PROFILE_NOT_FOUND", errorResponse["code"])
 	mockService.AssertExpectations(t)
 }
-

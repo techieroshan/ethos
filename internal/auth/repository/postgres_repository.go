@@ -2,8 +2,6 @@ package repository
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"strings"
 	"time"
 
@@ -257,10 +255,4 @@ func (r *PostgresRepository) DeleteRefreshToken(ctx context.Context, tokenHash s
 
 	span.SetStatus(codes.Ok, "")
 	return nil
-}
-
-// hashToken creates a SHA256 hash of a token for storage
-func hashToken(token string) string {
-	hash := sha256.Sum256([]byte(token))
-	return hex.EncodeToString(hash[:])
 }

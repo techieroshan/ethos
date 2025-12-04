@@ -8,13 +8,14 @@ import (
 	"testing"
 	"time"
 
+	"ethos/internal/middleware"
+	"ethos/internal/profile"
+	prefModel "ethos/internal/profile/model"
+	"ethos/pkg/jwt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"ethos/internal/middleware"
-	prefModel "ethos/internal/profile/model"
-	"ethos/internal/profile/service"
-	"ethos/pkg/jwt"
 )
 
 // UpdatePreferences is already defined in profile_handler_test.go
@@ -44,7 +45,7 @@ func TestUpdatePreferences_ValidUpdate(t *testing.T) {
 
 	notifyOnLogin := false
 	locale := "en-GB"
-	updateReq := service.UpdatePreferencesRequest{
+	updateReq := profile.UpdatePreferencesRequest{
 		NotifyOnLogin: &notifyOnLogin,
 		Locale:        &locale,
 	}
@@ -76,4 +77,3 @@ func TestUpdatePreferences_ValidUpdate(t *testing.T) {
 	assert.Equal(t, expectedPrefs.Locale, response.Preferences.Locale)
 	mockService.AssertExpectations(t)
 }
-

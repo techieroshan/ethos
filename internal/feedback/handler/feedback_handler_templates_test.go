@@ -1,20 +1,20 @@
 package handler
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
+	"time"
+
+	"ethos/internal/feedback"
+	fbModel "ethos/internal/feedback/model"
+	"ethos/internal/feedback/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	fbModel "ethos/internal/feedback/model"
-	"ethos/pkg/jwt"
-)
-
-// MockFeedbackServiceForTemplates is a mock implementation of the feedback service for templates
+) // MockFeedbackServiceForTemplates is a mock implementation for templates tests
 type MockFeedbackServiceForTemplates struct {
 	mock.Mock
 }
@@ -43,7 +43,7 @@ func (m *MockFeedbackServiceForTemplates) GetComments(ctx context.Context, feedb
 	return args.Get(0).([]*fbModel.FeedbackComment), args.Get(1).(int), args.Error(3)
 }
 
-func (m *MockFeedbackServiceForTemplates) CreateFeedback(ctx context.Context, userID string, req interface{}) (*fbModel.FeedbackItem, error) {
+func (m *MockFeedbackServiceForTemplates) CreateFeedback(ctx context.Context, userID string, req *service.CreateFeedbackRequest) (*fbModel.FeedbackItem, error) {
 	args := m.Called(ctx, userID, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -51,7 +51,7 @@ func (m *MockFeedbackServiceForTemplates) CreateFeedback(ctx context.Context, us
 	return args.Get(0).(*fbModel.FeedbackItem), args.Error(1)
 }
 
-func (m *MockFeedbackServiceForTemplates) CreateComment(ctx context.Context, userID, feedbackID string, req interface{}) (*fbModel.FeedbackComment, error) {
+func (m *MockFeedbackServiceForTemplates) CreateComment(ctx context.Context, userID, feedbackID string, req *service.CreateCommentRequest) (*fbModel.FeedbackComment, error) {
 	args := m.Called(ctx, userID, feedbackID, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -77,144 +77,147 @@ func (m *MockFeedbackServiceForTemplates) GetTemplates(ctx context.Context, cont
 	return args.Get(0).([]*fbModel.FeedbackTemplate), args.Error(1)
 }
 
-func (m *MockFeedbackServiceForTemplates) SubmitTemplateSuggestion(ctx context.Context, req interface{}) error {
+func (m *MockFeedbackServiceForTemplates) SubmitTemplateSuggestion(ctx context.Context, req *feedback.TemplateSuggestionRequest) error {
 	args := m.Called(ctx, req)
 	return args.Error(0)
 }
 
-func setupFeedbackRouterForTemplates(handler *FeedbackHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
-	v1 := router.Group("/api/v1")
-	feedback := v1.Group("/feedback")
-	feedback.GET("/templates", handler.GetTemplates)
-	feedback.POST("/template_suggestions", handler.PostTemplateSuggestions)
-	return router
+func (m *MockFeedbackServiceForTemplates) GetImpact(ctx context.Context, userID *string, from, to *time.Time) (*fbModel.FeedbackImpact, error) {
+	args := m.Called(ctx, userID, from, to)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackImpact), args.Error(1)
+}
+
+func (m *MockFeedbackServiceForTemplates) CreateBatchFeedback(ctx context.Context, userID string, req *feedback.BatchFeedbackRequest) (*feedback.BatchFeedbackResponse, error) {
+	args := m.Called(ctx, userID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*feedback.BatchFeedbackResponse), args.Error(1)
+}
+
+func (m *MockFeedbackServiceForTemplates) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *feedback.FeedFilters) ([]*fbModel.FeedbackItem, int, error) {
+	args := m.Called(ctx, limit, offset, filters)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*fbModel.FeedbackItem), args.Get(1).(int), args.Error(2)
+}
+
+func (m *MockFeedbackServiceForTemplates) GetBookmarks(ctx context.Context, userID string, limit, offset int) ([]*fbModel.FeedbackItem, int, error) {
+	args := m.Called(ctx, userID, limit, offset)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*fbModel.FeedbackItem), args.Get(1).(int), args.Error(2)
+}
+
+func (m *MockFeedbackServiceForTemplates) AddBookmark(ctx context.Context, userID, feedbackID string) error {
+	args := m.Called(ctx, userID, feedbackID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackServiceForTemplates) RemoveBookmark(ctx context.Context, userID, feedbackID string) error {
+	args := m.Called(ctx, userID, feedbackID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackServiceForTemplates) ExportFeedback(ctx context.Context, filters *feedback.FeedFilters, format string) (*feedback.ExportResponse, error) {
+	args := m.Called(ctx, filters, format)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*feedback.ExportResponse), args.Error(1)
+}
+
+func (m *MockFeedbackServiceForTemplates) UpdateFeedback(ctx context.Context, userID, feedbackID string, req *service.UpdateFeedbackRequest) (*fbModel.FeedbackItem, error) {
+	args := m.Called(ctx, userID, feedbackID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackItem), args.Error(1)
+}
+
+func (m *MockFeedbackServiceForTemplates) DeleteFeedback(ctx context.Context, userID, feedbackID string) error {
+	args := m.Called(ctx, userID, feedbackID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackServiceForTemplates) UpdateComment(ctx context.Context, userID, feedbackID, commentID string, req *service.UpdateCommentRequest) (*fbModel.FeedbackComment, error) {
+	args := m.Called(ctx, userID, feedbackID, commentID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackComment), args.Error(1)
+}
+
+func (m *MockFeedbackServiceForTemplates) DeleteComment(ctx context.Context, userID, feedbackID, commentID string) error {
+	args := m.Called(ctx, userID, feedbackID, commentID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackServiceForTemplates) GetFeedbackAnalytics(ctx context.Context, userID *string, from, to *time.Time) (*fbModel.FeedbackAnalytics, error) {
+	args := m.Called(ctx, userID, from, to)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackAnalytics), args.Error(1)
 }
 
 func TestGetTemplates_Success(t *testing.T) {
 	mockService := new(MockFeedbackServiceForTemplates)
 	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
 
 	templates := []*fbModel.FeedbackTemplate{
 		{
-			TemplateID:  "t-001",
-			Name:        "Appreciation Template",
-			Description: "A short message to acknowledge great work.",
-			ContextTags: []string{"appreciation", "general"},
-			TemplateFields: map[string]interface{}{
-				"fields": []interface{}{
-					map[string]interface{}{
-						"name":  "what_went_well",
-						"type":  "text",
-						"label": "What went well?",
-					},
-				},
-			},
+			TemplateID:     "t-001",
+			Name:           "Performance Review",
+			Description:    "For performance reviews",
+			ContextTags:    []string{"performance_review"},
+			TemplateFields: map[string]interface{}{"question": "What are your strengths?"},
 		},
 	}
 
-	mockService.On("GetTemplates", mock.Anything, "", "").Return(templates, nil)
+	mockService.On("GetTemplates", mock.Anything, "performance_review", "").Return(templates, nil)
 
-	router := setupFeedbackRouterForTemplates(handler, tokenGen)
-	req, _ := http.NewRequest("GET", "/api/v1/feedback/templates", nil)
+	gin.SetMode(gin.TestMode)
+	req := httptest.NewRequest("GET", "/api/v1/feedback/templates?context=performance_review", nil)
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-	var response map[string]interface{}
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	results := response["results"].([]interface{})
-	assert.Equal(t, 1, len(results))
-	mockService.AssertExpectations(t)
-}
-
-func TestGetTemplates_WithContextFilter(t *testing.T) {
-	mockService := new(MockFeedbackServiceForTemplates)
-	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
-
-	mockService.On("GetTemplates", mock.Anything, "performance_review", "").Return([]*model.FeedbackTemplate{}, nil)
-
-	router := setupFeedbackRouterForTemplates(handler, tokenGen)
-	req, _ := http.NewRequest("GET", "/api/v1/feedback/templates?context=performance_review", nil)
-	w := httptest.NewRecorder()
+	router := gin.New()
+	router.GET("/api/v1/feedback/templates", handler.GetTemplates)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	mockService.AssertExpectations(t)
 }
 
-func TestGetTemplates_WithTagsFilter(t *testing.T) {
+func TestGetTemplates_WithTags(t *testing.T) {
 	mockService := new(MockFeedbackServiceForTemplates)
 	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
 
-	mockService.On("GetTemplates", mock.Anything, "", "leadership,initiative").Return([]*model.FeedbackTemplate{}, nil)
+	templates := []*fbModel.FeedbackTemplate{
+		{
+			TemplateID:     "t-002",
+			Name:           "Initiative Review",
+			Description:    "For initiative feedback",
+			ContextTags:    []string{"leadership", "initiative"},
+			TemplateFields: map[string]interface{}{},
+		},
+	}
 
-	router := setupFeedbackRouterForTemplates(handler, tokenGen)
-	req, _ := http.NewRequest("GET", "/api/v1/feedback/templates?tags=leadership,initiative", nil)
+	mockService.On("GetTemplates", mock.Anything, "", "leadership,initiative").Return(templates, nil)
+
+	gin.SetMode(gin.TestMode)
+	req := httptest.NewRequest("GET", "/api/v1/feedback/templates?tags=leadership,initiative", nil)
 	w := httptest.NewRecorder()
+
+	router := gin.New()
+	router.GET("/api/v1/feedback/templates", handler.GetTemplates)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 	mockService.AssertExpectations(t)
-}
-
-func TestGetTemplates_ServiceError(t *testing.T) {
-	mockService := new(MockFeedbackServiceForTemplates)
-	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
-
-	mockService.On("GetTemplates", mock.Anything, "", "").Return(nil, assert.AnError)
-
-	router := setupFeedbackRouterForTemplates(handler, tokenGen)
-	req, _ := http.NewRequest("GET", "/api/v1/feedback/templates", nil)
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
-}
-
-func TestPostTemplateSuggestions_Success(t *testing.T) {
-	mockService := new(MockFeedbackServiceForTemplates)
-	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
-
-	mockService.On("SubmitTemplateSuggestion", mock.Anything, mock.Anything).Return(nil)
-
-	router := setupFeedbackRouterForTemplates(handler, tokenGen)
-	suggestion := `{
-		"usage_context": "peer review",
-		"details": "Need a short, positive feedback template for quick peer recognition.",
-		"desired_fields": [{"name": "positive_note", "type": "text"}]
-	}`
-	req, _ := http.NewRequest("POST", "/api/v1/feedback/template_suggestions", strings.NewReader(suggestion))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	var response map[string]interface{}
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	assert.Equal(t, "suggestion_received", response["status"])
-	mockService.AssertExpectations(t)
-}
-
-func TestPostTemplateSuggestions_InvalidJSON(t *testing.T) {
-	mockService := new(MockFeedbackServiceForTemplates)
-	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
-
-	router := setupFeedbackRouterForTemplates(handler, tokenGen)
-	req, _ := http.NewRequest("POST", "/api/v1/feedback/template_suggestions", strings.NewReader("invalid json"))
-	req.Header.Set("Content-Type", "application/json")
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

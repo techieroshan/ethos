@@ -187,10 +187,15 @@ func main() {
 	orgSvc := organizationService.NewOrganizationService(orgRepo)
 	orgHandler := organizationHandler.NewOrganizationHandler(orgSvc)
 
+	// Initialize organization context switching dependencies
+	orgContextRepo := organizationRepository.NewPostgresContextRepository(db)
+	orgContextSvc := organizationService.NewUserContextService(orgContextRepo)
+	contextSwitchHandler := organizationHandler.NewContextSwitchHandler(orgContextSvc)
+
 	// Setup router
 	router := gin.New()
 	api.SetupMiddleware(router)
-	api.SetupRoutes(router, authHandler, profileHandler, feedbackHandler, notificationHandler, dashboardHandler, orgHandler, peopleHandler, communityHandler, accountHandler, moderationHandler, tokenGen)
+	api.SetupRoutes(router, authHandler, profileHandler, feedbackHandler, notificationHandler, dashboardHandler, orgHandler, contextSwitchHandler, peopleHandler, communityHandler, accountHandler, moderationHandler, tokenGen, orgContextSvc)
 
 	// Create HTTP server
 	srv := &http.Server{

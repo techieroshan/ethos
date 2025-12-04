@@ -444,7 +444,7 @@ func generateTOTPSecret(userID string) string {
 }
 
 // generateQRCode generates a QR code URI for TOTP setup
-func generateQRCode(email, secret string) string {
+func generateQRCode(_ string, secret string) string {
 	// Return otpauth URI that can be converted to QR code by client
 	return fmt.Sprintf("otpauth://totp/Ethos:%%s?secret=%s&issuer=Ethos", secret)
 }

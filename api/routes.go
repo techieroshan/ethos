@@ -10,6 +10,7 @@ import (
 	moderationHandler "ethos/internal/moderation/handler"
 	notificationHandler "ethos/internal/notifications/handler"
 	organizationHandler "ethos/internal/organization/handler"
+	organizationService "ethos/internal/organization/service"
 	peopleHandler "ethos/internal/people/handler"
 	profileHandler "ethos/internal/profile/handler"
 	"ethos/pkg/jwt"
@@ -18,7 +19,7 @@ import (
 )
 
 // SetupRoutes configures all API routes
-func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHandler *profileHandler.ProfileHandler, feedbackHandler *feedbackHandler.FeedbackHandler, notificationHandler *notificationHandler.NotificationHandler, dashboardHandler *dashboardHandler.DashboardHandler, organizationHandler *organizationHandler.OrganizationHandler, peopleHandler *peopleHandler.PeopleHandler, communityHandler *communityHandler.CommunityHandler, accountHandler *accountHandler.AccountHandler, moderationHandler *moderationHandler.ModerationHandler, tokenGen *jwt.TokenGenerator) {
+func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHandler *profileHandler.ProfileHandler, feedbackHandler *feedbackHandler.FeedbackHandler, notificationHandler *notificationHandler.NotificationHandler, dashboardHandler *dashboardHandler.DashboardHandler, organizationHandler *organizationHandler.OrganizationHandler, contextSwitchHandler *organizationHandler.ContextSwitchHandler, peopleHandler *peopleHandler.PeopleHandler, communityHandler *communityHandler.CommunityHandler, accountHandler *accountHandler.AccountHandler, moderationHandler *moderationHandler.ModerationHandler, tokenGen *jwt.TokenGenerator, contextService organizationService.UserContextService) {
 	// Global OPTIONS handler for all API routes
 	router.OPTIONS("/api/*path", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
@@ -47,6 +48,7 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 		{
 			profileProtected := profile.Group("")
 			profileProtected.Use(middleware.AuthMiddleware(tokenGen))
+			profileProtected.Use(middleware.ContextSwitchMiddleware(contextService))
 			{
 				profileProtected.GET("/me", profileHandler.GetProfile)
 				profileProtected.PUT("/me", profileHandler.UpdateProfile)
@@ -55,6 +57,12 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 				profileProtected.POST("/opt-out", profileHandler.OptOut)
 				profileProtected.POST("/anonymize", profileHandler.Anonymize)
 				profileProtected.POST("/delete_request", profileHandler.RequestDeletion)
+
+				// Context switching routes
+				profileProtected.GET("/available-contexts", contextSwitchHandler.GetAvailableContexts)
+				profileProtected.GET("/current-context", contextSwitchHandler.GetCurrentContext)
+				profileProtected.POST("/switch-context", contextSwitchHandler.SwitchContext)
+				profileProtected.GET("/context-switch-history", contextSwitchHandler.GetContextSwitchHistory)
 			}
 			profile.GET("/user-profile", profileHandler.SearchProfiles)
 			profile.GET("/:user_id", profileHandler.GetUserProfileByID)
@@ -62,6 +70,7 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 
 		organizations := v1.Group("/organizations")
 		organizations.Use(middleware.AuthMiddleware(tokenGen))
+		organizations.Use(middleware.ValidateOrganizationMembership(contextService))
 		{
 			organizations.GET("", organizationHandler.ListOrganizations)
 			organizations.POST("", organizationHandler.CreateOrganization)

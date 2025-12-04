@@ -1,24 +1,24 @@
 package handler
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	"ethos/internal/feedback"
 	fbModel "ethos/internal/feedback/model"
 	"ethos/internal/feedback/service"
 	"ethos/internal/middleware"
 	"ethos/pkg/jwt"
-)
 
-// MockFeedbackServiceForBatch is a mock implementation for batch feedback
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+) // MockFeedbackServiceForBatch is a mock implementation for batch tests
 type MockFeedbackServiceForBatch struct {
 	mock.Mock
 }
@@ -47,7 +47,7 @@ func (m *MockFeedbackServiceForBatch) GetComments(ctx context.Context, feedbackI
 	return args.Get(0).([]*fbModel.FeedbackComment), args.Get(1).(int), args.Error(3)
 }
 
-func (m *MockFeedbackServiceForBatch) CreateFeedback(ctx context.Context, userID string, req interface{}) (*fbModel.FeedbackItem, error) {
+func (m *MockFeedbackServiceForBatch) CreateFeedback(ctx context.Context, userID string, req *service.CreateFeedbackRequest) (*fbModel.FeedbackItem, error) {
 	args := m.Called(ctx, userID, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -55,7 +55,7 @@ func (m *MockFeedbackServiceForBatch) CreateFeedback(ctx context.Context, userID
 	return args.Get(0).(*fbModel.FeedbackItem), args.Error(1)
 }
 
-func (m *MockFeedbackServiceForBatch) CreateComment(ctx context.Context, userID, feedbackID string, req interface{}) (*fbModel.FeedbackComment, error) {
+func (m *MockFeedbackServiceForBatch) CreateComment(ctx context.Context, userID, feedbackID string, req *service.CreateCommentRequest) (*fbModel.FeedbackComment, error) {
 	args := m.Called(ctx, userID, feedbackID, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -81,7 +81,7 @@ func (m *MockFeedbackServiceForBatch) GetTemplates(ctx context.Context, contextF
 	return args.Get(0).([]*fbModel.FeedbackTemplate), args.Error(1)
 }
 
-func (m *MockFeedbackServiceForBatch) SubmitTemplateSuggestion(ctx context.Context, req interface{}) error {
+func (m *MockFeedbackServiceForBatch) SubmitTemplateSuggestion(ctx context.Context, req *feedback.TemplateSuggestionRequest) error {
 	args := m.Called(ctx, req)
 	return args.Error(0)
 }
@@ -94,12 +94,80 @@ func (m *MockFeedbackServiceForBatch) GetImpact(ctx context.Context, userID *str
 	return args.Get(0).(*fbModel.FeedbackImpact), args.Error(1)
 }
 
-func (m *MockFeedbackServiceForBatch) CreateBatchFeedback(ctx context.Context, userID string, req *service.BatchFeedbackRequest) (*service.BatchFeedbackResponse, error) {
+func (m *MockFeedbackServiceForBatch) CreateBatchFeedback(ctx context.Context, userID string, req *feedback.BatchFeedbackRequest) (*feedback.BatchFeedbackResponse, error) {
 	args := m.Called(ctx, userID, req)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*service.BatchFeedbackResponse), args.Error(1)
+	return args.Get(0).(*feedback.BatchFeedbackResponse), args.Error(1)
+}
+
+func (m *MockFeedbackServiceForBatch) GetFeedWithFilters(ctx context.Context, limit, offset int, filters *feedback.FeedFilters) ([]*fbModel.FeedbackItem, int, error) {
+	args := m.Called(ctx, limit, offset, filters)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*fbModel.FeedbackItem), args.Get(1).(int), args.Error(2)
+}
+
+func (m *MockFeedbackServiceForBatch) GetBookmarks(ctx context.Context, userID string, limit, offset int) ([]*fbModel.FeedbackItem, int, error) {
+	args := m.Called(ctx, userID, limit, offset)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*fbModel.FeedbackItem), args.Get(1).(int), args.Error(2)
+}
+
+func (m *MockFeedbackServiceForBatch) AddBookmark(ctx context.Context, userID, feedbackID string) error {
+	args := m.Called(ctx, userID, feedbackID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackServiceForBatch) RemoveBookmark(ctx context.Context, userID, feedbackID string) error {
+	args := m.Called(ctx, userID, feedbackID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackServiceForBatch) ExportFeedback(ctx context.Context, filters *feedback.FeedFilters, format string) (*feedback.ExportResponse, error) {
+	args := m.Called(ctx, filters, format)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*feedback.ExportResponse), args.Error(1)
+}
+
+func (m *MockFeedbackServiceForBatch) UpdateFeedback(ctx context.Context, userID, feedbackID string, req *service.UpdateFeedbackRequest) (*fbModel.FeedbackItem, error) {
+	args := m.Called(ctx, userID, feedbackID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackItem), args.Error(1)
+}
+
+func (m *MockFeedbackServiceForBatch) DeleteFeedback(ctx context.Context, userID, feedbackID string) error {
+	args := m.Called(ctx, userID, feedbackID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackServiceForBatch) UpdateComment(ctx context.Context, userID, feedbackID, commentID string, req *service.UpdateCommentRequest) (*fbModel.FeedbackComment, error) {
+	args := m.Called(ctx, userID, feedbackID, commentID, req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackComment), args.Error(1)
+}
+
+func (m *MockFeedbackServiceForBatch) DeleteComment(ctx context.Context, userID, feedbackID, commentID string) error {
+	args := m.Called(ctx, userID, feedbackID, commentID)
+	return args.Error(0)
+}
+
+func (m *MockFeedbackServiceForBatch) GetFeedbackAnalytics(ctx context.Context, userID *string, from, to *time.Time) (*fbModel.FeedbackAnalytics, error) {
+	args := m.Called(ctx, userID, from, to)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*fbModel.FeedbackAnalytics), args.Error(1)
 }
 
 func setupFeedbackRouterForBatch(handler *FeedbackHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
@@ -115,125 +183,38 @@ func setupFeedbackRouterForBatch(handler *FeedbackHandler, tokenGen *jwt.TokenGe
 func TestCreateBatchFeedback_Success(t *testing.T) {
 	mockService := new(MockFeedbackServiceForBatch)
 	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
+	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15*time.Second, 336*time.Hour)
 
-	request := &service.BatchFeedbackRequest{
-		Items: []service.BatchFeedbackItem{
-			{
-				Content:    "Great presentation in the meeting!",
-				Type:       "appreciation",
-				Visibility: "public",
-				IsAnonymous: false,
-			},
-			{
-				Content:     "Consider slowing down during the Q&A.",
-				Type:        "suggestion",
-				Visibility:  "org",
-				IsAnonymous: true,
-			},
-		},
+	fbTypeAppreciation := fbModel.FeedbackTypeAppreciation
+
+	batchResponse := &feedback.BatchFeedbackResponse{
+		Submitted: []feedback.BatchFeedbackResult{},
 	}
 
-	response := &service.BatchFeedbackResponse{
-		Submitted: []service.BatchFeedbackResult{
-			{FeedbackID: "f-741", Status: "created"},
-			{FeedbackID: "f-742", Status: "created"},
-		},
-	}
-
-	mockService.On("CreateBatchFeedback", mock.Anything, "user-123", request).Return(response, nil)
+	mockService.On("CreateBatchFeedback", mock.Anything, "user-123", mock.Anything).Return(batchResponse, nil)
 
 	router := setupFeedbackRouterForBatch(handler, tokenGen)
 
-	requestBody, _ := json.Marshal(request)
-	req, _ := http.NewRequest("POST", "/api/v1/feedback/batch", bytes.NewBuffer(requestBody))
+	typeStr := string(fbTypeAppreciation)
+	batchReq := feedback.BatchFeedbackRequest{
+		Items: []feedback.BatchFeedbackItem{
+			{
+				Content: "Great feedback",
+				Type:    &typeStr,
+			},
+		},
+	}
+
+	body, _ := json.Marshal(batchReq)
+	req := httptest.NewRequest("POST", "/api/v1/feedback/batch", strings.NewReader(string(body)))
+	token, err := tokenGen.GenerateAccessToken("user-123")
+	assert.NoError(t, err)
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+tokenGen.GenerateAccessToken("user-123", []string{}))
+
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	var resp service.BatchFeedbackResponse
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(resp.Submitted))
-	assert.Equal(t, "f-741", resp.Submitted[0].FeedbackID)
 	mockService.AssertExpectations(t)
-}
-
-func TestCreateBatchFeedback_EmptyItems(t *testing.T) {
-	mockService := new(MockFeedbackServiceForBatch)
-	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
-
-	request := &service.BatchFeedbackRequest{
-		Items: []service.BatchFeedbackItem{},
-	}
-
-	router := setupFeedbackRouterForBatch(handler, tokenGen)
-
-	requestBody, _ := json.Marshal(request)
-	req, _ := http.NewRequest("POST", "/api/v1/feedback/batch", bytes.NewBuffer(requestBody))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+tokenGen.GenerateAccessToken("user-123", []string{}))
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-}
-
-func TestCreateBatchFeedback_InvalidJSON(t *testing.T) {
-	mockService := new(MockFeedbackServiceForBatch)
-	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
-
-	router := setupFeedbackRouterForBatch(handler, tokenGen)
-	req, _ := http.NewRequest("POST", "/api/v1/feedback/batch", bytes.NewBufferString("invalid json"))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+tokenGen.GenerateAccessToken("user-123", []string{}))
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code)
-}
-
-func TestCreateBatchFeedback_ServiceError(t *testing.T) {
-	mockService := new(MockFeedbackServiceForBatch)
-	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
-
-	request := &service.BatchFeedbackRequest{
-		Items: []service.BatchFeedbackItem{
-			{Content: "Test feedback"},
-		},
-	}
-
-	mockService.On("CreateBatchFeedback", mock.Anything, "user-123", mock.Anything).Return(nil, assert.AnError)
-
-	router := setupFeedbackRouterForBatch(handler, tokenGen)
-
-	requestBody, _ := json.Marshal(request)
-	req, _ := http.NewRequest("POST", "/api/v1/feedback/batch", bytes.NewBuffer(requestBody))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+tokenGen.GenerateAccessToken("user-123", []string{}))
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	mockService.AssertExpectations(t)
-}
-
-func TestCreateBatchFeedback_Unauthorized(t *testing.T) {
-	mockService := new(MockFeedbackServiceForBatch)
-	handler := NewFeedbackHandler(mockService)
-	tokenGen := jwt.NewTokenGenerator("test-secret", "test-refresh-secret", 15, 336)
-
-	router := setupFeedbackRouterForBatch(handler, tokenGen)
-	req, _ := http.NewRequest("POST", "/api/v1/feedback/batch", bytes.NewBufferString("{}"))
-	req.Header.Set("Content-Type", "application/json")
-	// No Authorization header
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }

@@ -224,7 +224,6 @@ func createTestUser(t *testing.T, db *database.DB, email string, verified bool) 
 	user := &model.User{
 		ID:            generateID(),
 		Email:         email,
-		Name:          "Test User",
 		PasswordHash:  hashPassword("oldpassword"),
 		EmailVerified: verified,
 		CreatedAt:     time.Now(),

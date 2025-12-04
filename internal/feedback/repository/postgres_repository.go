@@ -1051,10 +1051,11 @@ func (r *PostgresRepository) GetFeedWithFilters(ctx context.Context, limit, offs
 		// Reviewer type filter
 		if filters.ReviewerType != nil {
 			argCount++
-			if *filters.ReviewerType == "org" {
+			switch *filters.ReviewerType {
+			case "org":
 				// For org reviewer type, we need feedback with reviewer_context
 				whereConditions = append(whereConditions, `fi.reviewer_context IS NOT NULL`)
-			} else if *filters.ReviewerType == "public" {
+			case "public":
 				// For public reviewer type, we need feedback without reviewer_context or with public visibility
 				whereConditions = append(whereConditions, `(fi.reviewer_context IS NULL OR fi.visibility = 'public')`)
 			}
@@ -1069,9 +1070,10 @@ func (r *PostgresRepository) GetFeedWithFilters(ctx context.Context, limit, offs
 
 		// Verification filter (based on email_verified status of author)
 		if filters.Verification != nil {
-			if *filters.Verification == "verified" {
+			switch *filters.Verification {
+			case "verified":
 				whereConditions = append(whereConditions, `u.email_verified = true`)
-			} else if *filters.Verification == "unverified" {
+			case "unverified":
 				whereConditions = append(whereConditions, `u.email_verified = false`)
 			}
 		}

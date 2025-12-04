@@ -6,15 +6,16 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	authModel "ethos/internal/auth/model"
 	"ethos/pkg/errors"
 	"ethos/pkg/jwt"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func setupProfileRouterForUserID(handler *ProfileHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
+func setupProfileRouterForUserID(handler *ProfileHandler, _ *jwt.TokenGenerator) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	v1 := router.Group("/api/v1")
@@ -85,4 +86,3 @@ func TestGetUserProfileByID_MissingUserID(t *testing.T) {
 	// Should return 404 for missing route or 400 for empty user_id
 	assert.True(t, w.Code == http.StatusNotFound || w.Code == http.StatusBadRequest)
 }
-

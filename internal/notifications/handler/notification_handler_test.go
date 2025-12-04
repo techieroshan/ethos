@@ -8,12 +8,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	notifModel "ethos/internal/notifications/model"
 	notifService "ethos/internal/notifications/service"
 	"ethos/pkg/jwt"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // MockNotificationService is a mock implementation of the notification service
@@ -45,7 +46,17 @@ func (m *MockNotificationService) UpdatePreferences(ctx context.Context, userID 
 	return args.Get(0).(*notifModel.NotificationPreferences), args.Error(1)
 }
 
-func setupNotificationRouter(handler *NotificationHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
+func (m *MockNotificationService) MarkAllAsRead(ctx context.Context, userID string) error {
+	args := m.Called(ctx, userID)
+	return args.Error(0)
+}
+
+func (m *MockNotificationService) MarkAsRead(ctx context.Context, userID, notificationID string, read bool) error {
+	args := m.Called(ctx, userID, notificationID, read)
+	return args.Error(0)
+}
+
+func setupNotificationRouter(handler *NotificationHandler, _ *jwt.TokenGenerator) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	v1 := router.Group("/api/v1")
@@ -206,4 +217,3 @@ func TestUpdatePreferences_InvalidJSON(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "VALIDATION_FAILED", response["code"])
 }
-

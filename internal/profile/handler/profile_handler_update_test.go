@@ -8,13 +8,14 @@ import (
 	"testing"
 	"time"
 
+	"ethos/internal/auth/model"
+	"ethos/internal/middleware"
+	"ethos/internal/profile"
+	"ethos/pkg/jwt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"ethos/internal/auth/model"
-	"ethos/internal/middleware"
-	"ethos/internal/profile/service"
-	"ethos/pkg/jwt"
 )
 
 func setupUpdateProfileRouter(handler *ProfileHandler, tokenGen *jwt.TokenGenerator) *gin.Engine {
@@ -40,7 +41,7 @@ func TestUpdateProfile_ValidUpdate(t *testing.T) {
 	token, err := tokenGen.GenerateAccessToken(userID)
 	assert.NoError(t, err)
 
-	updateReq := service.UpdateProfileRequest{
+	updateReq := profile.UpdateProfileRequest{
 		Name:      "Updated Name",
 		PublicBio: "Updated bio",
 	}
@@ -126,7 +127,7 @@ func TestUpdateProfile_ExpiredToken(t *testing.T) {
 	token, err := expiredTokenGen.GenerateAccessToken(userID)
 	assert.NoError(t, err)
 
-	updateReq := service.UpdateProfileRequest{
+	updateReq := profile.UpdateProfileRequest{
 		Name: "Updated Name",
 	}
 
@@ -142,4 +143,3 @@ func TestUpdateProfile_ExpiredToken(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 	mockService.AssertNotCalled(t, "UpdateProfile")
 }
-
