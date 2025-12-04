@@ -155,4 +155,3 @@ func isDevEnvironment() bool {
 
 	return env == "development" || env == "dev" || env == "staging" || env == "test"
 }
-

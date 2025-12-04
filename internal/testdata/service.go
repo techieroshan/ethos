@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-
-	"ethos/internal/auth/model"
-	"ethos/internal/feedback/model"
 )
 
 // TestDataService handles creation and cleanup of test data
@@ -91,26 +88,26 @@ func (s *TestDataService) generateContextualFeedback(author *TestUserProfile, al
 
 		recipient := recipients[i]
 		ratings := map[string]int{
-			"Integrity":      rand.Intn(10) + 1,
-			"Leadership":     rand.Intn(10) + 1,
-			"Communication":  rand.Intn(10) + 1,
-			"Collaboration":  rand.Intn(10) + 1,
-			"Technical":      rand.Intn(10) + 1,
+			"Integrity":     rand.Intn(10) + 1,
+			"Leadership":    rand.Intn(10) + 1,
+			"Communication": rand.Intn(10) + 1,
+			"Collaboration": rand.Intn(10) + 1,
+			"Technical":     rand.Intn(10) + 1,
 		}
 
 		feedbackItem := map[string]interface{}{
-			"id":        fmt.Sprintf("feedback-%s-%d", author.ID, i),
-			"authorId":  author.ID,
-			"author":    author.FullName,
+			"id":          fmt.Sprintf("feedback-%s-%d", author.ID, i),
+			"authorId":    author.ID,
+			"author":      author.FullName,
 			"recipientId": recipient.ID,
-			"recipient": recipient.FullName,
-			"content":   s.generateFeedbackContent(author, recipient),
-			"type":      "peer-feedback",
-			"visibility": "public",
-			"ratings":   ratings,
-			"tags":      s.generateFeedbackTags(),
-			"replies":   rand.Intn(5),
-			"createdAt": time.Now().Add(-time.Duration(rand.Intn(90)) * 24 * time.Hour),
+			"recipient":   recipient.FullName,
+			"content":     s.generateFeedbackContent(author, recipient),
+			"type":        "peer-feedback",
+			"visibility":  "public",
+			"ratings":     ratings,
+			"tags":        s.generateFeedbackTags(),
+			"replies":     rand.Intn(5),
+			"createdAt":   time.Now().Add(-time.Duration(rand.Intn(90)) * 24 * time.Hour),
 		}
 		feedback = append(feedback, feedbackItem)
 	}
@@ -134,13 +131,13 @@ func (s *TestDataService) generateContextualRatings(rater *TestUserProfile, allP
 
 		recipient := recipients[i]
 		rating := map[string]interface{}{
-			"id":        fmt.Sprintf("rating-%s-%d", rater.ID, i),
-			"userId":    rater.ID,
+			"id":          fmt.Sprintf("rating-%s-%d", rater.ID, i),
+			"userId":      rater.ID,
 			"ratedUserId": recipient.ID,
-			"category":  categories[rand.Intn(len(categories))],
-			"score":     rand.Intn(10) + 1,
-			"feedback":  s.generateRatingFeedback(),
-			"createdAt": time.Now().Add(-time.Duration(rand.Intn(90)) * 24 * time.Hour),
+			"category":    categories[rand.Intn(len(categories))],
+			"score":       rand.Intn(10) + 1,
+			"feedback":    s.generateRatingFeedback(),
+			"createdAt":   time.Now().Add(-time.Duration(rand.Intn(90)) * 24 * time.Hour),
 		}
 		ratings = append(ratings, rating)
 	}
@@ -297,11 +294,11 @@ func (s *TestDataService) CleanupTestData(ctx context.Context) (map[string]inter
 	testIDs := GetAllTestUserIDs()
 
 	result := map[string]interface{}{
-		"status":        "cleaned",
-		"deletedUsers":  len(testIDs),
-		"userIds":       testIDs,
-		"timestamp":     time.Now().Unix(),
-		"message":       "All test data has been removed successfully",
+		"status":       "cleaned",
+		"deletedUsers": len(testIDs),
+		"userIds":      testIDs,
+		"timestamp":    time.Now().Unix(),
+		"message":      "All test data has been removed successfully",
 	}
 
 	return result, nil
