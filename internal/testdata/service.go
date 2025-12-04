@@ -19,14 +19,14 @@ func NewTestDataService() *TestDataService {
 
 // CreateTestData creates all test users and their contextual data
 func (s *TestDataService) CreateTestData(ctx context.Context) (map[string]interface{}, error) {
-	profiles := GetTestUserProfiles()
+	profilesMap := GetTestUserProfilesAsStringMap()
 	createdUsers := make([]map[string]interface{}, 0)
 	createdFeedback := make([]map[string]interface{}, 0)
 	createdRatings := make([]map[string]interface{}, 0)
 	createdReviews := make([]map[string]interface{}, 0)
 
 	// For each test user, create their profile, feedback, ratings, and reviews
-	for userType, profile := range profiles {
+	for userType, profile := range profilesMap {
 		// Create user profile
 		userPayload := map[string]interface{}{
 			"id":        profile.ID,
@@ -41,15 +41,15 @@ func (s *TestDataService) CreateTestData(ctx context.Context) (map[string]interf
 		createdUsers = append(createdUsers, userPayload)
 
 		// Create contextual feedback items for this user
-		feedbackItems := s.generateContextualFeedback(profile, profiles)
+		feedbackItems := s.generateContextualFeedback(profile, profilesMap)
 		createdFeedback = append(createdFeedback, feedbackItems...)
 
 		// Create ratings for this user
-		ratings := s.generateContextualRatings(profile, profiles)
+		ratings := s.generateContextualRatings(profile, profilesMap)
 		createdRatings = append(createdRatings, ratings...)
 
 		// Create reviews for this user
-		reviews := s.generateContextualReviews(profile, profiles)
+		reviews := s.generateContextualReviews(profile, profilesMap)
 		createdReviews = append(createdReviews, reviews...)
 
 		fmt.Printf("[TESTDATA] Created test user: %s (%s) with %d feedback, %d ratings, %d reviews\n",
