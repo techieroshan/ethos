@@ -13,6 +13,7 @@ import (
 	organizationService "ethos/internal/organization/service"
 	peopleHandler "ethos/internal/people/handler"
 	profileHandler "ethos/internal/profile/handler"
+	"ethos/internal/testdata"
 	"ethos/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
@@ -152,6 +153,14 @@ func SetupRoutes(router *gin.Engine, authHandler *handler.AuthHandler, profileHa
 		{
 			account.GET("/security-events", accountHandler.GetSecurityEvents)
 			account.GET("/export-data/:export_id/status", accountHandler.GetExportStatus)
+		}
+
+		// Test data endpoints (dev/staging only)
+		testDataHandler := testdata.NewHandler()
+		testData := v1.Group("/test-data")
+		{
+			testData.POST("/seed", testDataHandler.SeedTestData)
+			testData.DELETE("/cleanup", testDataHandler.CleanupTestData)
 		}
 	}
 }
